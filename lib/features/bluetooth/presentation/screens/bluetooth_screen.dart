@@ -1,0 +1,337 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:rapid_app/core/config/app_assets.dart';
+
+import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
+import 'package:rapid_app/route_names.dart';
+import 'bloc/bluetooth_bloc.dart';
+
+class BluetoothScreen extends StatefulWidget {
+  const BluetoothScreen({super.key});
+
+  @override
+  State<BluetoothScreen> createState() => _BluetoothScreenState();
+}
+
+class _BluetoothScreenState extends State<BluetoothScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Add StartSearch event when screen is opened
+    context.read<BluetoothBloc>().add(StartSearch());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.scaffoldBg,
+      appBar: const RapidAppBar(title: 'Bluetooth'),
+      body: BlocListener<BluetoothBloc, BluetoothState>(
+        listener: (context, state) {
+          if (state is BluetoothConnected) {
+            Future.delayed(const Duration(seconds: 1), () {
+              if (mounted) {
+                context.pushNamed(AppRoutes.scanning);
+              }
+            });
+          }
+        },
+        child: BlocBuilder<BluetoothBloc, BluetoothState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                SizedBox(height: 32.h),
+                _headerSection(state),
+                SizedBox(height: 24.h),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: _buildContent(context, state),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _headerSection(BluetoothState state) {
+    String title = 'Searching for devices';
+    String subtitle = 'Looking nearby...';
+
+    if (state is BluetoothDevicesFound) {
+      subtitle =
+          '${state.devices.length} device${state.devices.length > 1 ? 's' : ''} nearby';
+    } else if (state is BluetoothConnecting) {
+      subtitle = 'Connecting...';
+    } else if (state is BluetoothConnected) {
+      title = 'Connected';
+      subtitle = 'Device ready to use';
+    }
+
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textVeryDarkGrey,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: AppColors.textMediumGrey,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context, BluetoothState state) {
+    if (state is BluetoothSearching) {
+      return Padding(
+        padding: EdgeInsets.only(top: 80.h),
+        child: const Align(
+          alignment: Alignment.topCenter,
+          child: PulsatingBluetoothIcon(),
+        ),
+      );
+    }
+
+    if (state is BluetoothDevicesFound ||
+        state is BluetoothConnecting ||
+        state is BluetoothConnected) {
+      final devices = (state is BluetoothDevicesFound)
+          ? state.devices
+          : (state is BluetoothConnecting)
+          ? [state.device]
+          : (state is BluetoothConnected)
+          ? [state.device]
+          : [];
+
+      return ListView.builder(
+        itemCount: devices.length,
+        itemBuilder: (context, index) {
+          final device = devices[index];
+          return Padding(
+            padding: EdgeInsets.only(bottom: 16.h),
+            child: _deviceCard(context, device, state),
+          );
+        },
+      );
+    }
+
+    return const SizedBox();
+  }
+
+  Widget _deviceCard(
+    BuildContext context,
+    BluetoothDevice device,
+    BluetoothState state,
+  ) {
+    String status = 'Tap to connect';
+    bool isConnecting = false;
+    bool isConnected = false;
+
+    if (state is BluetoothConnecting && state.device == device) {
+      status = 'Connecting...';
+      isConnecting = true;
+    } else if (state is BluetoothConnected && state.device == device) {
+      status = 'Connected';
+      isConnected = true;
+    }
+
+    return GestureDetector(
+      onTap: isConnecting
+          ? null
+          : () {
+              if (!isConnected) {
+                context.read<BluetoothBloc>().add(DeviceSelected(device));
+              }
+            },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.borderColor),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: AppColors.greyLight,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(Assets.bluetoothLightGrey),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    device.name,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textVeryDarkGrey,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    status,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: AppColors.textMediumGrey,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isConnecting)
+              SizedBox(
+                width: 24.w,
+                height: 24.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.black,
+                ),
+              )
+            else if (isConnected)
+              SvgPicture.asset(Assets.checkCircleGrey)
+            else
+              SvgPicture.asset(Assets.arrowRight),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PulsatingBluetoothIcon extends StatelessWidget {
+  const PulsatingBluetoothIcon({super.key});
+
+  static const double _centerSize = 88.0;
+
+  Widget _ring({
+    required double endScale,
+    required double beginOpacity,
+    required double endOpacity,
+  }) {
+    return Container(
+          width: _centerSize.w,
+          height: _centerSize.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primary, width: 1.5),
+          ),
+        )
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .scale(
+          begin: const Offset(1.0, 1.0),
+          end: Offset(endScale, endScale),
+          duration: 1600.ms,
+          curve: Curves.easeInOut,
+        )
+        .fade(
+          begin: beginOpacity,
+          end: endOpacity,
+          duration: 1600.ms,
+          curve: Curves.easeInOut,
+        );
+  }
+
+  Widget _blinkingDot() {
+    return Container(
+          width: 3.w,
+          height: 3.w,
+          decoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+        )
+        .animate(onPlay: (c) => c.repeat())
+        .custom(
+          duration: 2000.ms,
+          builder: (ctx, value, child) {
+            // value: 0.0 → 1.0 over 2000ms (no reverse)
+            // Triple blink: on/off/on/off/on → long pause
+            final ms = value * 2000;
+            final opacity = (ms < 180)
+                ? 1.0
+                : (ms < 320)
+                ? 0.0
+                : (ms < 500)
+                ? 1.0
+                : (ms < 640)
+                ? 0.0
+                : (ms < 820)
+                ? 1.0
+                : 0.0;
+            return Opacity(opacity: opacity, child: child);
+          },
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 180.w,
+      height: 180.w,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outer ring: scales to 1.75x, fades 0.25 → 0.65
+          _ring(endScale: 1.75, beginOpacity: 0.2, endOpacity: 0.6),
+
+          // Inner ring: scales to 1.42x, fades 0.3 → 1.0
+          _ring(endScale: 1.42, beginOpacity: 0.3, endOpacity: 1.0),
+
+          // Central filled circle
+          Container(
+            width: _centerSize.w,
+            height: _centerSize.w,
+            decoration: BoxDecoration(
+              color: AppColors.fadedPrimary,
+              shape: BoxShape.circle,
+            ),
+            // Stack icon + dots so dots are tightly overlapping the icon area
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                // Bluetooth icon
+                SvgPicture.asset(Assets.bluetoothBlue),
+                // Left dot — nudged left
+                Transform.translate(
+                  offset: Offset(-10.w, 0),
+                  child: _blinkingDot(),
+                ),
+                // Right dot — nudged right
+                Transform.translate(
+                  offset: Offset(10.w, 0),
+                  child: _blinkingDot(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

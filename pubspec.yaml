@@ -1,0 +1,55 @@
+name: rapid_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.0
+  bloc: ^9.1.0
+  equatable: ^2.0.7
+  flutter_screenutil: ^5.9.3
+  flutter_svg: ^2.2.4
+  go_router: ^17.2.0
+  shared_preferences: ^2.5.5
+  flutter_animate: ^4.5.2
+  google_fonts: ^7.0.0
+  dio: ^5.9.2
+  pretty_dio_logger: ^1.4.0
+  intl: ^0.20.2
+  cached_network_image: ^3.4.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/svgs/
+    - assets/svgs/dashboard/
+    - assets/svgs/account/
+
+  fonts:
+    - family: Work Sans
+      fonts:
+        - asset: assets/fonts/WorkSans-Regular.ttf
+        - asset: assets/fonts/WorkSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/WorkSans-Italic.ttf
+          style: italic
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-VariableFont_opsz,wght.ttf
+        - asset: assets/fonts/Inter-Italic-VariableFont_opsz,wght.ttf
+          style: italic
+        - asset: assets/fonts/Inter_18pt-Bold.ttf
+          weight: 700
+
