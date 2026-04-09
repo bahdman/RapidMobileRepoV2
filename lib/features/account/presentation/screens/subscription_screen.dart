@@ -13,25 +13,24 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  int _selectedPlanIndex = 1;
+  final int _selectedPlanIndex = 1;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       appBar: const RapidAppBar(title: 'Subscription'),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 16.h),
                   _buildPlanCard(
-                    index: 0,
-                    title: 'Free Plan',
+                    title: 'Free',
                     price: '\$0',
                     subtitle: '/month',
                     isCurrent: true,
@@ -43,61 +42,49 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                   SizedBox(height: 16.h),
                   _buildPlanCard(
-                    index: 1,
-                    title: 'Rapid Premium',
+                    title: 'Pro',
                     price: '\$9.99',
                     subtitle: '/month',
                     isCurrent: false,
                     isRecommended: true,
+                    buttonText: 'Upgrade to Pro',
                     features: [
-                      'Unlimited sub-scans',
-                      'Advanced AI diagnostics',
+                      'Unlimited code lookups',
+                      'Full scan reports',
+                      '3 vehicle profiles',
+                      'Driving score',
                       'Priority support',
-                      'Unlimited vehicle profiles',
                     ],
                   ),
                   SizedBox(height: 32.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56.h,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Change Plan',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textWhite,
-                        ),
-                      ),
-                    ),
+                  _buildPlanCard(
+                    title: 'Premium',
+                    price: '\$19.99',
+                    subtitle: '/month',
+                    isCurrent: false,
+                    buttonText: 'Choose Premium',
+                    isOutlinedButton: true,
+                    features: [
+                      'Everything in Pro',
+                      'Unlimited vehicles',
+                      'Auto-scheduled scans',
+                      'Repair cost estimates',
+                      '24/7 live support',
+                    ],
                   ),
                   SizedBox(height: 32.h),
                 ],
               ),
             ),
           ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 32.h),
-                child: Text(
-                  'Rapid V1.2',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textMediumGrey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 32.h, top: 16.h),
+            child: Text(
+              'Rapid V1.2',
+              style: TextStyle(
+                fontSize: 11.sp,
+                color: AppColors.grey500,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -107,154 +94,172 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildPlanCard({
-    required int index,
     required String title,
     required String price,
     required String subtitle,
     required bool isCurrent,
     bool isRecommended = false,
+    String? buttonText,
+    bool isOutlinedButton = false,
     required List<String> features,
   }) {
-    final isSelected = _selectedPlanIndex == index;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedPlanIndex = index;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.all(24.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.borderColor2,
-            width: isSelected ? 2.w : 1.w,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24.r),
+            border: Border.all(
+              color: isRecommended ? AppColors.primary : AppColors.borderColor2,
+              width: isRecommended ? 1.w : 1.w,
+            ),
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
                 ),
-                if (isCurrent)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 6.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Color(0xffCCDCEF),
-                      borderRadius: BorderRadius.circular(100.r),
-                      border: Border.all(color: Color(0xffE2E8F0)),
-                    ),
-                    child: Text(
-                      'Current',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.primary,
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        price,
+                        style: TextStyle(
+                          fontSize: 32.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 6.h, left: 2.w),
+                        child: Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: AppColors.black200,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  if (isCurrent)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightBlue,
+                        borderRadius: BorderRadius.circular(100.r),
+                        border: Border.all(color: const Color(0xffE2E8F0)),
+                      ),
+                      child: Text(
+                        'Current',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                  )
-                else if (isRecommended)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 6.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(100.r),
+                ],
+              ),
+              SizedBox(height: 24.h),
+              ...features.map((feature) => _buildFeatureItem(feature)),
+              if (buttonText != null) ...[
+                SizedBox(height: 24.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54.h,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isOutlinedButton
+                          ? Colors.white
+                          : AppColors.primary,
+                      foregroundColor: isOutlinedButton
+                          ? Colors.black
+                          : Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100.r),
+                        side: isOutlinedButton
+                            ? BorderSide(color: AppColors.borderColor2)
+                            : BorderSide.none,
+                      ),
                     ),
                     child: Text(
-                      'Recommended',
+                      buttonText,
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
                       ),
                     ),
                   ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  price,
-                  style: TextStyle(
-                    fontSize: 32.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 6.h, left: 4.w),
-                  child: Text(
-                    subtitle,
+              ],
+            ],
+          ),
+        ),
+        if (isRecommended)
+          Positioned(
+            top: -16.h,
+            left: 20.w,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(Assets.whiteBulb),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'MOST POPULAR',
                     style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.textMediumGrey,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
+                      color: Colors.white,
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 24.h),
-            const Divider(color: AppColors.borderColor2),
-            SizedBox(height: 24.h),
-            ...features.map(
-              (feature) => _buildFeatureItem(
-                feature,
-                isPremium: title.contains('Premium'),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
   }
 
-  Widget _buildFeatureItem(String text, {required bool isPremium}) {
+  Widget _buildFeatureItem(String text) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         children: [
-          SvgPicture.asset(
-            Assets.checkCircleGreen,
-            width: 20.w,
-            colorFilter: ColorFilter.mode(
-              isPremium ? AppColors.primary : AppColors.tertiaryGreen,
-              BlendMode.srcIn,
-            ),
-          ),
-          SizedBox(width: 12.w),
+          SvgPicture.asset(Assets.doubleTickBlue),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 14.sp, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.grey800,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
         ],

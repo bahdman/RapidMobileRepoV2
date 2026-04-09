@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:rapid_app/core/config/app_assets.dart';
+import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/features/account/presentation/widgets/delete_schedule_bottom_sheet.dart';
 
@@ -10,158 +14,146 @@ class SchedulesScreen extends StatefulWidget {
   State<SchedulesScreen> createState() => _SchedulesScreenState();
 }
 
-class _SchedulesScreenState extends State<SchedulesScreen> {
-  int _selectedIndex = 0;
+class _SchedulesScreenState extends State<SchedulesScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  final _scanSessions = [
+    _ScheduleItem(
+      title: 'Morning Check',
+      subtitle: 'Monday & Thursday',
+      time: '7:00pm',
+    ),
+    _ScheduleItem(title: 'Weekend Scan', subtitle: 'Saturday', time: '10:00am'),
+  ];
+
+  final _repairSessions = [
+    _ScheduleItem(
+      title: 'Oil Change',
+      subtitle: 'March 15, 2026',
+      time: '7:00pm',
+      description: 'Due every 5,000 miles',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: const RapidAppBar(),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Scan schedules',
-              style: TextStyle(
-                fontSize: 32.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 24.h),
-
-            // Toggle Switch
-            Container(
-              padding: EdgeInsets.all(4.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(100.r),
-              ),
-              child: Row(
-                children: [
-                   _buildToggleItem(0, 'Scan Sessions'),
-                   _buildToggleItem(1, 'Repair Sessions'),
-                ],
-              ),
-            ),
-            SizedBox(height: 32.h),
-
-            // Create New Card
-            Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDBEAFE),
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(12.w),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF007AFF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.add, color: Colors.white, size: 24.w),
+      backgroundColor: AppColors.scaffoldBg,
+      appBar: const RapidAppBar(title: 'Schedules'),
+      body: Column(
+        children: [
+          // ── Fixed top: TabBar + banner ──
+          Padding(
+            padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 0),
+            child: Column(
+              children: [
+                // TabBar
+                Container(
+                  padding: EdgeInsets.all(4.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(100.r),
                   ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Create a scan schedule',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1E40AF),
-                          ),
-                        ),
-                        Text(
-                          'Automate your vehicle diagnostics',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: const Color(0xFF3B82F6),
-                          ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(100.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.07),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    labelColor: Colors.black,
+                    splashBorderRadius: BorderRadius.circular(100.r),
+                    unselectedLabelColor: AppColors.grey600,
+                    labelStyle: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    padding: EdgeInsets.zero,
+                    tabs: const [
+                      Tab(text: 'Scan Sessions'),
+                      Tab(text: 'Repair Sessions'),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: 24.h),
+                ),
+                SizedBox(height: 32.h),
 
-            // Schedules List
-            _buildScheduleItem(
-              title: 'Full Diagnostic Scan',
-              time: '10:00 AM',
-              date: 'Every Monday',
-              frequency: 'Weekly',
+                // Banner — fades when tab changes
+                _buildCreateNewBanner(),
+                SizedBox(height: 24.h),
+              ],
             ),
-            SizedBox(height: 16.h),
-            _buildScheduleItem(
-              title: 'Quick Engine Check',
-              time: '2:30 PM',
-              date: '15th Oct, 2024',
-              frequency: 'One-time',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggleItem(int index, String title) {
-    bool isSelected = _selectedIndex == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedIndex = index),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(100.r),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
-                : null,
           ),
-          child: Center(
+
+          // ── Scrollable tab content ──
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildSessionList(_scanSessions),
+                _buildSessionList(_repairSessions),
+              ],
+            ),
+          ),
+
+          // ── Footer ──
+          Padding(
+            padding: EdgeInsets.only(bottom: 32.h, top: 16.h),
             child: Text(
-              title,
+              'Rapid V1.2',
               style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.black : const Color(0xFF6B7280),
+                fontSize: 11.sp,
+                color: AppColors.grey500,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildScheduleItem({
-    required String title,
-    required String time,
-    required String date,
-    required String frequency,
-  }) {
+  Widget _buildCreateNewBanner() {
+    final isScan = _tabController.index == 0;
+    final description = isScan
+        ? "Set up auto scan sessions. We'll remind you to start scanning at your scheduled time."
+        : "Schedule repair & maintenance reminders so you never miss a service appointment.";
+
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xFFF3F4F6)),
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
         children: [
@@ -170,38 +162,132 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  'Create New',
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Icon(Icons.access_time, size: 14.w, color: const Color(0xFF9CA3AF)),
-                    SizedBox(width: 4.w),
-                    Text(
-                      time,
-                      style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-                    ),
-                    SizedBox(width: 12.w),
-                    Icon(Icons.calendar_today, size: 14.w, color: const Color(0xFF9CA3AF)),
-                    SizedBox(width: 4.w),
-                    Text(
-                      date,
-                      style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
+                // Fade description text when tab switches
                 Text(
-                  frequency,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF10B981),
+                      description,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.4,
+                      ),
+                    )
+                    .animate(key: ValueKey(isScan))
+                    .fadeIn(duration: 300.ms, curve: Curves.easeIn),
+              ],
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.5),
+                width: 1.5.w,
+              ),
+            ),
+            child: Icon(Icons.add, color: Colors.white, size: 24.w),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionList(List<_ScheduleItem> items) {
+    return ListView.separated(
+      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 24.h),
+      itemCount: items.length,
+      separatorBuilder: (_, _) => SizedBox(height: 16.h),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        // Each card fades in with a staggered delay
+        return _buildScheduleCard(item).animate().fadeIn(
+          duration: 300.ms,
+          delay: (60 * index).ms,
+          curve: Curves.easeIn,
+        );
+      },
+    );
+  }
+
+  Widget _buildScheduleCard(_ScheduleItem item) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Flexible(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SvgPicture.asset(Assets.scheduleGrey),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        children: [
+                          Text(
+                            item.subtitle,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: AppColors.black300,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          SvgPicture.asset(Assets.clock),
+                          SizedBox(width: 4.w),
+                          Text(
+                            item.time,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: AppColors.black300,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (item.description != null) ...[
+                        SizedBox(height: 4.h),
+                        Text(
+                          item.description!,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AppColors.black300,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
@@ -209,10 +295,24 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
           ),
           IconButton(
             onPressed: () => showDeleteScheduleBottomSheet(context),
-            icon: Icon(Icons.more_vert, color: const Color(0xFF9CA3AF), size: 24.w),
+            icon: SvgPicture.asset(Assets.binRed),
           ),
         ],
       ),
     );
   }
+}
+
+class _ScheduleItem {
+  final String title;
+  final String subtitle;
+  final String time;
+  final String? description;
+
+  const _ScheduleItem({
+    required this.title,
+    required this.subtitle,
+    required this.time,
+    this.description,
+  });
 }

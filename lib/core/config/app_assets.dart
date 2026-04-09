@@ -43,4 +43,18 @@ class Assets {
   static const String logout = 'assets/svgs/account/Logout.svg';
   static const String subscriptions = 'assets/svgs/account/subscriptions.svg';
   static const String camera = 'assets/svgs/account/camera.svg';
+  static const String doubleTickBlue =
+      'assets/svgs/account/double_tick_blue.svg';
+  static const String whiteBulb = 'assets/svgs/account/white_bulb.svg';
+  static const String scheduleGrey = 'assets/svgs/account/schedule_grey.svg';
+  static const String binRed = 'assets/svgs/account/bin_red.svg';
+  static const String clock = 'assets/svgs/account/clock.svg';
+  static const String settingsAppearance = 'assets/svgs/account/appearance.svg';
+  static const String settingsPrivacy = 'assets/svgs/account/privacy.svg';
+  static const String settingsNotification =
+      'assets/svgs/account/notification.svg';
+  static const String copy = 'assets/svgs/account/copy.svg';
+  static const String gift = 'assets/svgs/account/gift.svg';
+  static const String people = 'assets/svgs/account/people.svg';
+  static const String bigGift = 'assets/svgs/account/big_gift.svg';
 }

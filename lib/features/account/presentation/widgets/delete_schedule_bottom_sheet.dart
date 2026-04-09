@@ -8,7 +8,7 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+      padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 40.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
@@ -16,49 +16,75 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Drag Handle
+          Container(
+            width: 40.w,
+            height: 4.h,
+            margin: EdgeInsets.only(bottom: 12.h),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+          ),
+
+          // Close Button Row
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  padding: EdgeInsets.all(8.w),
+                  padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: AppColors.btnGrey,
+                    color: AppColors.btnGrey.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.close, size: 20.w, color: AppColors.textVeryDarkGrey),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 24.w,
+                    color: AppColors.textVeryDarkGrey,
+                  ),
                 ),
               ),
             ],
           ),
+
           SizedBox(height: 8.h),
+
           Text(
             'Delete this schedule?',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 22.sp,
               fontWeight: FontWeight.w700,
               color: AppColors.textVeryDarkGrey,
             ),
           ),
+
           SizedBox(height: 16.h),
-          Text(
-            'This action cannot be undone and all related reminders will be removed.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: AppColors.textMediumGrey,
-              height: 1.5,
+
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Text(
+              'This action cannot be undone and all related reminders will be removed.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: AppColors.black300,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
-          SizedBox(height: 32.h),
+
+          SizedBox(height: 40.h),
+
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context, true);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              minimumSize: Size(double.infinity, 56.h),
+              backgroundColor: AppColors.red,
+              minimumSize: Size(double.infinity, 64.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(100.r),
               ),
@@ -67,18 +93,20 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
             child: Text(
               'Yes, Delete',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
             ),
           ),
+
           SizedBox(height: 12.h),
+
           TextButton(
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
-              minimumSize: Size(double.infinity, 56.h),
-              backgroundColor: AppColors.btnGrey,
+              minimumSize: Size(double.infinity, 64.h),
+              backgroundColor: AppColors.btnGrey.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(100.r),
               ),
@@ -86,13 +114,12 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
             child: Text(
               'Cancel',
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textVeryDarkGrey,
               ),
             ),
           ),
-          SizedBox(height: 16.h),
         ],
       ),
     );

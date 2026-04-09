@@ -14,6 +14,8 @@ import 'package:rapid_app/features/history/presentation/screens/scan_report_scre
 import 'package:rapid_app/features/account/presentation/screens/profile_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/subscription_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/schedules_screen.dart';
+import 'package:rapid_app/features/account/presentation/screens/settings_screen.dart';
+import 'package:rapid_app/features/account/presentation/screens/refer_a_friend_screen.dart';
 import 'package:rapid_app/route_names.dart';
 import 'package:rapid_app/core/models/issue.dart';
 import 'package:rapid_app/core/models/scan_history.dart';
@@ -146,6 +148,18 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.schedules,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const SchedulesScreen(),
+      ),
+      GoRoute(
+        path: '/${AppRoutes.settings}',
+        name: AppRoutes.settings,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/${AppRoutes.refer}',
+        name: AppRoutes.refer,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ReferAFriendScreen(),
       ),
     ],
   );

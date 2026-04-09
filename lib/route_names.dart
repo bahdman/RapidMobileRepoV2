@@ -17,4 +17,6 @@ class AppRoutes {
   static const String profile = 'profile';
   static const String subscription = 'subscription';
   static const String schedules = 'schedules';
+  static const String settings = 'settings';
+  static const String refer = 'refer';
 }
