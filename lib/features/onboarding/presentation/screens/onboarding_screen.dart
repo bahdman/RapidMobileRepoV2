@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -253,7 +254,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 // next Button
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  child: ElevatedButton(
+                  child: RapidButton(
+                    text: 'Next',
+                    height: 64,
+                    borderRadius: 100,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                     onPressed: () {
                       if (_currentPage < _pages.length - 1) {
                         _pageController.nextPage(
@@ -264,22 +270,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         context.pushReplacementNamed(AppRoutes.auth);
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      minimumSize: Size(double.infinity, 64.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Next',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
                   ),
                 ),
 

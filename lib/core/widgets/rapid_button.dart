@@ -18,6 +18,7 @@ class RapidButton extends StatelessWidget {
   final FontWeight? fontWeight;
   final double? elevation;
   final EdgeInsets? padding;
+  final bool isOutline;
 
   const RapidButton({
     super.key,
@@ -36,10 +37,63 @@ class RapidButton extends StatelessWidget {
     this.fontWeight,
     this.elevation = 0,
     this.padding,
+    this.isOutline = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Widget buttonChild = isLoading
+        ? SizedBox(
+            height: 20.h,
+            width: 20.h,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                textColor ?? (isOutline ? Colors.black : Colors.white),
+              ),
+            ),
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                icon!,
+                SizedBox(width: 8.w),
+              ],
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: fontSize ?? 16.sp,
+                  fontWeight: fontWeight ?? FontWeight.w700,
+                  color: textColor ?? (isOutline ? Colors.black : Colors.white),
+                ),
+              ),
+              if (suffixIcon != null) ...[
+                SizedBox(width: 8.w),
+                suffixIcon!,
+              ],
+            ],
+          );
+
+    if (isOutline) {
+      return OutlinedButton(
+        onPressed: (isLoading || onPressed == null) ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: backgroundColor ?? Colors.transparent,
+          foregroundColor: textColor ?? Colors.black,
+          minimumSize: Size(width ?? 0, height.h),
+          maximumSize: Size(width ?? double.infinity, height.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius ?? 28.r),
+          ),
+          side: borderSide ?? BorderSide(color: AppColors.grey200, width: 1.5),
+          padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
+        ),
+        child: buttonChild,
+      );
+    }
+
     return ElevatedButton(
       onPressed: (isLoading || onPressed == null) ? null : onPressed,
       style: ElevatedButton.styleFrom(
@@ -56,39 +110,8 @@ class RapidButton extends StatelessWidget {
         disabledBackgroundColor:
             (backgroundColor ?? AppColors.primary).withValues(alpha: 0.6),
       ),
-      child: isLoading
-          ? SizedBox(
-              height: 20.h,
-              width: 20.h,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  textColor ?? Colors.white,
-                ),
-              ),
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  icon!,
-                  SizedBox(width: 8.w),
-                ],
-                Text(
-                  text,
-                  style: TextStyle(
-                    fontSize: fontSize ?? 16.sp,
-                    fontWeight: fontWeight ?? FontWeight.w700,
-                    color: textColor ?? Colors.white,
-                  ),
-                ),
-                if (suffixIcon != null) ...[
-                  SizedBox(width: 8.w),
-                  suffixIcon!,
-                ],
-              ],
-            ),
+      child: buttonChild,
     );
   }
 }
+

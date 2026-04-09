@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
@@ -162,32 +163,14 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               const Spacer(),
 
               // Complete Button
-              ElevatedButton(
+              RapidButton(
+                text: 'Complete',
                 onPressed: _agreedToTerms
                     ? () {
                         // Registration complete logic
                         context.goNamed(AppRoutes.home);
                       }
                     : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withValues(
-                    alpha: 0.5,
-                  ),
-                  minimumSize: Size(double.infinity, 56.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.r),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Complete',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
               ),
               SizedBox(height: 24.h),
             ],

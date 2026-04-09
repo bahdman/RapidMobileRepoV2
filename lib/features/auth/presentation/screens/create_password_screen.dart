@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/widgets/rapid_text_field.dart';
 import 'package:rapid_app/route_names.dart';
 
@@ -185,24 +186,9 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                 SizedBox(height: 30.h),
 
                 // Continue Button
-                ElevatedButton(
+                RapidButton(
+                  text: 'Continue',
                   onPressed: _showOtpDialog,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    minimumSize: Size(double.infinity, 56.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28.r),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Continue',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
                 SizedBox(height: 32.h),
               ],

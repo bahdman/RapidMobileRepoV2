@@ -3,6 +3,7 @@ import 'package:pinput/pinput.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
 
 class EmailOtpScreen extends StatefulWidget {
@@ -133,26 +134,11 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
 
                 // Animated Continue Button
                 if (_isCodeComplete)
-                  ElevatedButton(
+                  RapidButton(
+                    text: 'Continue',
                     onPressed: () {
                       context.pushNamed(AppRoutes.personalInfo);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      minimumSize: Size(double.infinity, 56.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Continue',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
                   ),
                 SizedBox(height: 32.h),
               ],

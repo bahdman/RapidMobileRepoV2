@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -105,27 +106,12 @@ class _AuthScreenState extends State<AuthScreen> {
               SizedBox(height: 16.h),
 
               // Continue Button
-              ElevatedButton(
+              RapidButton(
+                text: 'Continue',
                 onPressed: () {
                   // Handle continue with phone
                   context.pushNamed(AppRoutes.home); // Just to test
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  minimumSize: Size(double.infinity, 56.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28.r),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Continue',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
               ),
 
               SizedBox(height: 32.h),
@@ -239,34 +225,15 @@ class _AuthScreenState extends State<AuthScreen> {
     Color? textColor,
     bool isOutline = true,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(28.r),
-      child: Container(
-        height: 56.h,
-        decoration: BoxDecoration(
-          color: backgroundColor ?? Colors.white,
-          borderRadius: BorderRadius.circular(28.r),
-          border: isOutline ? Border.all(color: AppColors.grey200) : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (svgIcon != null) ...[
-              SvgPicture.string(svgIcon, width: 20.w, height: 20.h),
-              SizedBox(width: 12.w),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: textColor ?? Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return RapidButton(
+      text: label,
+      onPressed: onTap,
+      isOutline: isOutline,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
+      icon: svgIcon != null
+          ? SvgPicture.string(svgIcon, width: 20.w, height: 20.h)
+          : null,
     );
   }
 }
