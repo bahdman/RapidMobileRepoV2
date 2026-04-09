@@ -261,7 +261,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           curve: Curves.easeIn,
                         );
                       } else {
-                        context.pushReplacementNamed(AppRoutes.home);
+                        context.pushReplacementNamed(AppRoutes.auth);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -307,7 +307,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 else
                   GestureDetector(
                     onTap: () {
-                      context.pushReplacementNamed(AppRoutes.home);
+                      context.pushReplacementNamed(AppRoutes.auth);
                     },
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.h),

@@ -16,6 +16,8 @@ import 'package:rapid_app/features/account/presentation/screens/subscription_scr
 import 'package:rapid_app/features/account/presentation/screens/schedules_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/settings_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/refer_a_friend_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/auth_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/personal_information_screen.dart';
 import 'package:rapid_app/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:rapid_app/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:rapid_app/route_names.dart';
@@ -78,6 +80,20 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.onboarding,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.auth}',
+        name: AppRoutes.auth,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AuthScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.personalInfo}',
+        name: AppRoutes.personalInfo,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PersonalInformationScreen(),
       ),
 
       // Full screen routes

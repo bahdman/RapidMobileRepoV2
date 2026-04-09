@@ -20,11 +20,13 @@ class AppColors {
   static const Color black200 = Color(0xff9E9F9F);
   static const Color yellow = Color(0xffFFDA03);
   static const Color green = Color(0xff00963D);
+  static const Color green2 = Color(0xff34BB78);
   static const Color red = Color(0xffFF2100);
   static const Color blue = Color(0xff004EB0);
   static const Color grey800 = Color(0xff4C4C4D);
   static const Color grey600 = Color(0xff99999A);
   static const Color grey500 = Color(0xff8C8C8C);
+  static const Color grey400 = Color(0xff797979);
   static const Color grey200 = Color(0xffE5E5E5);
   static const Color grey100 = Color(0xffF2F2F3);
   static const Color selectedNavBar = Color(0xffEDFFFD);
