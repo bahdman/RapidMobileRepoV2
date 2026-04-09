@@ -21,7 +21,7 @@ void main() async {
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  final router = buildRouter('/${AppRoutes.home}');
+  final router = buildRouter('/${AppRoutes.splash}');
 
   runApp(
     MultiRepositoryProvider(

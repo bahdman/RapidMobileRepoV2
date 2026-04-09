@@ -13,7 +13,6 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  final int _selectedPlanIndex = 1;
 
   @override
   Widget build(BuildContext context) {

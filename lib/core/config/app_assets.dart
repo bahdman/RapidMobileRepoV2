@@ -1,6 +1,9 @@
 class Assets {
   ///images
   static const String logoWhite = 'assets/images/logo_white.png';
+  static const String rapidTxt = 'assets/images/rapid_txt.png';
+  static const String rapidLogoBig = 'assets/images/rapid_logo_big.png';
+  
 
   ///svgs
   static const String appbarBackBtn = 'assets/svgs/appbar_back_btn.svg';
