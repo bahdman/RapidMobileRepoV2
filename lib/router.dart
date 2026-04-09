@@ -17,6 +17,9 @@ import 'package:rapid_app/features/account/presentation/screens/schedules_screen
 import 'package:rapid_app/features/account/presentation/screens/settings_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/refer_a_friend_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/auth_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/email_auth_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/create_password_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/email_otp_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/personal_information_screen.dart';
 import 'package:rapid_app/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:rapid_app/features/onboarding/presentation/screens/splash_screen.dart';
@@ -87,6 +90,27 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.auth,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AuthScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.emailAuth}',
+        name: AppRoutes.emailAuth,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const EmailAuthScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.createPassword}',
+        name: AppRoutes.createPassword,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CreatePasswordScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.emailOtp}',
+        name: AppRoutes.emailOtp,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const EmailOtpScreen(),
       ),
 
       GoRoute(
