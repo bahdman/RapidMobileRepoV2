@@ -152,9 +152,14 @@ class VehicleReportScreen extends StatelessWidget {
                       return _issueCard(
                         issue,
                         onTap: () {
-                          final diagnosticIssue = IssueDatabase.getIssue(issue.code);
+                          final diagnosticIssue = IssueDatabase.getIssue(
+                            issue.code,
+                          );
                           if (diagnosticIssue != null) {
-                            context.pushNamed(AppRoutes.issueDetail, extra: diagnosticIssue);
+                            context.pushNamed(
+                              AppRoutes.issueDetail,
+                              extra: diagnosticIssue,
+                            );
                           }
                         },
                       );
@@ -200,64 +205,64 @@ class VehicleReportScreen extends StatelessWidget {
             ],
           ),
           child: Row(
-          children: [
-            // Icon container
-            Container(
-              padding: EdgeInsets.all(10.w),
-              decoration: BoxDecoration(
-                color: issue.severity.bgColor,
-                borderRadius: BorderRadius.circular(12.r),
+            children: [
+              // Icon container
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: issue.severity.bgColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: SvgPicture.asset(issue.severity.icon),
               ),
-              child: SvgPicture.asset(issue.severity.icon),
-            ),
-            SizedBox(width: 14.w),
+              SizedBox(width: 14.w),
 
-            // Text
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        issue.code,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.grey600,
+              // Text
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          issue.code,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.grey600,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        issue.label,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w700,
-                          color: issue.severity.labelColor,
+                        SizedBox(width: 8.w),
+                        Text(
+                          issue.label,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                            color: issue.severity.labelColor,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    issue.description,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1F2937),
+                      ],
                     ),
-                  ),
-                ],
+                    SizedBox(height: 4.h),
+                    Text(
+                      issue.description,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1F2937),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            SvgPicture.asset(Assets.arrowRight),
-          ],
+              SvgPicture.asset(Assets.arrowRight),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 // ── Data models ──────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -99,14 +100,7 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   SizedBox(height: 24.h),
-                  Text(
-                    'Rapid V1.2',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                  ),
+                  Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
                   SizedBox(height: 24.h),
                 ],
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rapid_app/core/theme/app_colors.dart';
 
 class AppTextStyles {
   /// Extra Bold / Headers
@@ -58,6 +59,13 @@ class AppTextStyles {
     fontFamily: 'Inter',
     fontSize: 16.sp,
     fontWeight: FontWeight.w500,
+  );
+
+  static TextStyle get rapidVersion => TextStyle(
+    fontFamily: 'Inter',
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textMediumGrey,
   );
 
   static TextStyle get whiteSmall => TextStyle(

@@ -292,7 +292,7 @@ class HomeScreen extends StatelessWidget {
                         title,
                         style: TextStyle(
                           fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: AppColors.textVeryDarkGrey,
                         ),
                       ),
@@ -301,6 +301,7 @@ class HomeScreen extends StatelessWidget {
                         date,
                         style: TextStyle(
                           fontSize: 14.sp,
+                          fontWeight: FontWeight.w400,
                           color: AppColors.textMediumGrey,
                         ),
                       ),

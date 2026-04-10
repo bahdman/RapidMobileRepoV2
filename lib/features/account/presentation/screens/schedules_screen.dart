@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/features/account/presentation/widgets/delete_schedule_bottom_sheet.dart';
 
@@ -129,14 +130,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
           // ── Footer ──
           Padding(
             padding: EdgeInsets.only(bottom: 32.h, top: 16.h),
-            child: Text(
-              'Rapid V1.2',
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: AppColors.grey500,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            child: Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
           ),
         ],
       ),

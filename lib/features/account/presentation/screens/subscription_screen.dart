@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 
 class SubscriptionScreen extends StatefulWidget {
@@ -13,7 +14,6 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,18 +72,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ],
                   ),
                   SizedBox(height: 32.h),
+                  Center(
+                    child: Text(
+                      'Rapid V1.2',
+                      style: AppTextStyles.rapidVersion,
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
                 ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 32.h, top: 16.h),
-            child: Text(
-              'Rapid V1.2',
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: AppColors.grey500,
-                fontWeight: FontWeight.w400,
               ),
             ),
           ),

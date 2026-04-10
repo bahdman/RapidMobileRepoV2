@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 
 class ReferAFriendScreen extends StatelessWidget {
@@ -182,14 +183,7 @@ class ReferAFriendScreen extends StatelessWidget {
 
             SizedBox(height: 70.h),
 
-            Text(
-              'Rapid V1.2',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
             SizedBox(height: 24.h),
           ],
         ),

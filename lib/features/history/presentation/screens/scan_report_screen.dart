@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/models/issue.dart';
 
 class ScanReportScreen extends StatelessWidget {
@@ -77,13 +78,7 @@ class ScanReportScreen extends StatelessWidget {
                   _buildPossibleCauseSection(),
 
                   SizedBox(height: 32.h),
-                  Text(
-                    'Rapid V1.2',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AppColors.textMediumGrey,
-                    ),
-                  ),
+                  Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
                 ],
               ),
             ),
