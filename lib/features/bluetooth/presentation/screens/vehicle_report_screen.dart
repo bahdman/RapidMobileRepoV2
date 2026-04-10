@@ -176,7 +176,10 @@ class VehicleReportScreen extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
               child: RapidButton(
                 text: 'Back to Dashboard',
-                onPressed: () => context.go('/${AppRoutes.home}'),
+                onPressed: () {
+                  int count = 0;
+                  Navigator.of(context).popUntil((_) => count++ >= 2);
+                },
               ),
             ),
           ],

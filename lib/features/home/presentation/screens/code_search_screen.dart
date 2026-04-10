@@ -302,7 +302,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                     vertical: 4.h,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444),
+                    color: issue.severity.color,
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Text(

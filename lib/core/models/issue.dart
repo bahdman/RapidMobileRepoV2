@@ -12,7 +12,7 @@ extension DiagnosticSeverityX on DiagnosticSeverity {
       };
 
   Color get color => switch (this) {
-        DiagnosticSeverity.critical => AppColors.red,
+        DiagnosticSeverity.critical => AppColors.tertiaryRed,
         DiagnosticSeverity.warning => AppColors.yellow,
         DiagnosticSeverity.info => AppColors.blue,
       };

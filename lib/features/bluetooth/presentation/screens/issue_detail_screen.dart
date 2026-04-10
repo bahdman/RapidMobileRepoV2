@@ -92,7 +92,9 @@ class IssueDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
-                    issue.severity.label,
+                    issue.severity.label == 'HIGH'
+                        ? 'HIGH THREATS'
+                        : issue.severity.label,
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w700,
