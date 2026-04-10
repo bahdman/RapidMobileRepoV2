@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 
 class RapidTextField extends StatefulWidget {
@@ -27,10 +29,12 @@ class RapidTextField extends StatefulWidget {
 class _RapidTextFieldState extends State<RapidTextField> {
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
+  late bool _isObscured;
 
   @override
   void initState() {
     super.initState();
+    _isObscured = widget.obscureText;
     _focusNode.addListener(() {
       setState(() {
         _isFocused = _focusNode.hasFocus;
@@ -48,7 +52,6 @@ class _RapidTextFieldState extends State<RapidTextField> {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      height: 56.h,
       decoration: BoxDecoration(
         color: widget.backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
@@ -62,7 +65,7 @@ class _RapidTextFieldState extends State<RapidTextField> {
       child: TextField(
         controller: widget.controller,
         focusNode: _focusNode,
-        obscureText: widget.obscureText,
+        obscureText: _isObscured,
         keyboardType: widget.keyboardType,
         style: TextStyle(
           fontSize: 16.sp,
@@ -74,7 +77,29 @@ class _RapidTextFieldState extends State<RapidTextField> {
           hintText: widget.hintText,
           hintStyle: TextStyle(color: AppColors.grey400),
           filled: false,
-          contentPadding: EdgeInsets.only(bottom: 4.h),
+          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+          suffixIconConstraints: BoxConstraints(
+            minHeight: 24.w,
+            minWidth: 24.w,
+          ),
+          suffixIcon: widget.obscureText
+              ? GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _isObscured = !_isObscured;
+                    });
+                  },
+                  child: SvgPicture.asset(
+                    _isObscured
+                        ? Assets.onboardingShowPwd
+                        : Assets.onboardingHidePwd,
+                    width: 24.w,
+                    height: 24.h,
+                    fit: BoxFit.scaleDown,
+                  ),
+                )
+              : null,
         ),
       ),
     );

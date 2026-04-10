@@ -21,6 +21,10 @@ import 'package:rapid_app/features/auth/presentation/screens/email_auth_screen.d
 import 'package:rapid_app/features/auth/presentation/screens/create_password_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/email_otp_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/personal_information_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/phone_auth_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/phone_otp_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/create_account_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/account_success_screen.dart';
 import 'package:rapid_app/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:rapid_app/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:rapid_app/route_names.dart';
@@ -103,7 +107,10 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.createPassword}',
         name: AppRoutes.createPassword,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const CreatePasswordScreen(),
+        builder: (context, state) {
+          final nextRoute = state.extra as String?;
+          return CreatePasswordScreen(nextRoute: nextRoute);
+        },
       ),
 
       GoRoute(
@@ -111,6 +118,34 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.emailOtp,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const EmailOtpScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.phoneAuth}',
+        name: AppRoutes.phoneAuth,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PhoneAuthScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.phoneOtp}',
+        name: AppRoutes.phoneOtp,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PhoneOtpScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.createAccount}',
+        name: AppRoutes.createAccount,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const CreateAccountScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.accountSuccess}',
+        name: AppRoutes.accountSuccess,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AccountSuccessScreen(),
       ),
 
       GoRoute(

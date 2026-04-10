@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const Color primary = Color(0xFF007AFF);
+  static const Color primaryDark = Color(0xFF004EB0);
   static const Color primaryDisabled = Color(0xFF106CD0);
   static const Color fadedPrimary = Color(0xFFEDF2F9);
   static const Color secondaryHeading = Color(0xff767676);
@@ -14,7 +15,8 @@ class AppColors {
   static const Color textVeryDarkGrey = Color(0xFF424242);
   static const Color scaffoldBg = Color(0xFFF9FAFB);
   static const Color txtFadedBlue = Color(0xff8FC4FF);
-  static const Color secondaryTxtField = Color(0xffF9F9F9);
+  static const Color primaryTxtFieldBg = Color(0xffF3F3F3);
+  static const Color secondaryTxtFieldBg = Color(0xffF9F9F9);
   static const Color black400 = Color(0xff3D3E3E);
   static const Color black300 = Color(0xff6E6E6E);
   static const Color black200 = Color(0xff9E9F9F);
@@ -30,7 +32,6 @@ class AppColors {
   static const Color grey200 = Color(0xffE5E5E5);
   static const Color grey100 = Color(0xffF2F2F3);
   static const Color selectedNavBar = Color(0xffEDFFFD);
-  
 
   static const Color hintGrey = Color(0xffB8B8B8);
   static const Color labelColor = Color(0xFF6C7278);

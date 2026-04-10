@@ -37,6 +37,7 @@ flutter:
     - assets/svgs/
     - assets/svgs/dashboard/
     - assets/svgs/account/
+    - assets/svgs/onboarding/
 
   fonts:
     - family: Work Sans

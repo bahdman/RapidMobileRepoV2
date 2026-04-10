@@ -69,7 +69,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                       vertical: 12.h,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.secondaryTxtField,
+                      color: AppColors.secondaryTxtFieldBg,
                       borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Row(
@@ -169,6 +169,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
       ),
     );
   }
+
   Widget _searchItem(String code, String description) {
     return InkWell(
       onTap: () {

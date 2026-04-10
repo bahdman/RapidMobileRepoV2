@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/widgets/rapid_text_field.dart';
@@ -65,24 +67,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
               children: [
                 SizedBox(height: 24.h),
 
-                // @ Icon in a rounded container style
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.grey200, width: 2),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '@',
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      color: AppColors.grey400,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                ),
+                SvgPicture.asset(Assets.onboardingEmail),
                 SizedBox(height: 16.h),
 
                 Text(
@@ -110,7 +95,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   controller: _emailController,
                   hintText: 'some@email.com',
                   keyboardType: TextInputType.emailAddress,
-                  backgroundColor: AppColors.grey100,
+                  backgroundColor: AppColors.primaryTxtFieldBg,
                   inactiveBorderColor: Colors.transparent,
                 ),
                 SizedBox(height: 24.h),

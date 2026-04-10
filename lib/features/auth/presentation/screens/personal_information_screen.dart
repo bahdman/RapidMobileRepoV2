@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
+import 'package:rapid_app/core/widgets/rapid_text_field.dart';
 import 'package:rapid_app/route_names.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
@@ -88,16 +89,18 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               SizedBox(height: 26.h),
 
               // First Name Field
-              _buildTextField(
+              RapidTextField(
                 controller: _firstNameController,
-                hint: 'First name',
+                hintText: 'First name',
+                backgroundColor: AppColors.primaryTxtFieldBg,
               ),
               SizedBox(height: 16.h),
 
               // Last Name Field
-              _buildTextField(
+              RapidTextField(
                 controller: _lastNameController,
-                hint: 'Last name',
+                hintText: 'Last name',
+                backgroundColor: AppColors.primaryTxtFieldBg,
               ),
               SizedBox(height: 32.h),
 
@@ -167,44 +170,13 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                 text: 'Complete',
                 onPressed: _agreedToTerms
                     ? () {
-                        // Registration complete logic
-                        context.goNamed(AppRoutes.home);
+                        context.pushNamed(AppRoutes.accountSuccess);
                       }
                     : null,
               ),
               SizedBox(height: 24.h),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hint,
-  }) {
-    return Container(
-      height: 56.h,
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: AppColors.grey100,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      alignment: Alignment.centerLeft,
-      child: TextField(
-        controller: controller,
-        style: TextStyle(
-          fontSize: 16.sp,
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: hint,
-          filled: false,
-          hintStyle: TextStyle(color: AppColors.grey400),
-          contentPadding: EdgeInsets.only(bottom: 4.h),
         ),
       ),
     );

@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:pinput/pinput.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pinput/pinput.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
 
-class EmailOtpScreen extends StatefulWidget {
-  const EmailOtpScreen({super.key});
+class PhoneOtpScreen extends StatefulWidget {
+  const PhoneOtpScreen({super.key});
 
   @override
-  State<EmailOtpScreen> createState() => _EmailOtpScreenState();
+  State<PhoneOtpScreen> createState() => _PhoneOtpScreenState();
 }
 
-class _EmailOtpScreenState extends State<EmailOtpScreen> {
+class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
   final TextEditingController _pinController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
+  final FocusNode _pinFocusNode = FocusNode();
+  bool _isCodeComplete = false;
 
-  bool get _isCodeComplete => _pinController.text.length == 4;
+  void _unfocus() {
+    FocusScope.of(context).unfocus();
+  }
 
   @override
   void dispose() {
     _pinController.dispose();
-    _focusNode.dispose();
+    _pinFocusNode.dispose();
     super.dispose();
   }
 
@@ -43,63 +46,42 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
       ),
     );
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: _unfocus,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leadingWidth: 100.w,
-        leading: GestureDetector(
-          onTap: () => context.pop(),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: AppColors.primary,
-                size: 20.w,
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                'Back',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.w),
+            onPressed: () => context.pop(),
           ),
         ),
-      ),
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
+        body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 24.h),
-
+                  SizedBox(height: 16.h),
                   Text(
                     'Enter the code',
                     style: TextStyle(
                       fontSize: 21.sp,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: 32.h),
 
-                  // OTP Input Boxes
+                  // Pinput for 4 digit OTP
                   Center(
                     child: Pinput(
                       length: 4,
                       controller: _pinController,
-                      focusNode: _focusNode,
+                      focusNode: _pinFocusNode,
                       defaultPinTheme: defaultPinTheme,
                       focusedPinTheme: defaultPinTheme.copyWith(
                         decoration: defaultPinTheme.decoration!.copyWith(
@@ -120,40 +102,44 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
                         ),
                       ),
                       onChanged: (value) {
-                        setState(() {});
+                        setState(() {
+                          _isCodeComplete = value.length == 4;
+                        });
                       },
                       onCompleted: (pin) {
-                        setState(() {});
+                        setState(() {
+                          _isCodeComplete = true;
+                        });
                       },
                     ),
                   ),
-                  SizedBox(height: 24.h),
+                  SizedBox(height: 32.h),
 
+                  // Resend Code
                   GestureDetector(
                     onTap: () {
-                      // Handle resend code
+                      // Logic to resend code
                     },
                     child: Text(
                       'Resend code',
                       style: TextStyle(
                         fontSize: 16.sp,
+                        fontWeight: FontWeight.w400,
                         color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
 
                   SizedBox(height: 48.h),
 
-                  // Animated Continue Button
+                  // Continue Button
                   if (_isCodeComplete)
                     RapidButton(
                       text: 'Continue',
                       onPressed: () {
-                        context.pushNamed(AppRoutes.personalInfo);
+                        context.pushNamed(AppRoutes.createAccount);
                       },
                     ),
-                  SizedBox(height: 32.h),
                 ],
               ),
             ),

@@ -1,14 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/widgets/rapid_text_field.dart';
 import 'package:rapid_app/route_names.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
-  const CreatePasswordScreen({super.key});
+  /// Optional route name to navigate to on Continue.
+  /// If null, the email OTP dialog flow is used.
+  final String? nextRoute;
+
+  const CreatePasswordScreen({super.key, this.nextRoute});
 
   @override
   State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
@@ -115,22 +121,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
               children: [
                 SizedBox(height: 24.h),
 
-                // Padlock Icon
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: AppColors.grey200, width: 2),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.lock_outline_rounded,
-                    color: AppColors.grey400,
-                    size: 24.w,
-                  ),
-                ),
+                SvgPicture.asset(Assets.onboardingPwd),
                 SizedBox(height: 16.h),
 
                 Text(
@@ -158,8 +149,8 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                   controller: _passwordController,
                   hintText: 'Enter a password',
                   obscureText: true,
-                  backgroundColor: Colors.white,
-                  inactiveBorderColor: AppColors.grey200,
+                  backgroundColor: AppColors.primaryTxtFieldBg,
+                  inactiveBorderColor: Colors.transparent,
                 ),
                 SizedBox(height: 24.h),
 
@@ -179,8 +170,8 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                   controller: _retypePasswordController,
                   hintText: 'Enter a password',
                   obscureText: true,
-                  backgroundColor: Colors.white,
-                  inactiveBorderColor: AppColors.grey200,
+                  backgroundColor: AppColors.primaryTxtFieldBg,
+                  inactiveBorderColor: Colors.transparent,
                 ),
 
                 SizedBox(height: 30.h),
@@ -188,7 +179,13 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                 // Continue Button
                 RapidButton(
                   text: 'Continue',
-                  onPressed: _showOtpDialog,
+                  onPressed: () {
+                    if (widget.nextRoute != null) {
+                      context.pushNamed(widget.nextRoute!);
+                    } else {
+                      _showOtpDialog();
+                    }
+                  },
                 ),
                 SizedBox(height: 32.h),
               ],

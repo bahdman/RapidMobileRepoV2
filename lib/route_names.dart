@@ -5,6 +5,10 @@ class AppRoutes {
   static const String emailAuth = 'email-auth';
   static const String createPassword = 'create-password';
   static const String emailOtp = 'email-otp';
+  static const String phoneAuth = 'phone-auth';
+  static const String phoneOtp = 'phone-otp';
+  static const String createAccount = 'create-account';
+  static const String accountSuccess = 'account-success';
   static const String personalInfo = 'personal-info';
   // Navigation Tabs
   static const String home = 'home';

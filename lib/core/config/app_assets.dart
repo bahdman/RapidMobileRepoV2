@@ -3,7 +3,6 @@ class Assets {
   static const String logoWhite = 'assets/images/logo_white.png';
   static const String rapidTxt = 'assets/images/rapid_txt.png';
   static const String rapidLogoBig = 'assets/images/rapid_logo_big.png';
-  
 
   ///svgs
   static const String appbarBackBtn = 'assets/svgs/appbar_back_btn.svg';
@@ -31,6 +30,7 @@ class Assets {
   static const String bulbOrange = 'assets/svgs/bulb_orange.svg';
   static const String moneyBlue = 'assets/svgs/money_blue.svg';
   static const String share = 'assets/svgs/share.svg';
+  static const String arrowDown = 'assets/svgs/arrow_down.svg';
 
   //dashboard
   static const String home = 'assets/svgs/dashboard/home.svg';
@@ -60,4 +60,15 @@ class Assets {
   static const String gift = 'assets/svgs/account/gift.svg';
   static const String people = 'assets/svgs/account/people.svg';
   static const String bigGift = 'assets/svgs/account/big_gift.svg';
+
+  //onboarding
+  static const String onboardingEmail = 'assets/svgs/onboarding/email.svg';
+  static const String onboardingPwd = 'assets/svgs/onboarding/pwd.svg';
+  static const String onboardingHidePwd = 'assets/svgs/onboarding/hide_pwd.svg';
+  static const String onboardingShowPwd = 'assets/svgs/onboarding/show_pwd.svg';
+  static const String ngFlag = 'assets/svgs/onboarding/ng_flag.svg';
+  static const String sms = 'assets/svgs/onboarding/sms.svg';
+  static const String whatsapp = 'assets/svgs/onboarding/whatsapp.svg';
+  static const String bigCheckCircle =
+      'assets/svgs/onboarding/big_check_cricle.svg';
 }
