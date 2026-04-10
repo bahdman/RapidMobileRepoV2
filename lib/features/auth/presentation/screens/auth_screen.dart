@@ -47,7 +47,6 @@ class _AuthScreenState extends State<AuthScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,
-          toolbarHeight: 0,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -55,7 +54,7 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 60.h),
+                SizedBox(height: 30.h),
                 Text(
                   'Enter your number',
                   style: TextStyle(

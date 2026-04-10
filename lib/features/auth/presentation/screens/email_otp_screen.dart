@@ -46,6 +46,7 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        toolbarHeight: 75.h,
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,

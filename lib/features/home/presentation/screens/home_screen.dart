@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             //top section
             Container(
-              padding: EdgeInsets.only(top: 10.h, bottom: 32.h),
+              padding: EdgeInsets.only(top: 20.h, bottom: 32.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -229,7 +229,7 @@ class HomeScreen extends StatelessWidget {
                             // History Items List
                             Expanded(
                               child: ListView.builder(
-                                padding: EdgeInsets.only(bottom: 120.h),
+                                padding: EdgeInsets.only(bottom: 20.h),
                                 physics: const BouncingScrollPhysics(),
                                 itemCount: 10,
                                 itemBuilder: (context, index) {

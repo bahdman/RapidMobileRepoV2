@@ -37,6 +37,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+        toolbarHeight: 75.h,
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(

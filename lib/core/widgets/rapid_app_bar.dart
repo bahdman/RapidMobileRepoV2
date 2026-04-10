@@ -24,6 +24,7 @@ class RapidAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      toolbarHeight: 75.h,
       backgroundColor: backgroundColor ?? AppColors.scaffoldBg,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -57,5 +58,5 @@ class RapidAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight.h);
+  Size get preferredSize => Size.fromHeight(75.h);
 }

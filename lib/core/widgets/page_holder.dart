@@ -38,94 +38,75 @@ class _PageHolderState extends State<PageHolder> {
       backgroundColor: widget.child.currentIndex == 2
           ? AppColors.scaffoldBg
           : Colors.white,
-      body: Stack(
-        children: [
-          Positioned.fill(child: widget.child),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: AnimatedSlide(
-              offset: widget.child.currentIndex == 2
-                  ? const Offset(0, 1)
-                  : Offset.zero,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeInOutCubic,
+      body: widget.child,
+      bottomNavigationBar: Container(
+        height: 110.h,
+        padding: EdgeInsets.only(top: 12.h, bottom: 28.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(
+              width: 0.5,
+              color: AppColors.borderColor.withValues(alpha: 0.5),
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: items.map((item) {
+            final targetIndex = item['index'] as int;
+            final isSelected = widget.child.currentIndex == targetIndex;
+            final primaryColor = const Color(0xFF007AFF);
+
+            return GestureDetector(
+              onTap: () => widget.child.goBranch(targetIndex),
+              behavior: HitTestBehavior.opaque,
               child: Container(
-                height: 110.h,
-                padding: EdgeInsets.only(top: 12.h, bottom: 28.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    top: BorderSide(
-                      width: 0.5,
-                      color: AppColors.borderColor.withValues(alpha: 0.5),
+                  color: isSelected
+                      ? AppColors.selectedNavBar
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      item['asset'] as String,
+                      colorFilter: ColorFilter.mode(
+                        isSelected ? primaryColor : AppColors.textMediumGrey,
+                        BlendMode.srcIn,
+                      ),
+                      width: 24.w,
+                      height: 24.h,
                     ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, -4),
+                    SizedBox(height: 4.h),
+                    Text(
+                      item['label'] as String,
+                      style: TextStyle(
+                        color: isSelected
+                            ? primaryColor
+                            : AppColors.textMediumGrey,
+                        fontSize: 13.sp,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: items.map((item) {
-                    final targetIndex = item['index'] as int;
-                    final isSelected = widget.child.currentIndex == targetIndex;
-                    final primaryColor = const Color(0xFF007AFF);
-
-                    return GestureDetector(
-                      onTap: () => widget.child.goBranch(targetIndex),
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20.w,
-                          vertical: 8.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.selectedNavBar
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              item['asset'] as String,
-                              colorFilter: ColorFilter.mode(
-                                isSelected
-                                    ? primaryColor
-                                    : AppColors.textMediumGrey,
-                                BlendMode.srcIn,
-                              ),
-                              width: 24.w,
-                              height: 24.h,
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              item['label'] as String,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? primaryColor
-                                    : AppColors.textMediumGrey,
-                                fontSize: 13.sp,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
               ),
-            ),
-          ),
-        ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }

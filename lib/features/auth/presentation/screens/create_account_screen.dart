@@ -118,6 +118,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+        toolbarHeight: 75.h,
           backgroundColor: Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,

@@ -35,6 +35,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        toolbarHeight: 75.h,
         backgroundColor: Colors.white,
         elevation: 0,
         leadingWidth: 80.w,
