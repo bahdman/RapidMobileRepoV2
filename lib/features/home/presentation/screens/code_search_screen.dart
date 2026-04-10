@@ -39,11 +39,20 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
     _controller.addListener(() {
       setState(() {});
     });
-    // Request focus after the Hero flight completes
+    // Request focus after the Hero flight completes (route transition finishes)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted) _focusNode.requestFocus();
-      });
+      final route = ModalRoute.of(context);
+      if (route != null && route.animation != null) {
+        route.animation!.addStatusListener((status) {
+          if (status == AnimationStatus.completed) {
+            if (mounted) _focusNode.requestFocus();
+          }
+        });
+      } else {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) _focusNode.requestFocus();
+        });
+      }
     });
   }
 
