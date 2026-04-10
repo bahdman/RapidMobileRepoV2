@@ -48,35 +48,37 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 24.h),
-                  Hero(
-                    tag: kInputCodeHeroTag,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: GestureDetector(
-                        onTap: () => context.pushNamed(AppRoutes.codeSearch),
-                        child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 20.w),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 20.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(100.r),
-                          ),
-                          child: TextField(
-                            enabled: false,
-                            decoration: InputDecoration(
-                              hintText: 'Input code',
-                              hintStyle: TextStyle(
-                                color: AppColors.hintGrey,
-                                fontSize: 15.sp,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Hero(
+                      tag: kInputCodeHeroTag,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: GestureDetector(
+                          onTap: () => context.pushNamed(AppRoutes.codeSearch),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 20.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(100.r),
+                            ),
+                            child: TextField(
+                              enabled: false,
+                              decoration: InputDecoration(
+                                hintText: 'Input code',
+                                hintStyle: TextStyle(
+                                  color: AppColors.hintGrey,
+                                  fontSize: 15.sp,
+                                ),
+                                border: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                fillColor: Colors.transparent,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
                               ),
-                              border: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              fillColor: Colors.transparent,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
                             ),
                           ),
                         ),

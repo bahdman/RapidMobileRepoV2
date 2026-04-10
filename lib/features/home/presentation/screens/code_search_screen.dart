@@ -79,7 +79,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
 
             // ── Hero search bar ──────────────────────────────────────────
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Hero(
                 tag: kInputCodeHeroTag,
                 child: Material(
