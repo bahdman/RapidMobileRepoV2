@@ -172,12 +172,14 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.codeSearch}',
         name: AppRoutes.codeSearch,
         parentNavigatorKey: rootNavigatorKey,
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
-          key: state.pageKey,
-          child: const CodeSearchScreen(),
-          transitionDuration: const Duration(milliseconds: 350),
-          reverseTransitionDuration: const Duration(milliseconds: 280),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        pageBuilder: (context, state) {
+          final query = state.extra as String?;
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: CodeSearchScreen(initialSearchQuery: query),
+            transitionDuration: const Duration(milliseconds: 350),
+            reverseTransitionDuration: const Duration(milliseconds: 280),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: CurvedAnimation(
                 parent: animation,
@@ -186,7 +188,8 @@ GoRouter buildRouter(String initialRoute) {
               child: child,
             );
           },
-        ),
+        );
+        },
       ),
       GoRoute(
         path: '/${AppRoutes.scanning}',

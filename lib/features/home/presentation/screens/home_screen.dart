@@ -89,11 +89,11 @@ class HomeScreen extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _tagItem('UP0903'),
-                        _tagItem('CU0402'),
-                        _tagItem('BI0903'),
-                        _tagItem('BI0903'),
-                        _tagItem('BI0903'),
+                        _tagItem(context, 'C0074'),
+                        _tagItem(context, 'P0A01'),
+                        _tagItem(context, 'P0001'),
+                        _tagItem(context, 'B1365'),
+                        _tagItem(context, 'P0420'),
                       ],
                     ),
                   ),
@@ -254,17 +254,20 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _tagItem(String text) {
-    return Container(
-      margin: EdgeInsets.only(right: 8.w),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AppColors.primaryDisabled,
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: AppColors.txtFadedBlue, fontSize: 13.sp),
+  Widget _tagItem(BuildContext context, String text) {
+    return GestureDetector(
+      onTap: () => context.pushNamed(AppRoutes.codeSearch, extra: text),
+      child: Container(
+        margin: EdgeInsets.only(right: 8.w),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: AppColors.primaryDisabled,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(color: AppColors.txtFadedBlue, fontSize: 13.sp),
+        ),
       ),
     );
   }
