@@ -31,6 +31,7 @@ class Assets {
   static const String moneyBlue = 'assets/svgs/money_blue.svg';
   static const String share = 'assets/svgs/share.svg';
   static const String arrowDown = 'assets/svgs/arrow_down.svg';
+  static const String calendar = 'assets/svgs/calendar.svg';
 
   //dashboard
   static const String home = 'assets/svgs/dashboard/home.svg';

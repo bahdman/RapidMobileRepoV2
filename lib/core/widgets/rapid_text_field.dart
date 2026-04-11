@@ -11,6 +11,9 @@ class RapidTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final Color backgroundColor;
   final Color inactiveBorderColor;
+  final Widget? prefixIcon;
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const RapidTextField({
     super.key,
@@ -20,6 +23,9 @@ class RapidTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.backgroundColor = Colors.white,
     this.inactiveBorderColor = Colors.transparent,
+    this.prefixIcon,
+    this.readOnly = false,
+    this.onTap,
   });
 
   @override
@@ -50,14 +56,16 @@ class _RapidTextFieldState extends State<RapidTextField> {
 
   @override
   Widget build(BuildContext context) {
+    _focusNode.canRequestFocus = !widget.readOnly;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: widget.backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: _isFocused ? AppColors.primary : widget.inactiveBorderColor,
-          width: _isFocused ? 2 : 1.5,
+          color: (_isFocused && !widget.readOnly) ? AppColors.primary : widget.inactiveBorderColor,
+          width: (_isFocused && !widget.readOnly) ? 2 : 1.5,
         ),
       ),
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -67,6 +75,8 @@ class _RapidTextFieldState extends State<RapidTextField> {
         focusNode: _focusNode,
         obscureText: _isObscured,
         keyboardType: widget.keyboardType,
+        readOnly: widget.readOnly,
+        onTap: widget.onTap,
         style: TextStyle(
           fontSize: 16.sp,
           fontWeight: FontWeight.w400,
@@ -77,7 +87,17 @@ class _RapidTextFieldState extends State<RapidTextField> {
           hintText: widget.hintText,
           hintStyle: TextStyle(color: AppColors.grey400),
           filled: false,
-          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+          contentPadding: EdgeInsets.symmetric(vertical: 16.h), // Changed to 16.h for better padding
+          prefixIcon: widget.prefixIcon != null
+              ? Padding(
+                  padding: EdgeInsets.only(right: 12.w),
+                  child: widget.prefixIcon,
+                )
+              : null,
+          prefixIconConstraints: BoxConstraints(
+            minHeight: 20.w,
+            minWidth: 0,
+          ),
           suffixIconConstraints: BoxConstraints(
             minHeight: 24.w,
             minWidth: 24.w,
