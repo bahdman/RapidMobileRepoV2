@@ -3,10 +3,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
+import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/route_names.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -57,6 +59,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       }
     });
     _ticker.start();
+  }
+
+  void _completeOnboarding() {
+    context.read<SharedPrefsHelper>().setHasCompletedOnboarding(true);
+    context.goNamed(AppRoutes.auth);
   }
 
   @override
@@ -267,7 +274,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           curve: Curves.easeIn,
                         );
                       } else {
-                        context.pushReplacementNamed(AppRoutes.auth);
+                        _completeOnboarding();
                       }
                     },
                   ),
@@ -281,8 +288,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     onPressed: () {
                       _pageController.animateToPage(
                         _pages.length - 1,
-                        duration: const Duration(milliseconds: 600),
-                        curve: Curves.easeInOutBack,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.fastOutSlowIn,
                       );
                     },
                     child: Text(
@@ -297,7 +304,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 else
                   GestureDetector(
                     onTap: () {
-                      context.pushReplacementNamed(AppRoutes.auth);
+                      _completeOnboarding();
                     },
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 8.h),

@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
+import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/route_names.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -31,10 +33,15 @@ class _SplashScreenState extends State<SplashScreen>
     });
     _ticker.start();
 
-    // Navigate to onboarding after 5 seconds
-    Future.delayed(const Duration(seconds: 5), () {
+    // Navigate after 3 seconds (reduced from 5 for better UX)
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        context.pushReplacementNamed(AppRoutes.onboarding);
+        final hasCompleted = context.read<SharedPrefsHelper>().hasCompletedOnboarding();
+        if (hasCompleted) {
+          context.goNamed(AppRoutes.auth);
+        } else {
+          context.goNamed(AppRoutes.onboarding);
+        }
       }
     });
   }
