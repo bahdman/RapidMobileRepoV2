@@ -30,6 +30,33 @@ import 'package:rapid_app/features/onboarding/presentation/screens/splash_screen
 import 'package:rapid_app/route_names.dart';
 import 'package:rapid_app/core/models/issue.dart';
 
+CustomTransitionPage<T> _fadeSlidePageTransition<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 200),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.05),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+          )),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 GoRouter buildRouter(String initialRoute) {
@@ -48,7 +75,11 @@ GoRouter buildRouter(String initialRoute) {
               GoRoute(
                 path: '/${AppRoutes.home}',
                 name: AppRoutes.home,
-                builder: (context, state) => const HomeScreen(),
+                pageBuilder: (context, state) => _fadeSlidePageTransition(
+                  context: context,
+                  state: state,
+                  child: const HomeScreen(),
+                ),
               ),
             ],
           ),
@@ -58,7 +89,11 @@ GoRouter buildRouter(String initialRoute) {
               GoRoute(
                 path: '/${AppRoutes.history}',
                 name: AppRoutes.history,
-                builder: (context, state) => const HistoryScreen(),
+                pageBuilder: (context, state) => _fadeSlidePageTransition(
+                  context: context,
+                  state: state,
+                  child: const HistoryScreen(),
+                ),
               ),
             ],
           ),
@@ -68,7 +103,11 @@ GoRouter buildRouter(String initialRoute) {
               GoRoute(
                 path: '/${AppRoutes.account}',
                 name: AppRoutes.account,
-                builder: (context, state) => const AccountScreen(),
+                pageBuilder: (context, state) => _fadeSlidePageTransition(
+                  context: context,
+                  state: state,
+                  child: const AccountScreen(),
+                ),
               ),
             ],
           ),
@@ -79,37 +118,57 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.splash}',
         name: AppRoutes.splash,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const SplashScreen(),
+        ), 
       ),
 
       GoRoute(
         path: '/${AppRoutes.onboarding}',
         name: AppRoutes.onboarding,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const OnboardingScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.auth}',
         name: AppRoutes.auth,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AuthScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const AuthScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.emailAuth}',
         name: AppRoutes.emailAuth,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const EmailAuthScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const EmailAuthScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.createPassword}',
         name: AppRoutes.createPassword,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final nextRoute = state.extra as String?;
-          return CreatePasswordScreen(nextRoute: nextRoute);
+          return _fadeSlidePageTransition(
+            context: context,
+            state: state,
+            child: CreatePasswordScreen(nextRoute: nextRoute),
+          );
         },
       ),
 
@@ -117,42 +176,66 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.emailOtp}',
         name: AppRoutes.emailOtp,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const EmailOtpScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const EmailOtpScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.phoneAuth}',
         name: AppRoutes.phoneAuth,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PhoneAuthScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const PhoneAuthScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.phoneOtp}',
         name: AppRoutes.phoneOtp,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PhoneOtpScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const PhoneOtpScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.createAccount}',
         name: AppRoutes.createAccount,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const CreateAccountScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const CreateAccountScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.accountSuccess}',
         name: AppRoutes.accountSuccess,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AccountSuccessScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const AccountSuccessScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.personalInfo}',
         name: AppRoutes.personalInfo,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PersonalInformationScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const PersonalInformationScreen(),
+        ),
       ),
 
       // Full screen routes
@@ -160,13 +243,21 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.notification}',
         name: AppRoutes.notification,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const NotificationsScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const NotificationsScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.bluetooth}',
         name: AppRoutes.bluetooth,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const BluetoothScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const BluetoothScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.codeSearch}',
@@ -174,53 +265,59 @@ GoRouter buildRouter(String initialRoute) {
         parentNavigatorKey: rootNavigatorKey,
         pageBuilder: (context, state) {
           final query = state.extra as String?;
-          return CustomTransitionPage<void>(
-            key: state.pageKey,
+          return _fadeSlidePageTransition(
+            context: context,
+            state: state,
             child: CodeSearchScreen(initialSearchQuery: query),
-            transitionDuration: const Duration(milliseconds: 350),
-            reverseTransitionDuration: const Duration(milliseconds: 280),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOut,
-              ),
-              child: child,
-            );
-          },
-        );
+          );
         },
       ),
       GoRoute(
         path: '/${AppRoutes.scanning}',
         name: AppRoutes.scanning,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ScanningScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const ScanningScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.vehicleReport}',
         name: AppRoutes.vehicleReport,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const VehicleReportScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const VehicleReportScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.issueDetail}',
         name: AppRoutes.issueDetail,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final issue = state.extra as DiagnosticIssue;
-          return IssueDetailScreen(issue: issue);
+          return _fadeSlidePageTransition(
+            context: context,
+            state: state,
+            child: IssueDetailScreen(issue: issue),
+          );
         },
       ),
       GoRoute(
         path: '/${AppRoutes.scanReport}',
         name: AppRoutes.scanReport,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final data = state.extra as Map<String, dynamic>;
-          return ScanReportScreen(
-            issue: data['issue'] as DiagnosticIssue,
-            date: data['date'] as DateTime,
+          return _fadeSlidePageTransition(
+            context: context,
+            state: state,
+            child: ScanReportScreen(
+              issue: data['issue'] as DiagnosticIssue,
+              date: data['date'] as DateTime,
+            ),
           );
         },
       ),
@@ -228,31 +325,51 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.profile}',
         name: AppRoutes.profile,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ProfileScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const ProfileScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.subscription}',
         name: AppRoutes.subscription,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const SubscriptionScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const SubscriptionScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.schedules}',
         name: AppRoutes.schedules,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const SchedulesScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const SchedulesScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.settings}',
         name: AppRoutes.settings,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const SettingsScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const SettingsScreen(),
+        ),
       ),
       GoRoute(
         path: '/${AppRoutes.refer}',
         name: AppRoutes.refer,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ReferAFriendScreen(),
+        pageBuilder: (context, state) => _fadeSlidePageTransition(
+          context: context,
+          state: state,
+          child: const ReferAFriendScreen(),
+        ),
       ),
     ],
   );

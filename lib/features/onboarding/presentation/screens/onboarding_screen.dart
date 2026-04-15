@@ -182,53 +182,76 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     },
                     itemBuilder: (context, index) {
                       final page = _pages[index];
-                      return Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40.w),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            RichText(
-                              textAlign: TextAlign.center,
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: '${page.headingPrimary}\n',
-                                    style: TextStyle(
-                                      fontSize: 40.sp,
-                                      fontWeight: FontWeight.w800,
-                                      color: page.isPrimaryHighlighted
-                                          ? AppColors.primary
-                                          : Colors.black,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: page.headingSecondary,
-                                    style: TextStyle(
-                                      fontSize: 40.sp,
-                                      fontWeight: FontWeight.w800,
-                                      color: page.isPrimaryHighlighted
-                                          ? Colors.black
-                                          : AppColors.primary,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      return AnimatedBuilder(
+                        animation: _pageController,
+                        builder: (context, child) {
+                          double value = 1.0;
+                          if (_pageController.position.haveDimensions) {
+                            value = (_pageController.page! - index).abs();
+                          } else {
+                            value = (_currentPage - index).abs().toDouble();
+                          }
+
+                          // 0.0 means center, 1.0 means off-screen
+                          final double opacity = (1 - value).clamp(0.0, 1.0);
+                          final double translation = (index < (_pageController.page ?? _currentPage)) ? -value * 100.w : value * 100.w;
+
+                          return Opacity(
+                            opacity: opacity,
+                            child: Transform.translate(
+                              offset: Offset(translation, 0),
+                              child: child,
                             ),
-                            SizedBox(height: 24.h),
-                            Text(
-                              page.subheading,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.black.withValues(alpha: 0.8),
-                                height: 1.5,
-                                fontWeight: FontWeight.w500,
+                          );
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40.w),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              RichText(
+                                textAlign: TextAlign.center,
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: '${page.headingPrimary}\n',
+                                      style: TextStyle(
+                                        fontSize: 40.sp,
+                                        fontWeight: FontWeight.w800,
+                                        color: page.isPrimaryHighlighted
+                                            ? AppColors.primary
+                                            : Colors.black,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: page.headingSecondary,
+                                      style: TextStyle(
+                                        fontSize: 40.sp,
+                                        fontWeight: FontWeight.w800,
+                                        color: page.isPrimaryHighlighted
+                                            ? Colors.black
+                                            : AppColors.primary,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 100.h),
-                          ],
+                              SizedBox(height: 24.h),
+                              Text(
+                                page.subheading,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  color: Colors.black.withValues(alpha: 0.8),
+                                  height: 1.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 100.h),
+                            ],
+                          ),
                         ),
                       );
                     },
