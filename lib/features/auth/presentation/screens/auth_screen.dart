@@ -18,6 +18,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusScope = FocusNode();
+  bool _isContinuing = false;
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -108,7 +109,12 @@ class _AuthScreenState extends State<AuthScreen> {
                 // Continue Button
                 RapidButton(
                   text: 'Continue',
-                  onPressed: () {
+                  isLoading: _isContinuing,
+                  onPressed: () async {
+                    setState(() => _isContinuing = true);
+                    await Future.delayed(const Duration(seconds: 3));
+                    if (!mounted) return;
+                    setState(() => _isContinuing = false);
                     context.pushNamed(AppRoutes.phoneAuth);
                   },
                 ),

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -47,13 +48,10 @@ class RapidButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget buttonChild = isLoading
         ? SizedBox(
-            height: 20.h,
-            width: 20.h,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                textColor ?? (isOutline ? Colors.black : Colors.white),
-              ),
+            height: 24.h,
+            width: 24.h,
+            child: _GradientSpinner(
+              color: textColor ?? (isOutline ? Colors.black : Colors.white),
             ),
           )
         : isFullWidthLeading
@@ -147,8 +145,9 @@ class RapidButton extends StatelessWidget {
             side: borderSide ?? BorderSide.none,
           ),
           padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
-          disabledBackgroundColor: (backgroundColor ?? AppColors.primary)
-              .withValues(alpha: 0.6),
+          disabledBackgroundColor: isLoading
+              ? _darkenColor(backgroundColor ?? AppColors.primary, 0.15)
+              : (backgroundColor ?? AppColors.primary).withValues(alpha: 0.6),
         ),
         child: buttonChild,
       )
@@ -156,4 +155,82 @@ class RapidButton extends StatelessWidget {
           .fadeIn(delay: 400.ms)
           .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1));
   }
+
+  Color _darkenColor(Color color, [double amount = .1]) {
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
+  }
+}
+
+// ── Premium Loading Spinner ──────────────────────────────────────────────────
+class _GradientSpinner extends StatefulWidget {
+  final Color color;
+
+  const _GradientSpinner({required this.color});
+
+  @override
+  State<_GradientSpinner> createState() => _GradientSpinnerState();
+}
+
+class _GradientSpinnerState extends State<_GradientSpinner>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RotationTransition(
+      turns: _controller,
+      child: CustomPaint(
+        painter: _GradientSpinnerPainter(color: widget.color),
+      ),
+    );
+  }
+}
+
+class _GradientSpinnerPainter extends CustomPainter {
+  final Color color;
+
+  _GradientSpinnerPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round
+      ..shader = SweepGradient(
+        colors: [color.withValues(alpha: 0.0), color],
+        stops: const [0.0, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      0,
+      2 * math.pi,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
