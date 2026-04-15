@@ -275,7 +275,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
                 SizedBox(height: 16.h),
 
-                // Secondary Action (Skip or Login)
+                // Secondary Action (Skip)
                 if (_currentPage < _pages.length - 1)
                   TextButton(
                     onPressed: () {

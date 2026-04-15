@@ -1,4 +1,4 @@
-package com.example.rapid_app
+package ng.rapidapp.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 
