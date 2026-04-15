@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
@@ -186,7 +187,7 @@ class ReferAFriendScreen extends StatelessWidget {
             Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
             SizedBox(height: 24.h),
           ],
-        ),
+        ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
       ),
     );
   }

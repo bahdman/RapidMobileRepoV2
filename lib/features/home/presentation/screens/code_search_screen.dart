@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -169,55 +170,64 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
               ),
             ),
 
-            if (!hasMatch) ...[
-              SizedBox(height: 20.h),
-              // ── Recent searches header ───────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recent Searches',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Text(
-                        'MANAGE HISTORY',
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 8.h),
-            ] else ...[
-              SizedBox(height: 12.h),
-            ],
-
-            // ── List ─────────────────────────────────────────────────────
+            // ── Selective Animation for Content ──────────────────────────────
             Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: _recentSearches.length,
-                itemBuilder: (context, index) {
-                  if (hasMatch && _recentSearches[index].$1 == topMatch?.code) {
-                    return const SizedBox.shrink();
-                  }
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!hasMatch) ...[
+                    SizedBox(height: 20.h),
+                    // ── Recent searches header ─────────────────────────────
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Recent Searches',
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {},
+                            child: Text(
+                              'MANAGE HISTORY',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                  ] else ...[
+                    SizedBox(height: 12.h),
+                  ],
 
-                  final (code, description) = _recentSearches[index];
-                  return _searchItem(code, description);
-                },
-              ),
+                  // ── List ───────────────────────────────────────────────
+                  Expanded(
+                    child: ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      itemCount: _recentSearches.length,
+                      itemBuilder: (context, index) {
+                        if (hasMatch &&
+                            _recentSearches[index].$1 == topMatch?.code) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final (code, description) = _recentSearches[index];
+                        return _searchItem(code, description);
+                      },
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
             ),
           ],
         ),

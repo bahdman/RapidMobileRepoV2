@@ -55,7 +55,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   ),
                 ),
               ],
-            );
+            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
           },
         ),
       ),

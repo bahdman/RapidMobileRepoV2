@@ -72,4 +72,9 @@ class Assets {
   static const String whatsapp = 'assets/svgs/onboarding/whatsapp.svg';
   static const String bigCheckCircle =
       'assets/svgs/onboarding/big_check_cricle.svg';
+  
+  //auth
+  static const String google = 'assets/svgs/auth/google.svg';
+  static const String apple = 'assets/svgs/auth/apple.svg';
+  static const String facebook = 'assets/svgs/auth/facebook.svg';
 }

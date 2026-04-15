@@ -40,6 +40,7 @@ flutter:
     - assets/svgs/dashboard/
     - assets/svgs/account/
     - assets/svgs/onboarding/
+    - assets/svgs/auth/
 
   fonts:
     - family: Work Sans

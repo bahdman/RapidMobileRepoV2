@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
@@ -177,7 +178,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               ),
               SizedBox(height: 24.h),
             ],
-          ),
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
         ),
       ),
     );

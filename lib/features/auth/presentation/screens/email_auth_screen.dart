@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -146,7 +147,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 ),
                 SizedBox(height: 32.h),
               ],
-            ),
+            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
           ),
         ),
       ),

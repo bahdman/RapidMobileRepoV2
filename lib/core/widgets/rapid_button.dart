@@ -19,6 +19,7 @@ class RapidButton extends StatelessWidget {
   final double? elevation;
   final EdgeInsets? padding;
   final bool isOutline;
+  final bool isFullWidthLeading;
 
   const RapidButton({
     super.key,
@@ -38,6 +39,7 @@ class RapidButton extends StatelessWidget {
     this.elevation = 0,
     this.padding,
     this.isOutline = false,
+    this.isFullWidthLeading = false,
   });
 
   @override
@@ -53,28 +55,62 @@ class RapidButton extends StatelessWidget {
               ),
             ),
           )
-        : Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                icon!,
-                SizedBox(width: 8.w),
-              ],
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: fontSize ?? 16.sp,
-                  fontWeight: fontWeight ?? FontWeight.w700,
-                  color: textColor ?? (isOutline ? Colors.black : Colors.white),
-                ),
-              ),
-              if (suffixIcon != null) ...[
-                SizedBox(width: 8.w),
-                suffixIcon!,
-              ],
-            ],
-          );
+        : isFullWidthLeading
+            ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (icon != null)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 8.w),
+                        child: icon!,
+                      ),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        text,
+                        style: TextStyle(
+                          fontSize: fontSize ?? 16.sp,
+                          fontWeight: fontWeight ?? FontWeight.w700,
+                          color: textColor ??
+                              (isOutline ? Colors.black : Colors.white),
+                        ),
+                      ),
+                      if (suffixIcon != null) ...[
+                        SizedBox(width: 8.w),
+                        suffixIcon!,
+                      ],
+                    ],
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null) ...[
+                    icon!,
+                    SizedBox(width: 8.w),
+                  ],
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: fontSize ?? 16.sp,
+                      fontWeight: fontWeight ?? FontWeight.w700,
+                      color:
+                          textColor ?? (isOutline ? Colors.black : Colors.white),
+                    ),
+                  ),
+                  if (suffixIcon != null) ...[
+                    SizedBox(width: 8.w),
+                    suffixIcon!,
+                  ],
+                ],
+              );
 
     if (isOutline) {
       return OutlinedButton(

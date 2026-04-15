@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -37,14 +38,14 @@ class HomeScreen extends StatelessWidget {
             color: Colors.white,
             child: TabBarView(
               children: [
-                _recentScansList(),
-                const Center(child: Text('Vehicle Health Content')),
+                _recentScansList().animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+                const Center(child: Text('Vehicle Health Content')).animate().fadeIn(delay: 200.ms),
               ],
             ),
           ),
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 400.ms);
   }
 
   Widget _recentScansList() {
@@ -64,7 +65,7 @@ class HomeScreen extends StatelessWidget {
         _groupHeader('02-04-2026'),
         _historyItem('Scan Report', 'Scanned via OBD'),
       ],
-    );
+    ).animate().fadeIn().slideY(begin: 0.05, end: 0);
   }
 
   Widget _groupHeader(String title) {
@@ -76,28 +77,6 @@ class HomeScreen extends StatelessWidget {
           color: AppColors.textMediumGrey,
           fontSize: 12.sp,
           fontWeight: FontWeight.w400,
-        ),
-      ),
-    );
-  }
-
-  Widget _tagItem(BuildContext context, String text) {
-    return GestureDetector(
-      onTap: () => context.pushNamed(AppRoutes.codeSearch, extra: text),
-      child: Container(
-        margin: EdgeInsets.only(right: 8.w),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: AppColors.primaryDisabled,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-          ),
         ),
       ),
     );
@@ -269,7 +248,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                       ),
                     ),
                   ),
-                ),
+                ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
 
                 // 3. Connect Buttons Row (Always Visible)
                 _actionButtonsRow(),
@@ -318,30 +297,35 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _tagItem('UP0903'),
-          _tagItem('CU0402'),
-          _tagItem('BI0903'),
-          _tagItem('BI0903'),
-          _tagItem('BI0903'),
+          _tagItem('C0074'),
+          _tagItem('P0A01'),
+          _tagItem('P0001'),
+          _tagItem('B1365'),
+          _tagItem('P0420'),
         ],
       ),
     );
   }
 
   Widget _tagItem(String text) {
-    return Container(
-      margin: EdgeInsets.only(right: 8.w),
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AppColors.primaryDisabled,
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.7),
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w500,
+    return GestureDetector(
+      onTap: () {
+        context.pushNamed(AppRoutes.codeSearch, extra: text);
+      },
+      child: Container(
+        margin: EdgeInsets.only(right: 8.w),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: AppColors.primaryDisabled,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

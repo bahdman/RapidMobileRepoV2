@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -52,19 +53,19 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 48.h),
                   // Profile Fields
-                  _buildProfileItem(label: 'Full Name', value: 'John Doe'),
+                  _buildProfileItem(label: 'Full Name', value: 'John Doe').animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
                   SizedBox(height: 20.h),
                   _buildProfileItem(
                     label: 'Email',
                     value: 'johndoe@gmail.com',
                     keyboardType: TextInputType.emailAddress,
-                  ),
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
                   SizedBox(height: 20.h),
                   _buildProfileItem(
                     label: 'Phone',
                     value: '+234 810 123 4567',
                     keyboardType: TextInputType.phone,
-                  ),
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
                   SizedBox(height: 50.h),
                   SizedBox(
                     width: double.infinity,
@@ -87,9 +88,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
+                  ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1)),
                 ],
-              ),
+              ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
             ),
           ),
           SliverFillRemaining(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
@@ -84,7 +85,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
           ),
         ],
-      ),
+      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
     );
   }
 
