@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 
 class RapidButton extends StatelessWidget {
@@ -56,53 +57,29 @@ class RapidButton extends StatelessWidget {
             ),
           )
         : isFullWidthLeading
-            ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (icon != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 8.w),
-                        child: icon!,
-                      ),
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        text,
-                        style: TextStyle(
-                          fontSize: fontSize ?? 16.sp,
-                          fontWeight: fontWeight ?? FontWeight.w700,
-                          color: textColor ??
-                              (isOutline ? Colors.black : Colors.white),
-                        ),
-                      ),
-                      if (suffixIcon != null) ...[
-                        SizedBox(width: 8.w),
-                        suffixIcon!,
-                      ],
-                    ],
+        ? Stack(
+            alignment: Alignment.center,
+            children: [
+              if (icon != null)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 8.w),
+                    child: icon!,
                   ),
-                ],
-              )
-            : Row(
+                ),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (icon != null) ...[
-                    icon!,
-                    SizedBox(width: 8.w),
-                  ],
                   Text(
                     text,
                     style: TextStyle(
                       fontSize: fontSize ?? 16.sp,
                       fontWeight: fontWeight ?? FontWeight.w700,
                       color:
-                          textColor ?? (isOutline ? Colors.black : Colors.white),
+                          textColor ??
+                          (isOutline ? Colors.black : Colors.white),
                     ),
                   ),
                   if (suffixIcon != null) ...[
@@ -110,44 +87,73 @@ class RapidButton extends StatelessWidget {
                     suffixIcon!,
                   ],
                 ],
-              );
+              ),
+            ],
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[icon!, SizedBox(width: 8.w)],
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: fontSize ?? 16.sp,
+                  fontWeight: fontWeight ?? FontWeight.w700,
+                  color: textColor ?? (isOutline ? Colors.black : Colors.white),
+                ),
+              ),
+              if (suffixIcon != null) ...[SizedBox(width: 8.w), suffixIcon!],
+            ],
+          );
 
     if (isOutline) {
       return OutlinedButton(
+            onPressed: (isLoading || onPressed == null) ? null : onPressed,
+            style: OutlinedButton.styleFrom(
+              backgroundColor: backgroundColor ?? Colors.transparent,
+              foregroundColor: textColor ?? Colors.black,
+              minimumSize: Size(width ?? 0, height.h),
+              maximumSize: Size(width ?? double.infinity, height.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(borderRadius ?? 28.r),
+              ),
+              side:
+                  borderSide ??
+                  BorderSide(color: AppColors.grey200, width: 1.5),
+              padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
+            ),
+            child: buttonChild,
+          )
+          .animate()
+          .fadeIn(duration: 400.ms)
+          .scale(
+            begin: const Offset(0.95, 0.95),
+            end: const Offset(1, 1),
+            curve: Curves.easeOutQuart,
+          );
+    }
+
+    return ElevatedButton(
         onPressed: (isLoading || onPressed == null) ? null : onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Colors.transparent,
-          foregroundColor: textColor ?? Colors.black,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor ?? AppColors.primary,
+          foregroundColor: textColor ?? Colors.white,
+          elevation: elevation,
           minimumSize: Size(width ?? 0, height.h),
           maximumSize: Size(width ?? double.infinity, height.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius ?? 28.r),
+            side: borderSide ?? BorderSide.none,
           ),
-          side: borderSide ?? BorderSide(color: AppColors.grey200, width: 1.5),
           padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
+          disabledBackgroundColor: (backgroundColor ?? AppColors.primary)
+              .withValues(alpha: 0.6),
         ),
         child: buttonChild,
-      );
-    }
-
-    return ElevatedButton(
-      onPressed: (isLoading || onPressed == null) ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? AppColors.primary,
-        foregroundColor: textColor ?? Colors.white,
-        elevation: elevation,
-        minimumSize: Size(width ?? 0, height.h),
-        maximumSize: Size(width ?? double.infinity, height.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius ?? 28.r),
-          side: borderSide ?? BorderSide.none,
-        ),
-        padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
-        disabledBackgroundColor:
-            (backgroundColor ?? AppColors.primary).withValues(alpha: 0.6),
-      ),
-      child: buttonChild,
-    );
+      )
+      ..animate()
+          .fadeIn(delay: 400.ms)
+          .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1));
   }
 }
-

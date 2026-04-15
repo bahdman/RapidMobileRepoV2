@@ -12,10 +12,18 @@ import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/config/issue_database.dart';
 import 'package:rapid_app/route_names.dart';
 
-class VehicleReportScreen extends StatelessWidget {
+class VehicleReportScreen extends StatefulWidget {
   const VehicleReportScreen({super.key});
 
-  static const int _score = 72;
+  @override
+  State<VehicleReportScreen> createState() => _VehicleReportScreenState();
+}
+
+class _VehicleReportScreenState extends State<VehicleReportScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scoreAnimation;
+  static const int _targetScore = 72;
 
   static const _issues = [
     _Issue(
@@ -34,11 +42,31 @@ class VehicleReportScreen extends StatelessWidget {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _scoreAnimation = Tween<double>(begin: 0, end: _targetScore.toDouble())
+        .animate(CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeOutQuart,
+        ));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       appBar: const RapidAppBar(title: 'Vehicle Report', showBackButton: false),
-
       body: SafeArea(
         child: Column(
           children: [
@@ -102,32 +130,39 @@ class VehicleReportScreen extends StatelessWidget {
                           SizedBox(
                             width: 200.w,
                             height: 180.w,
-                            child: CustomPaint(
-                              painter: _GaugePainter(score: _score),
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '$_score',
-                                      style: TextStyle(
-                                        fontSize: 56.sp,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.yellow,
-                                        height: 1,
-                                      ),
+                            child: AnimatedBuilder(
+                              animation: _scoreAnimation,
+                              builder: (context, child) {
+                                return CustomPaint(
+                                  painter: _GaugePainter(
+                                    score: _scoreAnimation.value,
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${_scoreAnimation.value.toInt()}',
+                                          style: TextStyle(
+                                            fontSize: 56.sp,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.yellow,
+                                            height: 1,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Fair',
+                                          style: TextStyle(
+                                            fontSize: 14.sp,
+                                            color: const Color(0xFF9EA6B0),
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      'Fair',
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: const Color(0xFF9EA6B0),
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -305,7 +340,7 @@ class _Issue {
 // ── Health gauge painter ─────────────────────────────────────────────────────
 
 class _GaugePainter extends CustomPainter {
-  final int score;
+  final double score;
 
   const _GaugePainter({required this.score});
 

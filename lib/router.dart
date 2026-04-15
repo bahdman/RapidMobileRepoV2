@@ -81,9 +81,15 @@ GoRouter buildRouter(String initialRoute) {
     navigatorKey: rootNavigatorKey,
     initialLocation: initialRoute,
     routes: [
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) {
           return PageHolder(child: navigationShell);
+        },
+        navigatorContainerBuilder: (context, navigationShell, children) {
+          return _AnimatedBranchContainer(
+            currentIndex: navigationShell.currentIndex,
+            children: children,
+          );
         },
         branches: [
           // Home
@@ -312,4 +318,82 @@ GoRouter buildRouter(String initialRoute) {
       ),
     ],
   );
+}
+
+// ── Persistent Tab Transition Container ──
+class _AnimatedBranchContainer extends StatefulWidget {
+  final int currentIndex;
+  final List<Widget> children;
+
+  const _AnimatedBranchContainer({
+    required this.currentIndex,
+    required this.children,
+  });
+
+  @override
+  State<_AnimatedBranchContainer> createState() =>
+      _AnimatedBranchContainerState();
+}
+
+class _AnimatedBranchContainerState extends State<_AnimatedBranchContainer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.currentIndex;
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 350));
+    _controller.value = 1.0;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBranchContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _currentIndex = widget.currentIndex;
+      _controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: widget.children.asMap().entries.map((entry) {
+        final index = entry.key;
+        final child = entry.value;
+        final isActive = index == _currentIndex;
+
+        return Offstage(
+          offstage: !isActive, // Preserve branch state
+          child: TickerMode(
+            enabled: isActive,
+            child: isActive
+                ? FadeTransition(
+                    opacity: _controller,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.02),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: _controller,
+                        curve: Curves.easeOutQuart,
+                      )),
+                      child: child,
+                    ),
+                  )
+                : child, // When offstage, just hold the widget without active animation
+          ),
+        );
+      }).toList(),
+    );
+  }
 }

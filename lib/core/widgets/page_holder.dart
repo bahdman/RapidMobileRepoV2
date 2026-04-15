@@ -107,27 +107,7 @@ class _PageHolderState extends State<PageHolder> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 350),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.02),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            ),
-          );
-        },
-        child: KeyedSubtree(
-          key: ValueKey<int>(widget.child.currentIndex),
-          child: widget.child,
-        ),
-      ),
+      body: widget.child,
       bottomNavigationBar:
           Platform.isAndroid && MediaQuery.of(context).padding.bottom > 0
           ? SafeArea(top: false, child: navBar)

@@ -7,6 +7,7 @@ import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
+import 'package:rapid_app/core/widgets/rapid_button.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -53,7 +54,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 48.h),
                   // Profile Fields
-                  _buildProfileItem(label: 'Full Name', value: 'John Doe').animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
+                  _buildProfileItem(
+                    label: 'Full Name',
+                    value: 'John Doe',
+                  ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
                   SizedBox(height: 20.h),
                   _buildProfileItem(
                     label: 'Email',
@@ -67,28 +71,11 @@ class ProfileScreen extends StatelessWidget {
                     keyboardType: TextInputType.phone,
                   ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
                   SizedBox(height: 50.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 64.h,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF007AFF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Save Changes',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ).animate().fadeIn(delay: 400.ms).scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1)),
+                  RapidButton(
+                    text: 'Save Changes',
+                    backgroundColor: AppColors.primary,
+                    onPressed: () {},
+                  ),
                 ],
               ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
             ),
