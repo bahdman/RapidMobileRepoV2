@@ -32,25 +32,15 @@ class AppColors {
   static const Color grey200 = Color(0xffE5E5E5);
   static const Color grey100 = Color(0xffF2F2F3);
   static const Color selectedNavBar = Color(0xffEDFFFD);
-
   static const Color hintGrey = Color(0xffB8B8B8);
-  static const Color labelColor = Color(0xFF6C7278);
   static const Color borderColor2 = Color(0xffE5E7EB);
   static const Color borderColor = Color(0xffECECEC);
-  static const Color textWhite = Color(0xFFFFFFFF);
-  static const Color navBarColor = Color(0xffFFFFFF);
-  static const Color quickActionBtnColor = Color(0xff1C1E1F);
-  static const Color quickActionBtnColorLight = Color(0xff242728);
-  static const Color dialogColor = Color(0xff1E1E1E);
   static Color white20 = const Color(0xFFFFFFFF).withValues(alpha: 0.2);
   static const Color offWhite = Color(0xffF9FAFB);
-  static const Color avatarColor = Color(0xff4F4F4F);
-  static const Color otherChatBubbleColor = Color(0xff1C1E1F);
-  static const Color darkRed = Color(0xffEA4335);
   static const Color tertiaryOrange = Color(0xffF59E0B);
   static const Color tertiaryGreen = Color(0xff10B981);
   static const Color tertiaryRed = Color(0xffEF4444);
   static const Color lightBlue = Color(0xffDBEAFE);
-  static const Color tabBarBgLight = Color(0xffF3F4F6);
-  static const Color tabBarBgDark = Color(0xff1C1E1F);
+  static const Color connectDirectBlue = Color(0xFF4EA3FF);
+  static const Color connectObdBlue = Color(0xFF074180);
 }

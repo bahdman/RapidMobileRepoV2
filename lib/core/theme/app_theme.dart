@@ -149,8 +149,6 @@ class AppTheme {
 
     bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Colors.black),
 
-    dialogTheme: const DialogThemeData(backgroundColor: AppColors.tabBarBgDark),
-
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: AppColors.primary,
       selectionColor: AppColors.primary.withAlpha(120),
