@@ -2,6 +2,32 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- ============================================================ -->
+	<!-- Google Sign-In iOS Configuration                             -->
+	<!-- Replace the placeholder values below with your actual        -->
+	<!-- iOS OAuth 2.0 Client ID from Google Cloud Console /          -->
+	<!-- Firebase (GoogleService-Info.plist > CLIENT_ID).             -->
+	<!-- ============================================================ -->
+
+	<!-- 1. Your iOS OAuth Client ID -->
+	<key>GIDClientID</key>
+	<string>238659540610-66gftvi6s2t1re6fjtd0ta0t8nti5ufk.apps.googleusercontent.com</string>
+
+	<!-- 2. URL scheme for the OAuth redirect callback.               -->
+	<!--    This MUST be the CLIENT_ID reversed, e.g.                 -->
+	<!--    com.googleusercontent.apps.YOUR_IOS_CLIENT_ID             -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.238659540610-66gftvi6s2t1re6fjtd0ta0t8nti5ufk</string>
+			</array>
+		</dict>
+	</array>
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

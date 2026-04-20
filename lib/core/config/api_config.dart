@@ -1,5 +1,10 @@
 class ApiConfig {
-  static const String baseUrl = 'https://statamart-api-stg.brief.i.ng';
+  static const String baseUrl = 'https://rapidapi.bsite.net';
+
+  // Google Auth
+  static const String googleRegister = '/api/GoogleAuth/RegisterAsync';
+  static const String googleAcceptTerms = '/api/GoogleAuth/AcceptTermsAsync';
+  static const String googleLogin = '/api/GoogleAuth/LoginAsync';
 
   static const String login = '/api/v1/vendor/auth/login';
   static const String logout = '/api/v1/vendor/auth/logout';

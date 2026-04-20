@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
@@ -35,8 +39,21 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _unfocus,
-      child: Scaffold(
-        backgroundColor: Colors.white,
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthError && state.isApiError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            );
+          } else if (state is AuthAuthenticated) {
+            context.goNamed(AppRoutes.home);
+          }
+        },
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            final isGoogleLoading = state is AuthLoading;
+            return Scaffold(
+              backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
@@ -169,9 +186,9 @@ class _AuthScreenState extends State<AuthScreen> {
                 // Sign in with Google
                 _buildAuthButton(
                   label: 'Sign in with Google',
+                  isLoading: isGoogleLoading,
                   onTap: () {
-                    // Simulate Google Sign In and navigation to Personal Information Step
-                    context.pushNamed(AppRoutes.personalInfo);
+                    context.read<AuthBloc>().add(GoogleSignInRequested());
                   },
                   svgIcon: Assets.google,
                 ),
@@ -224,6 +241,9 @@ class _AuthScreenState extends State<AuthScreen> {
             ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
           ),
         ),
+      );
+      },
+      ),
       ),
     );
   }
@@ -235,9 +255,11 @@ class _AuthScreenState extends State<AuthScreen> {
     Color? backgroundColor,
     Color? textColor,
     bool isOutline = true,
+    bool isLoading = false,
   }) {
     return RapidButton(
       text: label,
+      isLoading: isLoading,
       onPressed: onTap,
       isOutline: isOutline,
       backgroundColor: backgroundColor,
