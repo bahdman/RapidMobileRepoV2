@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+// import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/api_config.dart';
 import '../utils/shared_prefs_helper.dart';
 
@@ -35,14 +35,22 @@ class ApiService {
           return handler.next(e);
         },
       ),
-      PrettyDioLogger(
+      // PrettyDioLogger(
+      //   requestHeader: true,
+      //   requestBody: true,
+      //   responseBody: true,
+      //   responseHeader: false,
+      //   error: true,
+      //   compact: true,
+      //   maxWidth: 90,
+      // ),
+      LogInterceptor(
+        request: true,
         requestHeader: true,
         requestBody: true,
+        responseHeader: true,
         responseBody: true,
-        responseHeader: false,
         error: true,
-        compact: true,
-        maxWidth: 90,
       ),
     ]);
   }

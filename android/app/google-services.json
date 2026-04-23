@@ -1,9 +1,46 @@
 {
-    "installed": {
-        "client_id": "238659540610-bqrkc1882bdfc0jvvu49kqc27fm1i84j.apps.googleusercontent.com",
-        "project_id": "root-arcanum-450614-t5",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
+  "project_info": {
+    "project_number": "238659540610",
+    "project_id": "root-arcanum-450614-t5",
+    "storage_bucket": "root-arcanum-450614-t5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:238659540610:android:9ed43ee8e438eac467069b",
+        "android_client_info": {
+          "package_name": "ng.rapidapp.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "238659540610-u2f3osj2f4tvbi7r0u8lscpa863i739h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9JJndqx5gkmxEk8XvnV6RA92r12Tf5hc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "238659540610-u2f3osj2f4tvbi7r0u8lscpa863i739h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "238659540610-66gftvi6s2t1re6fjtd0ta0t8nti5ufk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "ng.rapidapp.mobile"
+              }
+            }
+          ]
+        }
+      }
     }
+  ],
+  "configuration_version": "1"
 }
