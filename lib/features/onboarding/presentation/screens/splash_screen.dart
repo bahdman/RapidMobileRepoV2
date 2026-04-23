@@ -36,8 +36,13 @@ class _SplashScreenState extends State<SplashScreen>
     // Navigate after 3 seconds (reduced from 5 for better UX)
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        final hasCompleted = context.read<SharedPrefsHelper>().hasCompletedOnboarding();
-        if (hasCompleted) {
+        final prefs = context.read<SharedPrefsHelper>();
+        final hasCompletedOnboarding = prefs.hasCompletedOnboarding();
+        final token = prefs.getToken();
+
+        if (token != null && token.isNotEmpty) {
+          context.goNamed(AppRoutes.home);
+        } else if (hasCompletedOnboarding) {
           context.goNamed(AppRoutes.auth);
         } else {
           context.goNamed(AppRoutes.onboarding);

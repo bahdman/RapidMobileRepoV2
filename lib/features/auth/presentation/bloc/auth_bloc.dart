@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
@@ -56,10 +57,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(const AuthError('Login failed: invalid response data.'));
           return;
         }
-      } on DioException catch (e) {
+      } on DioException catch (e, stackTrace) {
         // If 401, proceed to Register flow
         if (e.response?.statusCode != 401) {
-          emit(AuthError('Google Login Failed: ${e.message}', isApiError: true));
+          _handleError(e, stackTrace, emit);
           return;
         }
       }
@@ -81,8 +82,39 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(const AuthError('Failed to retrieve tokens after accepting terms.', isApiError: true));
       }
-    } catch (e) {
-      emit(AuthError(e.toString(), isApiError: true));
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
     }
+  }
+
+  void _handleError(dynamic error, StackTrace stackTrace, Emitter<AuthState> emit) {
+    String userMessage = 'An unexpected error occurred';
+    bool isApiError = false;
+
+    if (error is DioException) {
+      isApiError = true;
+      final statusCode = error.response?.statusCode;
+      userMessage = 'Error [${statusCode ?? 'Unknown'}]';
+      
+      debugPrint('================ DEVELOPER LOG ================');
+      debugPrint('Source: AuthBloc API Call');
+      debugPrint('Type: DioException');
+      debugPrint('Status Code: $statusCode');
+      debugPrint('Path: ${error.requestOptions.path}');
+      debugPrint('Error: ${error.message}');
+      if (error.response?.data != null) {
+        debugPrint('Response Body: ${error.response?.data}');
+      }
+      debugPrint('Stacktrace: $stackTrace');
+      debugPrint('==============================================');
+    } else {
+      debugPrint('================ DEVELOPER LOG ================');
+      debugPrint('Source: AuthBloc Internal');
+      debugPrint('Error: $error');
+      debugPrint('Stacktrace: $stackTrace');
+      debugPrint('==============================================');
+    }
+
+    emit(AuthError(userMessage, isApiError: isApiError));
   }
 }
