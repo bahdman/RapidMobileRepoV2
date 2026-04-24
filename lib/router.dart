@@ -29,6 +29,7 @@ import 'package:rapid_app/features/onboarding/presentation/screens/onboarding_sc
 import 'package:rapid_app/features/onboarding/presentation/screens/splash_screen.dart';
 import 'package:rapid_app/route_names.dart';
 import 'package:rapid_app/core/models/issue.dart';
+import 'package:rapid_app/features/auth/data/models/auth_models.dart';
 
 // ── Vertical Transition for Tabs ──
 CustomTransitionPage<T> _tabFadeSlideUpTransition<T>({
@@ -214,7 +215,10 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.personalInfo}',
         name: AppRoutes.personalInfo,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PersonalInformationScreen(),
+        builder: (context, state) {
+          final user = state.extra as GoogleAuthUser?;
+          return PersonalInformationScreen(user: user);
+        },
       ),
 
       GoRoute(

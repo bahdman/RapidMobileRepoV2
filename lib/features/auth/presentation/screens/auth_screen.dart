@@ -47,6 +47,11 @@ class _AuthScreenState extends State<AuthScreen> {
             );
           } else if (state is AuthAuthenticated) {
             context.goNamed(AppRoutes.home);
+          } else if (state is AuthRegisterSuccess) {
+            context.pushNamed(
+              AppRoutes.personalInfo,
+              extra: state.user,
+            );
           }
         },
         child: BlocBuilder<AuthBloc, AuthState>(

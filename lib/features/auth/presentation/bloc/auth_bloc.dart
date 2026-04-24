@@ -15,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc(this._authRepository, this._prefsHelper) : super(AuthInitial()) {
     on<GoogleSignInRequested>(_onGoogleSignIn);
+    on<TermsAccepted>(_onTermsAccepted);
   }
 
   Future<void> _onGoogleSignIn(
@@ -72,10 +73,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      final String newUserId = registerResponse.data!.id;
+      // Stop here and let the user accept terms manually on the next screen
+      emit(AuthRegisterSuccess(registerResponse.data!));
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
 
-      // 4. Accept terms for the new user
-      final termsResponse = await _authRepository.acceptGoogleTerms(newUserId, true);
+  Future<void> _onTermsAccepted(
+    TermsAccepted event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final termsResponse = await _authRepository.acceptGoogleTerms(event.userId, event.acceptTerms);
       if (termsResponse.data != null && termsResponse.data!.authCredentials != null) {
         await _prefsHelper.saveToken(termsResponse.data!.authCredentials!.accessToken);
         emit(AuthAuthenticated());

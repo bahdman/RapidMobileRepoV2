@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:rapid_app/features/auth/data/models/auth_models.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -24,3 +25,12 @@ class AuthError extends AuthState {
   @override
   List<Object?> get props => [message, isApiError];
 }
+
+class AuthRegisterSuccess extends AuthState {
+  final GoogleAuthUser user;
+  const AuthRegisterSuccess(this.user);
+  @override
+  List<Object?> get props => [user];
+}
+
+class AuthTermsAccepted extends AuthState {}
