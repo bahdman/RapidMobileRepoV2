@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:rapid_app/features/auth/data/models/auth_models.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 
@@ -16,6 +17,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._authRepository, this._prefsHelper) : super(AuthInitial()) {
     on<GoogleSignInRequested>(_onGoogleSignIn);
     on<TermsAccepted>(_onTermsAccepted);
+    on<CreateEmailAccountRequested>(_onCreateEmailAccount);
+    on<CompleteOnboardingRequested>(_onCompleteOnboarding);
+    on<RequestOtpRequested>(_onRequestOtp);
+    on<VerifyOtpRequested>(_onVerifyOtp);
+    on<AppAuthLoginRequested>(_onAppAuthLogin);
+    on<GenerateAccessTokenRequested>(_onGenerateAccessToken);
   }
 
   Future<void> _onGoogleSignIn(
@@ -92,6 +99,126 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthAuthenticated());
       } else {
         emit(const AuthError('Failed to retrieve tokens after accepting terms.', isApiError: true));
+      }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onCreateEmailAccount(
+    CreateEmailAccountRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final response = await _authRepository.createEmailAccount(event.request);
+      if (response.data != null) {
+        emit(CreateEmailAccountSuccess(response.data!));
+      } else {
+        emit(const AuthError('Failed to create account: no data returned.', isApiError: true));
+      }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onCompleteOnboarding(
+    CompleteOnboardingRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final response = await _authRepository.completeOnboarding(event.request);
+      if (response.data != null && response.data!.authCredentials != null) {
+        await _prefsHelper.saveToken(response.data!.authCredentials!.accessToken);
+        emit(AuthAuthenticated());
+      } else {
+        emit(const AuthError('Failed to retrieve tokens after onboarding.', isApiError: true));
+      }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onRequestOtp(
+    RequestOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final response = await _authRepository.requestOtp(event.request);
+      if (response.data != null) {
+        emit(RequestOtpSuccess(response.data!));
+      } else {
+        emit(const AuthError('Failed to request OTP: no data returned.', isApiError: true));
+      }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onVerifyOtp(
+    VerifyOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final response = await _authRepository.verifyOtp(event.request);
+      if (response.data != null) {
+        final data = response.data!;
+        if (data.isFirstLogin) {
+          // Navigate to create account flow
+          emit(AuthNeedsOnboarding(data.onboardingToken ?? ''));
+        } else {
+          // Navigate to home page
+          if (data.authCredentials != null) {
+            await _prefsHelper.saveToken(data.authCredentials!.accessToken);
+            emit(AuthAuthenticated());
+          } else {
+            emit(const AuthError('Missing auth credentials for login.', isApiError: true));
+          }
+        }
+      } else {
+        emit(const AuthError('Failed to verify OTP: no data returned.', isApiError: true));
+      }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onAppAuthLogin(
+    AppAuthLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final response = await _authRepository.appAuthLogin(event.request);
+      if (response.data != null) {
+        await _prefsHelper.saveToken(response.data!.accessToken);
+        emit(AppAuthLoginSuccess(response.data!));
+        emit(AuthAuthenticated());
+      } else {
+        emit(const AuthError('Login failed: no data returned.', isApiError: true));
+      }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onGenerateAccessToken(
+    GenerateAccessTokenRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final response = await _authRepository.generateAccessToken(event.request);
+      if (response.data != null) {
+        await _prefsHelper.saveToken(response.data!.accessToken);
+        // We might not need to emit anything for a background refresh
+        // But for completeness we can emit authenticated
+        emit(AuthAuthenticated());
+      } else {
+        emit(const AuthError('Failed to refresh token: no data returned.', isApiError: true));
       }
     } catch (e, stackTrace) {
       _handleError(e, stackTrace, emit);

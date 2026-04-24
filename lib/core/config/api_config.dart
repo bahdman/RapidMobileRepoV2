@@ -6,6 +6,16 @@ class ApiConfig {
   static const String googleAcceptTerms = '/api/GoogleAuth/AcceptTermsAsync';
   static const String googleLogin = '/api/GoogleAuth/LoginAsync';
 
+  // Registration
+  static const String createEmailAccount = '/api/Registration/CreateEmailAccountAsync';
+  static const String completeOnboarding = '/api/Registration/CompleteOnboardingAsync';
+
+  // App Auth
+  static const String requestOtp = '/api/AppAuth/RequestOtpAsync';
+  static const String verifyOtp = '/api/AppAuth/VerifyOtpAsync';
+  static const String appAuthLogin = '/api/AppAuth/LoginAsync';
+  static const String generateAccessToken = '/api/AppAuth/GenerateAccessTokenAsync';
+
   static const String login = '/api/v1/vendor/auth/login';
   static const String logout = '/api/v1/vendor/auth/logout';
   static const String dashboard = '/api/v1/vendor/dashboard';

@@ -36,4 +36,58 @@ class AuthRepositoryImpl implements AuthRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<ApiResponse<CreateEmailAccountResponse>> createEmailAccount(CreateEmailAccountRequest request) async {
+    try {
+      return await _remoteDataSource.createEmailAccount(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ApiResponse<CompleteOnboardingResponse>> completeOnboarding(CompleteOnboardingRequest request) async {
+    try {
+      return await _remoteDataSource.completeOnboarding(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ApiResponse<RequestOtpResponse>> requestOtp(RequestOtpRequest request) async {
+    try {
+      return await _remoteDataSource.requestOtp(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ApiResponse<VerifyOtpResponse>> verifyOtp(VerifyOtpRequest request) async {
+    try {
+      return await _remoteDataSource.verifyOtp(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ApiResponse<AppAuthLoginResponse>> appAuthLogin(AppAuthLoginRequest request) async {
+    try {
+      return await _remoteDataSource.appAuthLogin(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ApiResponse<GenerateAccessTokenResponse>> generateAccessToken(GenerateAccessTokenRequest request) async {
+    try {
+      return await _remoteDataSource.generateAccessToken(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

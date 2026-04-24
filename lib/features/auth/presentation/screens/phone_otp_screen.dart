@@ -6,9 +6,21 @@ import 'package:pinput/pinput.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:rapid_app/features/auth/data/models/auth_models.dart';
 
 class PhoneOtpScreen extends StatefulWidget {
-  const PhoneOtpScreen({super.key});
+  final String challengeId;
+  final String contact;
+
+  const PhoneOtpScreen({
+    super.key,
+    required this.challengeId,
+    required this.contact,
+  });
 
   @override
   State<PhoneOtpScreen> createState() => _PhoneOtpScreenState();
@@ -61,9 +73,22 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
           ),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: SingleChildScrollView(
+          child: BlocConsumer<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is AuthNeedsOnboarding) {
+                 context.pushNamed(AppRoutes.createAccount, extra: state.onboardingToken);
+              } else if (state is AuthAuthenticated) {
+                 context.goNamed(AppRoutes.home);
+              } else if (state is AuthError) {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -138,13 +163,21 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                   if (_isCodeComplete)
                     RapidButton(
                       text: 'Continue',
+                      isLoading: state is AuthLoading,
                       onPressed: () {
-                        context.pushNamed(AppRoutes.createAccount);
+                        context.read<AuthBloc>().add(
+                          VerifyOtpRequested(VerifyOtpRequest(
+                            challengeId: widget.challengeId,
+                            otp: _pinController.text,
+                          )),
+                        );
                       },
                     ),
                 ],
               ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
             ),
+              );
+            },
           ),
         ),
       ),

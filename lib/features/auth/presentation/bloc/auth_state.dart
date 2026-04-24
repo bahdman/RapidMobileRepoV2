@@ -34,3 +34,39 @@ class AuthRegisterSuccess extends AuthState {
 }
 
 class AuthTermsAccepted extends AuthState {}
+
+class CreateEmailAccountSuccess extends AuthState {
+  final CreateEmailAccountResponse response;
+
+  const CreateEmailAccountSuccess(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
+class RequestOtpSuccess extends AuthState {
+  final RequestOtpResponse response;
+
+  const RequestOtpSuccess(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}
+
+class AuthNeedsOnboarding extends AuthState {
+  final String onboardingToken;
+
+  const AuthNeedsOnboarding(this.onboardingToken);
+
+  @override
+  List<Object?> get props => [onboardingToken];
+}
+
+class AppAuthLoginSuccess extends AuthState {
+  final AppAuthLoginResponse response;
+
+  const AppAuthLoginSuccess(this.response);
+
+  @override
+  List<Object?> get props => [response];
+}

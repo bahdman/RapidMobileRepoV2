@@ -194,7 +194,12 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.phoneOtp}',
         name: AppRoutes.phoneOtp,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PhoneOtpScreen(),
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>?;
+          final challengeId = data?['challengeId'] as String? ?? '';
+          final contact = data?['contact'] as String? ?? '';
+          return PhoneOtpScreen(challengeId: challengeId, contact: contact);
+        },
       ),
 
       GoRoute(

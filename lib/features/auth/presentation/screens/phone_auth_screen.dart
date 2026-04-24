@@ -3,10 +3,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/route_names.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
+import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:rapid_app/features/auth/data/models/auth_models.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
   const PhoneAuthScreen({super.key});
@@ -47,9 +52,25 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
           ),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Column(
+          child: BlocConsumer<AuthBloc, AuthState>(
+            listener: (context, state) {
+              if (state is RequestOtpSuccess) {
+                final phone = _phoneController.text.trim();
+                final fullContact = '+234$phone';
+                context.pushNamed(AppRoutes.phoneOtp, extra: {
+                  'challengeId': state.response.challengeId,
+                  'contact': fullContact,
+                });
+              } else if (state is AuthError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 16.h),
@@ -180,12 +201,21 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                 SizedBox(height: 32.h),
                 RapidButton(
                   text: 'Continue',
+                  isLoading: state is AuthLoading,
                   onPressed: () {
-                    context.pushNamed(AppRoutes.phoneOtp);
+                    final phone = _phoneController.text.trim();
+                    if (phone.isEmpty) return;
+                    
+                    final fullContact = '+234$phone';
+                    context.read<AuthBloc>().add(
+                      RequestOtpRequested(RequestOtpRequest(contact: fullContact)),
+                    );
                   },
                 ),
               ],
             ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+              );
+            },
           ),
         ),
       ),
