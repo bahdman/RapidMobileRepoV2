@@ -16,19 +16,17 @@ class RapidAuthAnimation extends StatelessWidget {
           // Ripple circles
           ...List.generate(3, (index) {
             return Container(
-              width: 150.w,
-              height: 150.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  width: 2,
-                ),
-              ),
-            )
-                .animate(
-                  onPlay: (controller) => controller.repeat(),
+                  width: 150.w,
+                  height: 150.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                      width: 2,
+                    ),
+                  ),
                 )
+                .animate(onPlay: (controller) => controller.repeat())
                 .scale(
                   begin: const Offset(0.5, 0.5),
                   end: const Offset(2.0, 2.0),
@@ -36,10 +34,7 @@ class RapidAuthAnimation extends StatelessWidget {
                   delay: (index * 600).ms,
                   curve: Curves.easeOut,
                 )
-                .fadeOut(
-                  duration: 2.seconds,
-                  curve: Curves.easeOut,
-                );
+                .fadeOut(duration: 2.seconds, curve: Curves.easeOut);
           }),
 
           // Logo in the middle
@@ -49,21 +44,23 @@ class RapidAuthAnimation extends StatelessWidget {
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: Image.asset(
-              Assets.rapidLogoBig,
-              width: 60.w,
-              height: 60.w,
-            ),
-          )
-              .animate(
-                onPlay: (controller) => controller.repeat(reverse: true),
-              )
-              .scale(
-                begin: const Offset(0.9, 0.9),
-                end: const Offset(1.1, 1.1),
-                duration: 1.seconds,
-                curve: Curves.easeInOut,
-              ),
+            child:
+                Image.asset(
+                      Assets.rapidLogoBig,
+                      color: AppColors.primary,
+                      width: 60.w,
+                      height: 60.w,
+                    )
+                    .animate(
+                      onPlay: (controller) => controller.repeat(reverse: true),
+                    )
+                    .scale(
+                      begin: const Offset(0.8, 0.8),
+                      end: const Offset(1.2, 1.2),
+                      duration: 1200.ms,
+                      curve: Curves.easeInOut,
+                    ),
+          ),
         ],
       ),
     );
