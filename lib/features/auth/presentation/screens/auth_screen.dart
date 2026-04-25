@@ -10,6 +10,7 @@ import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
+import 'package:rapid_app/core/widgets/rapid_auth_animation.dart';
 import 'package:rapid_app/route_names.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -65,185 +66,193 @@ class _AuthScreenState extends State<AuthScreen> {
           scrolledUnderElevation: 0,
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 30.h),
-                Text(
-                  'Enter your number',
-                  style: TextStyle(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
-                ),
-                SizedBox(height: 24.h),
-
-                // Phone Input Field
-                Container(
-                  height: 56.h,
-                  decoration: BoxDecoration(
-                    color: AppColors.grey100,
-                    borderRadius: BorderRadius.circular(28.r),
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 20.w),
-                      SvgPicture.asset(Assets.ngFlag),
-                      SizedBox(width: 12.w),
-                      SvgPicture.asset(Assets.arrowDown),
-
-                      SizedBox(width: 12.w),
-                      Text(
-                        '+234 | ',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.grey800,
-                        ),
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
-                          focusNode: _phoneFocusScope,
-                          decoration: InputDecoration(
-                            filled: false,
-                            border: InputBorder.none,
-                            hintText: '',
-                            contentPadding: EdgeInsets.only(bottom: 2.h),
-                          ),
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 20.w),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16.h),
-
-                // Continue Button
-                RapidButton(
-                  text: 'Continue',
-                  isLoading: _isContinuing,
-                  onPressed: () async {
-                    setState(() => _isContinuing = true);
-                    await Future.delayed(const Duration(seconds: 3));
-                    if (!mounted) return;
-                    setState(() => _isContinuing = false);
-                    context.pushNamed(AppRoutes.phoneAuth);
-                  },
-                ),
-
-                SizedBox(height: 32.h),
-                Row(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: Divider(color: AppColors.grey200, thickness: 1),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: AppColors.grey800,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    SizedBox(height: 30.h),
+                    Text(
+                      'Enter your number',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
                       ),
                     ),
-                    Expanded(
-                      child: Divider(color: AppColors.grey200, thickness: 1),
+                    SizedBox(height: 24.h),
+
+                    // Phone Input Field
+                    Container(
+                      height: 56.h,
+                      decoration: BoxDecoration(
+                        color: AppColors.grey100,
+                        borderRadius: BorderRadius.circular(28.r),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 20.w),
+                          SvgPicture.asset(Assets.ngFlag),
+                          SizedBox(width: 12.w),
+                          SvgPicture.asset(Assets.arrowDown),
+
+                          SizedBox(width: 12.w),
+                          Text(
+                            '+234 | ',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.grey800,
+                            ),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              focusNode: _phoneFocusScope,
+                              decoration: InputDecoration(
+                                filled: false,
+                                border: InputBorder.none,
+                                hintText: '',
+                                contentPadding: EdgeInsets.only(bottom: 2.h),
+                              ),
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 20.w),
+                        ],
+                      ),
                     ),
+                    SizedBox(height: 16.h),
+
+                    // Continue Button
+                    RapidButton(
+                      text: 'Continue',
+                      isLoading: _isContinuing,
+                      onPressed: () async {
+                        setState(() => _isContinuing = true);
+                        await Future.delayed(const Duration(seconds: 3));
+                        if (!mounted) return;
+                        setState(() => _isContinuing = false);
+                        context.pushNamed(AppRoutes.phoneAuth);
+                      },
+                    ),
+
+                    SizedBox(height: 32.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(color: AppColors.grey200, thickness: 1),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          child: Text(
+                            'OR',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: AppColors.grey800,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(color: AppColors.grey200, thickness: 1),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 32.h),
+
+                    // Use Email
+                    _buildAuthButton(
+                      label: 'Use Email',
+                      onTap: () {
+                        context.pushNamed(AppRoutes.emailAuth);
+                      },
+                      backgroundColor: AppColors.grey100,
+                      textColor: Colors.black,
+                      isOutline: false,
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Sign in with Apple
+                    _buildAuthButton(
+                      label: 'Sign in with Apple',
+                      onTap: () {
+                        //test
+                        context.pushNamed(AppRoutes.home);
+                      },
+                      svgIcon: Assets.apple,
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Sign in with Google
+                    _buildAuthButton(
+                      label: 'Sign in with Google',
+                      isLoading: isGoogleLoading,
+                      onTap: () {
+                        context.read<AuthBloc>().add(GoogleSignInRequested());
+                      },
+                      svgIcon: Assets.google,
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Sign in with Facebook
+                    _buildAuthButton(
+                      label: 'Sign in with Facebook',
+                      onTap: () {},
+                      svgIcon: Assets.facebook,
+                    ),
+
+                    SizedBox(height: 48.h),
+
+                    // Terms & Conditions
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: AppColors.grey500,
+                          height: 1.5,
+                        ),
+                        children: const [
+                          TextSpan(text: 'By signing up, you agree to our '),
+                          TextSpan(
+                            text: 'Terms & Conditions',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          TextSpan(text: ',\nacknowledge our '),
+                          TextSpan(
+                            text: 'Privacy Policy',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          TextSpan(
+                            text:
+                                ", and confirm that you're\nover 18. We may send promotions related to our services -\nyou can unsubscribe anytime in Communication Settings\nunder your profile.",
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 32.h),
                   ],
-                ),
-                SizedBox(height: 32.h),
-
-                // Use Email
-                _buildAuthButton(
-                  label: 'Use Email',
-                  onTap: () {
-                    context.pushNamed(AppRoutes.emailAuth);
-                  },
-                  backgroundColor: AppColors.grey100,
-                  textColor: Colors.black,
-                  isOutline: false,
-                ),
-                SizedBox(height: 16.h),
-
-                // Sign in with Apple
-                _buildAuthButton(
-                  label: 'Sign in with Apple',
-                  onTap: () {
-                    //test
-                    context.pushNamed(AppRoutes.home);
-                  },
-                  svgIcon: Assets.apple,
-                ),
-                SizedBox(height: 16.h),
-
-                // Sign in with Google
-                _buildAuthButton(
-                  label: 'Sign in with Google',
-                  isLoading: isGoogleLoading,
-                  onTap: () {
-                    context.read<AuthBloc>().add(GoogleSignInRequested());
-                  },
-                  svgIcon: Assets.google,
-                ),
-                SizedBox(height: 16.h),
-
-                // Sign in with Facebook
-                _buildAuthButton(
-                  label: 'Sign in with Facebook',
-                  onTap: () {},
-                  svgIcon: Assets.facebook,
-                ),
-
-                SizedBox(height: 48.h),
-
-                // Terms & Conditions
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: AppColors.grey500,
-                      height: 1.5,
-                    ),
-                    children: const [
-                      TextSpan(text: 'By signing up, you agree to our '),
-                      TextSpan(
-                        text: 'Terms & Conditions',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      TextSpan(text: ',\nacknowledge our '),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      TextSpan(
-                        text:
-                            ", and confirm that you're\nover 18. We may send promotions related to our services -\nyou can unsubscribe anytime in Communication Settings\nunder your profile.",
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 32.h),
-              ],
-            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+                ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+              ),
+              RapidAuthLoadingOverlay(
+                isVisible: isGoogleLoading,
+                message: 'Authenticating with Google...',
+              ),
+            ],
           ),
         ),
       );

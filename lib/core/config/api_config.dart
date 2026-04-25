@@ -15,6 +15,7 @@ class ApiConfig {
   static const String verifyOtp = '/api/AppAuth/VerifyOtpAsync';
   static const String appAuthLogin = '/api/AppAuth/LoginAsync';
   static const String generateAccessToken = '/api/AppAuth/GenerateAccessTokenAsync';
+  static const String appAuthLogout = '/api/AppAuth/LogoutAsync';
 
   static const String login = '/api/v1/vendor/auth/login';
   static const String logout = '/api/v1/vendor/auth/logout';

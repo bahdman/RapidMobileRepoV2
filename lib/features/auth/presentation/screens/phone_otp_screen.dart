@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
+import 'package:rapid_app/core/widgets/rapid_auth_animation.dart';
 import 'package:rapid_app/route_names.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
@@ -86,96 +87,104 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
               }
             },
             builder: (context, state) {
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              return Stack(
                 children: [
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Enter the code',
-                    style: TextStyle(
-                      fontSize: 21.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 32.h),
-
-                  // Pinput for 4 digit OTP
-                  Center(
-                    child: Pinput(
-                      length: 4,
-                      controller: _pinController,
-                      focusNode: _pinFocusNode,
-                      defaultPinTheme: defaultPinTheme,
-                      focusedPinTheme: defaultPinTheme.copyWith(
-                        decoration: defaultPinTheme.decoration!.copyWith(
-                          border: Border.all(
-                            color: AppColors.primary,
-                            width: 1.5,
-                          ),
-                          color: Colors.white,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 16.h),
+                      Text(
+                        'Enter the code',
+                        style: TextStyle(
+                          fontSize: 21.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
                       ),
-                      submittedPinTheme: defaultPinTheme.copyWith(
-                        decoration: defaultPinTheme.decoration!.copyWith(
-                          border: Border.all(
-                            color: AppColors.primary,
-                            width: 1.5,
+                      SizedBox(height: 32.h),
+
+                      // Pinput for 4 digit OTP
+                      Center(
+                        child: Pinput(
+                          length: 4,
+                          controller: _pinController,
+                          focusNode: _pinFocusNode,
+                          defaultPinTheme: defaultPinTheme,
+                          focusedPinTheme: defaultPinTheme.copyWith(
+                            decoration: defaultPinTheme.decoration!.copyWith(
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
+                              color: Colors.white,
+                            ),
                           ),
-                          color: Colors.white,
+                          submittedPinTheme: defaultPinTheme.copyWith(
+                            decoration: defaultPinTheme.decoration!.copyWith(
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 1.5,
+                              ),
+                              color: Colors.white,
+                            ),
+                          ),
+                          onChanged: (value) {
+                            setState(() {
+                              _isCodeComplete = value.length == 4;
+                            });
+                          },
+                          onCompleted: (pin) {
+                            setState(() {
+                              _isCodeComplete = true;
+                            });
+                          },
                         ),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          _isCodeComplete = value.length == 4;
-                        });
-                      },
-                      onCompleted: (pin) {
-                        setState(() {
-                          _isCodeComplete = true;
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 32.h),
+                      SizedBox(height: 32.h),
 
-                  // Resend Code
-                  GestureDetector(
-                    onTap: () {
-                      // Logic to resend code
-                    },
-                    child: Text(
-                      'Resend code',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.primary,
+                      // Resend Code
+                      GestureDetector(
+                        onTap: () {
+                          // Logic to resend code
+                        },
+                        child: Text(
+                          'Resend code',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.primary,
+                          ),
+                        ),
                       ),
-                    ),
+
+                      SizedBox(height: 48.h),
+
+                      // Continue Button
+                      if (_isCodeComplete)
+                        RapidButton(
+                          text: 'Continue',
+                          isLoading: state is AuthLoading,
+                          onPressed: () {
+                            context.read<AuthBloc>().add(
+                              VerifyOtpRequested(VerifyOtpRequest(
+                                challengeId: widget.challengeId,
+                                otp: _pinController.text,
+                              )),
+                            );
+                          },
+                        ),
+                    ],
+                  ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+                ),
                   ),
-
-                  SizedBox(height: 48.h),
-
-                  // Continue Button
-                  if (_isCodeComplete)
-                    RapidButton(
-                      text: 'Continue',
-                      isLoading: state is AuthLoading,
-                      onPressed: () {
-                        context.read<AuthBloc>().add(
-                          VerifyOtpRequested(VerifyOtpRequest(
-                            challengeId: widget.challengeId,
-                            otp: _pinController.text,
-                          )),
-                        );
-                      },
-                    ),
+                  RapidAuthLoadingOverlay(
+                    isVisible: state is AuthLoading,
+                    message: 'Verifying code...',
+                  ),
                 ],
-              ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
-            ),
               );
             },
           ),

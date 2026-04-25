@@ -90,4 +90,13 @@ class AuthRepositoryImpl implements AuthRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<ApiResponse<bool>> logout(LogoutRequest request) async {
+    try {
+      return await _remoteDataSource.logout(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

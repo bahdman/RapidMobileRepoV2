@@ -14,6 +14,7 @@ abstract class AuthRemoteDataSource {
   Future<ApiResponse<VerifyOtpResponse>> verifyOtp(VerifyOtpRequest request);
   Future<ApiResponse<AppAuthLoginResponse>> appAuthLogin(AppAuthLoginRequest request);
   Future<ApiResponse<GenerateAccessTokenResponse>> generateAccessToken(GenerateAccessTokenRequest request);
+  Future<ApiResponse<bool>> logout(LogoutRequest request);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -129,6 +130,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return ApiResponse<GenerateAccessTokenResponse>.fromJson(
       response.data as Map<String, dynamic>,
       (json) => GenerateAccessTokenResponse.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  Future<ApiResponse<bool>> logout(LogoutRequest request) async {
+    final response = await _apiService.post(
+      ApiConfig.appAuthLogout,
+      data: request.toJson(),
+    );
+    return ApiResponse<bool>.fromJson(
+      response.data as Map<String, dynamic>,
+      (json) => json as bool,
     );
   }
 }

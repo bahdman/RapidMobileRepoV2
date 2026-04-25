@@ -73,3 +73,12 @@ class GenerateAccessTokenRequested extends AuthEvent {
   @override
   List<Object?> get props => [request];
 }
+
+class LogoutRequested extends AuthEvent {
+  final String userId;
+
+  const LogoutRequested({required this.userId});
+
+  @override
+  List<Object?> get props => [userId];
+}

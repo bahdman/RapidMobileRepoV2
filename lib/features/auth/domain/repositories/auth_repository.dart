@@ -11,4 +11,5 @@ abstract class AuthRepository {
   Future<ApiResponse<VerifyOtpResponse>> verifyOtp(VerifyOtpRequest request);
   Future<ApiResponse<AppAuthLoginResponse>> appAuthLogin(AppAuthLoginRequest request);
   Future<ApiResponse<GenerateAccessTokenResponse>> generateAccessToken(GenerateAccessTokenRequest request);
+  Future<ApiResponse<bool>> logout(LogoutRequest request);
 }

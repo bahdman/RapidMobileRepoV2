@@ -174,7 +174,8 @@ class _SchedulesScreenState extends State<SchedulesScreen>
           _isCreating = true;
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
           color: AppColors.primary,

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
@@ -23,6 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<VerifyOtpRequested>(_onVerifyOtp);
     on<AppAuthLoginRequested>(_onAppAuthLogin);
     on<GenerateAccessTokenRequested>(_onGenerateAccessToken);
+    on<LogoutRequested>(_onLogout);
   }
 
   Future<void> _onGoogleSignIn(
@@ -54,11 +56,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
+      debugPrint('================ GOOGLE ID TOKEN ================');
+      debugPrint(idToken);
+      debugPrint('================================================');
+
+      // Copy to clipboard because debug console might truncate long strings
+      await Clipboard.setData(ClipboardData(text: idToken));
+
       // 2. Attempt Login
       try {
         final loginResponse = await _authRepository.googleLogin(idToken);
         if (loginResponse.data != null) {
           await _prefsHelper.saveToken(loginResponse.data!.accessToken);
+          // Save userId for logout and other purposes
+          await _prefsHelper.saveUser(loginResponse.data!.id); 
           emit(AuthAuthenticated());
           return;
         } else {
@@ -173,6 +184,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           // Navigate to home page
           if (data.authCredentials != null) {
             await _prefsHelper.saveToken(data.authCredentials!.accessToken);
+            // In a real scenario, VerifyOtpResponse might need to include userId 
+            // if it's not already in authCredentials or known. 
+            // For now, if onboardingToken is null and we have credentials, we assume login.
             emit(AuthAuthenticated());
           } else {
             emit(const AuthError('Missing auth credentials for login.', isApiError: true));
@@ -195,6 +209,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.appAuthLogin(event.request);
       if (response.data != null) {
         await _prefsHelper.saveToken(response.data!.accessToken);
+        await _prefsHelper.saveUser(response.data!.userId);
         emit(AppAuthLoginSuccess(response.data!));
         emit(AuthAuthenticated());
       } else {
@@ -220,6 +235,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(const AuthError('Failed to refresh token: no data returned.', isApiError: true));
       }
+    } catch (e, stackTrace) {
+      _handleError(e, stackTrace, emit);
+    }
+  }
+
+  Future<void> _onLogout(
+    LogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      await _authRepository.logout(LogoutRequest(userId: event.userId));
+      await _prefsHelper.clearAuth();
+      emit(AuthLoggedOut());
     } catch (e, stackTrace) {
       _handleError(e, stackTrace, emit);
     }
