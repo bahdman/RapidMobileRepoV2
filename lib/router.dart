@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/widgets/page_holder.dart';
 import 'package:rapid_app/features/home/presentation/screens/home_screen.dart';
@@ -9,6 +10,8 @@ import 'package:rapid_app/features/notifications/presentation/screens/notificati
 import 'package:rapid_app/features/bluetooth/presentation/screens/bluetooth_screen.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/scanning_screen.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/vehicle_report_screen.dart';
+import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/obd_scan_bloc.dart';
+import 'package:rapid_app/core/services/obd_service.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/issue_detail_screen.dart';
 import 'package:rapid_app/features/history/presentation/screens/scan_report_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/profile_screen.dart';
@@ -258,14 +261,19 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.scanning}',
         name: AppRoutes.scanning,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ScanningScreen(),
+        builder: (context, state) => BlocProvider(
+          create: (_) => ObdScanBloc(),
+          child: const ScanningScreen(),
+        ),
       ),
 
       GoRoute(
         path: '/${AppRoutes.vehicleReport}',
         name: AppRoutes.vehicleReport,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const VehicleReportScreen(),
+        builder: (context, state) => VehicleReportScreen(
+          scanResult: state.extra as ObdScanResult?,
+        ),
       ),
 
       GoRoute(

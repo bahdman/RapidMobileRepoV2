@@ -39,6 +39,13 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 context.pushNamed(AppRoutes.scanning);
               }
             });
+          } else if (state is BluetoothError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
           }
         },
         child: BlocBuilder<BluetoothBloc, BluetoothState>(
@@ -130,6 +137,36 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             child: _deviceCard(context, device, state),
           );
         },
+      );
+    }
+
+    if (state is BluetoothError) {
+      return Padding(
+        padding: EdgeInsets.only(top: 80.h),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: Column(
+            children: [
+              Icon(Icons.bluetooth_disabled_rounded,
+                  size: 64.w, color: Colors.redAccent),
+              SizedBox(height: 16.h),
+              Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: AppColors.textMediumGrey,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              TextButton(
+                onPressed: () =>
+                    context.read<BluetoothBloc>().add(StartSearch()),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
