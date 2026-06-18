@@ -8,7 +8,6 @@ import 'package:rapid_app/core/services/api_service.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/features/notifications/presentation/screens/bloc/notification_bloc.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/bluetooth_bloc.dart';
-import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/obd_scan_bloc.dart';
 import 'package:rapid_app/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:rapid_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:rapid_app/features/auth/data/repositories/auth_repository_impl.dart';
@@ -42,8 +41,7 @@ void main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => NotificationBloc(apiService)),
-          BlocProvider(create: (context) => BluetoothBloc()),
-          BlocProvider(create: (context) => ObdScanBloc()),
+          BlocProvider(create: (context) => BluetoothBloc(apiService)),
           BlocProvider(create: (context) => AuthBloc(authRepository, sharedPrefsHelper)),
         ],
         child: MainApp(router: router),

@@ -27,11 +27,6 @@ dependencies:
   google_sign_in: ^7.2.0
   firebase_core: ^4.7.0
 
-  # OBD-II / Bluetooth packages
-  obd2: ^0.10.0                         # High-level SAE J1979 OBD-II SDK (BLE)
-  flutter_blue_plus: ^2.3.8            # BLE transport layer (also required by obd2)
-  flutter_bluetooth_serial: ^0.3.2      # Classic Bluetooth (SPP/RFCOMM) for older adapters
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
