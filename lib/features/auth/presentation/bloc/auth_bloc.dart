@@ -68,8 +68,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final loginResponse = await _authRepository.googleLogin(idToken);
         if (loginResponse.data != null) {
           await _prefsHelper.saveToken(loginResponse.data!.accessToken);
+          await _prefsHelper.saveRefreshToken(loginResponse.data!.refreshToken);
+          await _prefsHelper.saveAccessTokenExpiry(loginResponse.data!.accessTokenExpiry);
+          await _prefsHelper.saveRefreshTokenExpiry(loginResponse.data!.refreshTokenExpiry);
           // Save userId for logout and other purposes
-          await _prefsHelper.saveUser(loginResponse.data!.id); 
+          await _prefsHelper.saveUser(loginResponse.data!.id);
           emit(AuthAuthenticated());
           return;
         } else {
@@ -107,6 +110,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final termsResponse = await _authRepository.acceptGoogleTerms(event.userId, event.acceptTerms);
       if (termsResponse.data != null && termsResponse.data!.authCredentials != null) {
         await _prefsHelper.saveToken(termsResponse.data!.authCredentials!.accessToken);
+        await _prefsHelper.saveRefreshToken(termsResponse.data!.authCredentials!.refreshToken);
+        await _prefsHelper.saveAccessTokenExpiry(termsResponse.data!.authCredentials!.accessTokenExpiry);
+        await _prefsHelper.saveRefreshTokenExpiry(termsResponse.data!.authCredentials!.refreshTokenExpiry);
         emit(AuthAuthenticated());
       } else {
         emit(const AuthError('Failed to retrieve tokens after accepting terms.', isApiError: true));
@@ -142,6 +148,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.completeOnboarding(event.request);
       if (response.data != null && response.data!.authCredentials != null) {
         await _prefsHelper.saveToken(response.data!.authCredentials!.accessToken);
+        await _prefsHelper.saveRefreshToken(response.data!.authCredentials!.refreshToken);
+        await _prefsHelper.saveAccessTokenExpiry(response.data!.authCredentials!.accessTokenExpiry);
+        await _prefsHelper.saveRefreshTokenExpiry(response.data!.authCredentials!.refreshTokenExpiry);
         emit(AuthAuthenticated());
       } else {
         emit(const AuthError('Failed to retrieve tokens after onboarding.', isApiError: true));
@@ -184,8 +193,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           // Navigate to home page
           if (data.authCredentials != null) {
             await _prefsHelper.saveToken(data.authCredentials!.accessToken);
-            // In a real scenario, VerifyOtpResponse might need to include userId 
-            // if it's not already in authCredentials or known. 
+            await _prefsHelper.saveRefreshToken(data.authCredentials!.refreshToken);
+            await _prefsHelper.saveAccessTokenExpiry(data.authCredentials!.accessTokenExpiry);
+            await _prefsHelper.saveRefreshTokenExpiry(data.authCredentials!.refreshTokenExpiry);
+            // In a real scenario, VerifyOtpResponse might need to include userId
+            // if it's not already in authCredentials or known.
             // For now, if onboardingToken is null and we have credentials, we assume login.
             emit(AuthAuthenticated());
           } else {
@@ -209,6 +221,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.appAuthLogin(event.request);
       if (response.data != null) {
         await _prefsHelper.saveToken(response.data!.accessToken);
+        await _prefsHelper.saveRefreshToken(response.data!.refreshToken);
+        await _prefsHelper.saveAccessTokenExpiry(response.data!.accessTokenExpiry);
+        await _prefsHelper.saveRefreshTokenExpiry(response.data!.refreshTokenExpiry);
         await _prefsHelper.saveUser(response.data!.userId);
         emit(AppAuthLoginSuccess(response.data!));
         emit(AuthAuthenticated());
@@ -229,6 +244,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.generateAccessToken(event.request);
       if (response.data != null) {
         await _prefsHelper.saveToken(response.data!.accessToken);
+        await _prefsHelper.saveRefreshToken(response.data!.refreshToken);
+        await _prefsHelper.saveAccessTokenExpiry(response.data!.accessTokenExpiresAtUtc);
+        await _prefsHelper.saveRefreshTokenExpiry(response.data!.refreshTokenExpiresAtUtc);
         // We might not need to emit anything for a background refresh
         // But for completeness we can emit authenticated
         emit(AuthAuthenticated());
@@ -246,7 +264,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     try {
-      await _authRepository.logout(LogoutRequest(userId: event.userId));
+      final refreshToken = _prefsHelper.getRefreshToken() ?? '';
+      await _authRepository.logout(LogoutRequest(userId: event.userId, refreshToken: refreshToken));
       await _prefsHelper.clearAuth();
       emit(AuthLoggedOut());
     } catch (e, stackTrace) {

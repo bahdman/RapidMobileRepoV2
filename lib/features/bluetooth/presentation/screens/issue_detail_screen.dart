@@ -1,27 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/theme/app_text_styles.dart';
-
 import 'package:rapid_app/core/models/issue.dart';
+import 'package:rapid_app/core/services/obd_service.dart';
 
 class IssueDetailScreen extends StatelessWidget {
-  final DiagnosticIssue issue;
+  final String issueCode;
+  final DiagnosticIssue? initialIssue;
 
-  const IssueDetailScreen({super.key, required this.issue});
+  const IssueDetailScreen({super.key, required this.issueCode, this.initialIssue});
 
   @override
   Widget build(BuildContext context) {
+    if (initialIssue != null) {
+      return _buildContent(context, initialIssue!);
+    }
+
+    return FutureBuilder<DiagnosticIssue>(
+      future: context.read<ObdService>().getCodeDetail(issueCode),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmer(context);
+        } else if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: Center(child: Text('Failed to load issue details: ${snapshot.error}')),
+          );
+        } else if (snapshot.hasData) {
+          return _buildContent(context, snapshot.data!);
+        }
+        return _buildShimmer(context);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, DiagnosticIssue issue) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       body: Column(
         children: [
           // ── Fixed Header ───────────────────────────────────────────
-          _buildHeader(context),
+          _buildHeader(context, issue),
 
           // ── Scrollable Content ─────────────────────────────────────
           Expanded(
@@ -30,11 +55,11 @@ class IssueDetailScreen extends StatelessWidget {
               padding: EdgeInsets.only(top: 10.h, bottom: 40.h),
               child: Column(
                 children: [
-                  _buildWhatsHappeningSection(),
+                  _buildWhatsHappeningSection(issue),
                   SizedBox(height: 10.h),
-                  _buildRepairCostSection(),
+                  _buildRepairCostSection(issue),
                   SizedBox(height: 10.h),
-                  _buildPossibleCauseSection(),
+                  _buildPossibleCauseSection(issue),
                   SizedBox(height: 32.h),
                   Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
                 ],
@@ -46,7 +71,71 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildShimmer(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.scaffoldBg,
+      body: Column(
+        children: [
+          Container(
+            height: 280.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(34.r)),
+            ),
+            padding: EdgeInsets.fromLTRB(20.w, 60.h, 20.w, 24.h),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(width: 44.w, height: 44.w, decoration: const BoxDecoration(color: Color(0xFFF0F0F0), shape: BoxShape.circle)),
+                      Container(width: 44.w, height: 44.w, decoration: const BoxDecoration(color: Color(0xFFF0F0F0), shape: BoxShape.circle)),
+                    ],
+                  ),
+                  SizedBox(height: 24.h),
+                  Container(width: 150.w, height: 30.h, color: const Color(0xFFF0F0F0)),
+                  SizedBox(height: 12.h),
+                  Container(width: 250.w, height: 20.h, color: const Color(0xFFF0F0F0)),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  Container(
+                    height: 180.h,
+                    margin: EdgeInsets.symmetric(horizontal: 20.w),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(34.r)),
+                  ),
+                  SizedBox(height: 10.h),
+                  Container(
+                    height: 80.h,
+                    margin: EdgeInsets.symmetric(horizontal: 20.w),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(34.r)),
+                  ),
+                  SizedBox(height: 10.h),
+                  Container(
+                    height: 220.h,
+                    margin: EdgeInsets.symmetric(horizontal: 20.w),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(34.r)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ).animate(onPlay: (controller) => controller.repeat()).shimmer(duration: 1200.ms, color: Colors.white54),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, DiagnosticIssue issue) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -145,7 +234,7 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWhatsHappeningSection() {
+  Widget _buildWhatsHappeningSection(DiagnosticIssue issue) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -217,7 +306,7 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRepairCostSection() {
+  Widget _buildRepairCostSection(DiagnosticIssue issue) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       decoration: BoxDecoration(
@@ -255,7 +344,7 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPossibleCauseSection() {
+  Widget _buildPossibleCauseSection(DiagnosticIssue issue) {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(

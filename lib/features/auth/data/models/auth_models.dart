@@ -21,16 +21,22 @@ class GoogleAuthUser {
 class AuthCredentials {
   final String accessToken;
   final String refreshToken;
+  final String accessTokenExpiry;
+  final String refreshTokenExpiry;
 
   AuthCredentials({
     required this.accessToken,
     required this.refreshToken,
+    required this.accessTokenExpiry,
+    required this.refreshTokenExpiry,
   });
 
   factory AuthCredentials.fromJson(Map<String, dynamic> json) {
     return AuthCredentials(
       accessToken: json['accessToken'] as String? ?? '',
       refreshToken: json['refreshToken'] as String? ?? '',
+      accessTokenExpiry: json['accessTokenExpiry'] as String? ?? '',
+      refreshTokenExpiry: json['refreshTokenExpiry'] as String? ?? '',
     );
   }
 }
@@ -68,12 +74,16 @@ class GoogleLoginData {
   final String name;
   final String accessToken;
   final String refreshToken;
+  final String accessTokenExpiry;
+  final String refreshTokenExpiry;
 
   GoogleLoginData({
     required this.id,
     required this.name,
     required this.accessToken,
     required this.refreshToken,
+    required this.accessTokenExpiry,
+    required this.refreshTokenExpiry,
   });
 
   factory GoogleLoginData.fromJson(Map<String, dynamic> json) {
@@ -82,6 +92,8 @@ class GoogleLoginData {
       name: json['name'] as String? ?? '',
       accessToken: json['accessToken'] as String? ?? '',
       refreshToken: json['refreshToken'] as String? ?? '',
+      accessTokenExpiry: json['accessTokenExpiry'] as String? ?? '',
+      refreshTokenExpiry: json['refreshTokenExpiry'] as String? ?? '',
     );
   }
 }
@@ -304,12 +316,16 @@ class UserInfo {
 class AppAuthLoginResponse {
   final String refreshToken;
   final String accessToken;
+  final String accessTokenExpiry;
+  final String refreshTokenExpiry;
   final String userId;
   final UserInfo? userInfo;
 
   AppAuthLoginResponse({
     required this.refreshToken,
     required this.accessToken,
+    required this.accessTokenExpiry,
+    required this.refreshTokenExpiry,
     required this.userId,
     this.userInfo,
   });
@@ -318,6 +334,8 @@ class AppAuthLoginResponse {
     return AppAuthLoginResponse(
       refreshToken: json['refreshToken'] as String? ?? '',
       accessToken: json['accessToken'] as String? ?? '',
+      accessTokenExpiry: json['accessTokenExpiry'] as String? ?? '',
+      refreshTokenExpiry: json['refreshTokenExpiry'] as String? ?? '',
       userId: json['userId'] as String? ?? '',
       userInfo: json['userInfo'] != null
           ? UserInfo.fromJson(json['userInfo'] as Map<String, dynamic>)
@@ -346,26 +364,39 @@ class GenerateAccessTokenRequest {
 class GenerateAccessTokenResponse {
   final String refreshToken;
   final String accessToken;
+  final String accessTokenExpiresAtUtc;
+  final String refreshTokenExpiresAtUtc;
 
   GenerateAccessTokenResponse({
     required this.refreshToken,
     required this.accessToken,
+    required this.accessTokenExpiresAtUtc,
+    required this.refreshTokenExpiresAtUtc,
   });
 
   factory GenerateAccessTokenResponse.fromJson(Map<String, dynamic> json) {
     return GenerateAccessTokenResponse(
       refreshToken: json['refreshToken'] as String? ?? '',
       accessToken: json['accessToken'] as String? ?? '',
+      accessTokenExpiresAtUtc: json['accessTokenExpiresAtUtc'] as String? ?? '',
+      refreshTokenExpiresAtUtc: json['refreshTokenExpiresAtUtc'] as String? ?? '',
     );
   }
 }
 
 class LogoutRequest {
   final String userId;
+  final String refreshToken;
 
-  LogoutRequest({required this.userId});
+  LogoutRequest({
+    required this.userId,
+    required this.refreshToken,
+  });
 
   Map<String, dynamic> toJson() {
-    return {'userId': userId};
+    return {
+      'userId': userId,
+      'refreshToken': refreshToken,
+    };
   }
 }

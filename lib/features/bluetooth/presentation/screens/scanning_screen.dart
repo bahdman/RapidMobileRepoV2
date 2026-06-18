@@ -2,9 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
+import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/obd_scan_bloc.dart';
 import 'package:rapid_app/route_names.dart';
 
 class ScanningScreen extends StatefulWidget {
@@ -29,6 +31,7 @@ class _ScanningScreenState extends State<ScanningScreen>
     _progress = CurvedAnimation(parent: _controller, curve: Curves.linear);
 
     _controller.forward();
+    context.read<ObdScanBloc>().add(StartObdScan());
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
         Future.delayed(const Duration(milliseconds: 500), () {

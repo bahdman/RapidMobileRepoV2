@@ -54,4 +54,8 @@ class ApiConfig {
   static String startPacking(String uuid) => '/api/v1/vendor/orders/$uuid/start-packing';
   static String completePacking(String uuid) => '/api/v1/vendor/orders/$uuid/complete-packing';
   static String readyForDispatch(String uuid) => '/api/v1/vendor/orders/$uuid/ready-for-dispatch';
+
+  // OBD Search
+  static const String obdSearch = '/api/ObdSearch/search';
+  static String obdCodeDetail(String code) => '/api/ObdSearch/code/$code';
 }

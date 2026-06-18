@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
-import 'package:rapid_app/core/config/issue_database.dart';
 import 'package:rapid_app/core/models/issue.dart';
+import 'package:rapid_app/core/services/obd_service.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/route_names.dart';
 
@@ -23,6 +26,10 @@ class CodeSearchScreen extends StatefulWidget {
 class _CodeSearchScreenState extends State<CodeSearchScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  
+  Timer? _debounce;
+  List<ObdSearchResult> _searchResults = [];
+  bool _isLoading = false;
 
   static const _recentSearches = [
     ('P0A01', 'Drive Motor A Inverter Performance'),
@@ -36,9 +43,10 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
     super.initState();
     if (widget.initialSearchQuery != null) {
       _controller.text = widget.initialSearchQuery!;
+      _performSearch(widget.initialSearchQuery!);
     }
     _controller.addListener(() {
-      setState(() {});
+      _onSearchChanged(_controller.text);
     });
     // Request focus after the Hero flight completes (route transition finishes)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -61,23 +69,59 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
   void dispose() {
     _controller.dispose();
     _focusNode.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _performSearch(query);
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    final cleanQuery = query.trim();
+    if (cleanQuery.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final obdService = context.read<ObdService>();
+      final results = await obdService.searchCodes(cleanQuery);
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onResultTapped(String code) {
+    if (mounted) {
+      context.pushNamed(AppRoutes.issueDetail, extra: code);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final String query = _controller.text.toUpperCase().trim();
-    DiagnosticIssue? topMatch;
-    if (query.isNotEmpty) {
-      try {
-        topMatch = IssueDatabase.issues.values.firstWhere(
-          (issue) =>
-              issue.code.toUpperCase().startsWith(query) ||
-              issue.title.toUpperCase().contains(query),
-        );
-      } catch (_) {}
-    }
-    final bool hasMatch = topMatch != null;
+    final String query = _controller.text.trim();
+    final bool hasQuery = query.isNotEmpty;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -94,76 +138,57 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                 tag: kInputCodeHeroTag,
                 child: Material(
                   color: Colors.transparent,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    padding: EdgeInsets.only(
-                      left: 16.w,
-                      right: 16.w,
-                      top: 12.h,
-                      bottom: hasMatch ? 24.h : 12.h,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 12.h,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.secondaryTxtFieldBg,
-                      borderRadius: BorderRadius.circular(
-                        hasMatch ? 24.r : 100.r,
-                      ),
+                      borderRadius: BorderRadius.circular(100.r),
                     ),
-                    child: SingleChildScrollView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              // Back button inside the pill
-                              GestureDetector(
-                                onTap: () => context.pop(),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 12.h,
-                                  ).copyWith(right: 12.w),
-                                  child: Icon(
-                                    Icons.arrow_back_ios_new,
-                                    color: AppColors.hintGrey,
-                                    size: 22.sp,
-                                  ),
-                                ),
-                              ),
-                              // Text field
-                              Expanded(
-                                child: TextField(
-                                  controller: _controller,
-                                  focusNode: _focusNode,
-                                  decoration: InputDecoration(
-                                    fillColor: Colors.transparent,
-                                    hintText: 'Input code',
-                                    hintStyle: TextStyle(
-                                      color: AppColors.hintGrey,
-                                      fontSize: 15.sp,
-                                    ),
-                                    border: InputBorder.none,
-                                    isDense: true,
-                                    contentPadding: EdgeInsets.symmetric(
-                                      vertical: 12.h,
-                                    ),
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: 15.sp,
-                                    color: AppColors.textVeryDarkGrey,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 12.w),
-                            ],
+                    child: Row(
+                      children: [
+                        // Back button inside the pill
+                        GestureDetector(
+                          onTap: () => context.pop(),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 12.h,
+                            ).copyWith(right: 12.w),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: AppColors.hintGrey,
+                              size: 22.sp,
+                            ),
                           ),
-                          if (hasMatch) ...[
-                            SizedBox(height: 24.h),
-                            _buildMatchPreview(topMatch),
-                          ],
-                        ],
-                      ),
+                        ),
+                        // Text field
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            focusNode: _focusNode,
+                            decoration: InputDecoration(
+                              fillColor: Colors.transparent,
+                              hintText: 'Input code',
+                              hintStyle: TextStyle(
+                                color: AppColors.hintGrey,
+                                fontSize: 15.sp,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 12.h,
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              color: AppColors.textVeryDarkGrey,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                      ],
                     ),
                   ),
                 ),
@@ -175,7 +200,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!hasMatch) ...[
+                  if (!hasQuery) ...[
                     SizedBox(height: 20.h),
                     // ── Recent searches header ─────────────────────────────
                     Padding(
@@ -210,21 +235,51 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                     SizedBox(height: 12.h),
                   ],
 
-                  // ── List ───────────────────────────────────────────────
+                  // ── List / Loader ───────────────────────────────────────────────
                   Expanded(
-                    child: ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      itemCount: _recentSearches.length,
-                      itemBuilder: (context, index) {
-                        if (hasMatch &&
-                            _recentSearches[index].$1 == topMatch?.code) {
-                          return const SizedBox.shrink();
-                        }
-
-                        final (code, description) = _recentSearches[index];
-                        return _searchItem(code, description);
-                      },
-                    ),
+                    child: _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : hasQuery && _searchResults.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'No results found for "$query"',
+                                  style: TextStyle(
+                                    fontSize: 15.sp,
+                                    color: AppColors.textMediumGrey,
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                                itemCount: hasQuery
+                                    ? _searchResults.length
+                                    : _recentSearches.length,
+                                itemBuilder: (context, index) {
+                                  if (hasQuery) {
+                                    final result = _searchResults[index];
+                                    return _searchItem(
+                                      result.code,
+                                      result.faultDescription.isNotEmpty
+                                          ? result.faultDescription
+                                          : result.primaryCause,
+                                      isRecent: false,
+                                      priority: result.priority,
+                                    );
+                                  } else {
+                                    final (code, description) =
+                                        _recentSearches[index];
+                                    return _searchItem(
+                                      code,
+                                      description,
+                                      isRecent: true,
+                                    );
+                                  }
+                                },
+                              ),
                   ),
                 ],
               ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
@@ -235,17 +290,32 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
     );
   }
 
-  Widget _searchItem(String code, String description) {
+  Widget _searchItem(
+    String code,
+    String description, {
+    required bool isRecent,
+    String? priority,
+  }) {
+    DiagnosticSeverity? severity;
+    if (priority != null) {
+      switch (priority.toLowerCase()) {
+        case 'critical':
+        case 'high':
+          severity = DiagnosticSeverity.critical;
+          break;
+        case 'warning':
+        case 'medium':
+          severity = DiagnosticSeverity.warning;
+          break;
+        case 'info':
+        case 'low':
+        default:
+          severity = DiagnosticSeverity.info;
+      }
+    }
+
     return InkWell(
-      onTap: () {
-        final issue = IssueDatabase.getIssue(code);
-        if (issue != null) {
-          context.pushNamed(AppRoutes.issueDetail, extra: issue);
-        } else {
-          _controller.text = code;
-          _focusNode.unfocus();
-        }
-      },
+      onTap: () => _onResultTapped(code),
       splashColor: AppColors.primaryDisabled.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(8.r),
       child: Padding(
@@ -259,13 +329,40 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    code,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        code,
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                      if (severity != null) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 2.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: severity.bgColor,
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Text(
+                            severity.label == 'HIGH'
+                                ? 'CRITICAL'
+                                : severity.label.toUpperCase(),
+                            style: TextStyle(
+                              color: severity.color,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   SizedBox(height: 3.h),
                   Text(
@@ -279,99 +376,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMatchPreview(DiagnosticIssue issue) {
-    return GestureDetector(
-      onTap: () => context.pushNamed(AppRoutes.issueDetail, extra: issue),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        color: Colors.transparent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  issue.code,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.hintGrey,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                // Severity tag
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: issue.severity.color,
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Text(
-                    issue.severity.label == 'HIGH'
-                        ? 'HIGH THREATS'
-                        : issue.severity.label,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16.sp,
-                  color: AppColors.hintGrey,
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              issue.title,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              issue.description,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textVeryDarkGrey,
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              "What's Happening",
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              issue.recommendedAction,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textVeryDarkGrey,
-                height: 1.4,
-              ),
-            ),
+            SvgPicture.asset(Assets.arrowRight),
           ],
         ),
       ),

@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
-// import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:flutter/foundation.dart';
 import '../config/api_config.dart';
 import '../utils/shared_prefs_helper.dart';
+import 'token_refresh_interceptor.dart';
 
 class ApiService {
   final Dio _dio;
@@ -20,6 +21,7 @@ class ApiService {
         ),
       ) {
     _dio.interceptors.addAll([
+      // 1. Attach the stored access token to every outgoing request.
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = _prefs.getToken();
@@ -35,15 +37,9 @@ class ApiService {
           return handler.next(e);
         },
       ),
-      // PrettyDioLogger(
-      //   requestHeader: true,
-      //   requestBody: true,
-      //   responseBody: true,
-      //   responseHeader: false,
-      //   error: true,
-      //   compact: true,
-      //   maxWidth: 90,
-      // ),
+      // 2. Intercept 401s, refresh the token, and retry the original request.
+      TokenRefreshInterceptor(_dio, _prefs),
+      // 3. Log all traffic (after refresh so retried requests are also logged).
       LogInterceptor(
         request: true,
         requestHeader: true,
@@ -51,6 +47,9 @@ class ApiService {
         responseHeader: true,
         responseBody: true,
         error: true,
+        logPrint: (Object object) {
+          debugPrint(object.toString());
+        },
       ),
     ]);
   }

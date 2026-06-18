@@ -273,8 +273,13 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.issueDetail,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
-          final issue = state.extra as DiagnosticIssue;
-          return IssueDetailScreen(issue: issue);
+          final extra = state.extra;
+          if (extra is DiagnosticIssue) {
+            return IssueDetailScreen(issueCode: extra.code, initialIssue: extra);
+          } else if (extra is String) {
+            return IssueDetailScreen(issueCode: extra);
+          }
+          return const Scaffold(body: Center(child: Text('Invalid route arguments')));
         },
       ),
 

@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:rapid_app/core/config/api_config.dart';
 import 'package:rapid_app/core/models/api_response.dart';
 import 'package:rapid_app/core/services/api_service.dart';

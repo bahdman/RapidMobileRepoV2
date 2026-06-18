@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +10,8 @@ import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
-import 'package:rapid_app/core/config/issue_database.dart';
+import 'package:rapid_app/core/models/issue.dart';
+import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/obd_scan_bloc.dart';
 import 'package:rapid_app/route_names.dart';
 
 class VehicleReportScreen extends StatefulWidget {
@@ -23,23 +25,7 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scoreAnimation;
-  static const int _targetScore = 72;
-
-  static const _issues = [
-    _Issue(
-      'P0420',
-      'Critical',
-      'Software Incapability with TCM',
-      _Severity.critical,
-    ),
-    _Issue(
-      'P0171',
-      'WARNING',
-      'Software Incapability with TCM',
-      _Severity.warning,
-    ),
-    _Issue('P0456', 'INFO', 'Software Incapability with TCM', _Severity.info),
-  ];
+  int _score = 100;
 
   @override
   void initState() {
@@ -48,12 +34,19 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    _scoreAnimation = Tween<double>(begin: 0, end: _targetScore.toDouble())
-        .animate(CurvedAnimation(
-          parent: _controller,
-          curve: Curves.easeOutQuart,
-        ));
-    _controller.forward();
+    _scoreAnimation = Tween<double>(begin: 0, end: 100).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutQuart),
+    );
+
+    // Initial setup based on current bloc state
+    final scanState = context.read<ObdScanBloc>().state;
+    if (scanState is ObdScanLoaded) {
+      _score = scanState.healthScore;
+      _scoreAnimation = Tween<double>(begin: 0, end: _score.toDouble()).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutQuart),
+      );
+      _controller.forward();
+    }
   }
 
   @override
@@ -62,169 +55,276 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
     super.dispose();
   }
 
+  String _getScoreLabel(int score) {
+    if (score >= 90) return 'Excellent';
+    if (score >= 70) return 'Fair';
+    return 'Poor';
+  }
+
+  Color _getScoreColor(int score) {
+    if (score >= 90) return AppColors.green;
+    if (score >= 70) return AppColors.yellow;
+    return AppColors.red;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       appBar: const RapidAppBar(title: 'Vehicle Report', showBackButton: false),
       body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(height: 20.h),
-            // ── Scan Complete badge ────────────────────────────────────
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: AppColors.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(Assets.checkCircleGreen),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Scan Complete',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.green,
+        child: BlocListener<ObdScanBloc, ObdScanState>(
+          listener: (context, state) {
+            if (state is ObdScanLoaded) {
+              setState(() {
+                _score = state.healthScore;
+                _scoreAnimation = Tween<double>(
+                  begin: 0,
+                  end: _score.toDouble(),
+                ).animate(
+                  CurvedAnimation(parent: _controller, curve: Curves.easeOutQuart),
+                );
+              });
+              _controller.forward(from: 0);
+            }
+          },
+          child: BlocBuilder<ObdScanBloc, ObdScanState>(
+            builder: (context, state) {
+              if (state is ObdScanning || state is ObdScanInitial) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(color: AppColors.primary),
+                      SizedBox(height: 24.h),
+                      Text(
+                        'Generating Report...',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textVeryDarkGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (state is ObdScanError) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.w),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 48.w, color: AppColors.red),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'Failed to generate scan report',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textVeryDarkGrey,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          state.message,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: AppColors.textMediumGrey,
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+                        RapidButton(
+                          text: 'Back to Dashboard',
+                          onPressed: () {
+                            int count = 0;
+                            Navigator.of(context).popUntil((_) => count++ >= 2);
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
+                );
+              }
 
-            SizedBox(height: 20.h),
+              final List<DiagnosticIssue> issues =
+                  state is ObdScanLoaded ? state.issues : [];
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Health Score card ──────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        vertical: 32.h,
-                        horizontal: 20.w,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24.r),
-                        border: Border.all(color: AppColors.borderColor),
-                      ),
+              return Column(
+                children: [
+                  SizedBox(height: 20.h),
+                  // ── Scan Complete badge ────────────────────────────────────
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(Assets.checkCircleGreen),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Scan Complete',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 20.h),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // ── Health Score card ──────────────────────────────
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                              vertical: 32.h,
+                              horizontal: 20.w,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24.r),
+                              border: Border.all(color: AppColors.borderColor),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'HEALTH SCORE',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.hintGrey,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                SizedBox(height: 24.h),
+                                SizedBox(
+                                  width: 200.w,
+                                  height: 180.w,
+                                  child: AnimatedBuilder(
+                                    animation: _scoreAnimation,
+                                    builder: (context, child) {
+                                      final scoreVal = _scoreAnimation.value.toInt();
+                                      final scoreColor = _getScoreColor(scoreVal);
+                                      return CustomPaint(
+                                        painter: _GaugePainter(
+                                          score: _scoreAnimation.value,
+                                          color: scoreColor,
+                                        ),
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                '$scoreVal',
+                                                style: TextStyle(
+                                                  fontSize: 56.sp,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: scoreColor,
+                                                  height: 1,
+                                                ),
+                                              ),
+                                              Text(
+                                                _getScoreLabel(scoreVal),
+                                                style: TextStyle(
+                                                  fontSize: 14.sp,
+                                                  color: const Color(0xFF9EA6B0),
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: 32.h),
+
+                          // ── Detected Issues header ─────────────────────────
                           Text(
-                            'HEALTH SCORE',
+                            'Detected Issues (${issues.length})',
                             style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.hintGrey,
-                              letterSpacing: 1.2,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textVeryDarkGrey,
                             ),
                           ),
-                          SizedBox(height: 24.h),
-                          SizedBox(
-                            width: 200.w,
-                            height: 180.w,
-                            child: AnimatedBuilder(
-                              animation: _scoreAnimation,
-                              builder: (context, child) {
-                                return CustomPaint(
-                                  painter: _GaugePainter(
-                                    score: _scoreAnimation.value,
+
+                          SizedBox(height: 16.h),
+
+                          // ── Issue cards ────────────────────────────────────
+                          if (issues.isEmpty)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24.h),
+                              child: Center(
+                                child: Text(
+                                  'No issues detected!',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    color: AppColors.textMediumGrey,
                                   ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '${_scoreAnimation.value.toInt()}',
-                                          style: TextStyle(
-                                            fontSize: 56.sp,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppColors.yellow,
-                                            height: 1,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Fair',
-                                          style: TextStyle(
-                                            fontSize: 14.sp,
-                                            color: const Color(0xFF9EA6B0),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
+                                ),
+                              ),
+                            )
+                          else
+                            ...issues.map((issue) {
+                              return _issueCard(
+                                issue,
+                                onTap: () {
+                                  context.pushNamed(
+                                    AppRoutes.issueDetail,
+                                    extra: issue,
+                                  );
+                                },
+                              );
+                            }),
+
+                          SizedBox(height: 32.h),
                         ],
                       ),
                     ),
+                  ),
 
-                    SizedBox(height: 32.h),
-
-                    // ── Detected Issues header ─────────────────────────
-                    Text(
-                      'Detected Issues (${_issues.length})',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textVeryDarkGrey,
-                      ),
+                  // ── Back to Dashboard button ───────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
+                    child: RapidButton(
+                      text: 'Back to Dashboard',
+                      onPressed: () {
+                        int count = 0;
+                        Navigator.of(context).popUntil((_) => count++ >= 2);
+                      },
                     ),
-
-                    SizedBox(height: 16.h),
-
-                    // ── Issue cards ────────────────────────────────────
-                    ..._issues.map((issue) {
-                      return _issueCard(
-                        issue,
-                        onTap: () {
-                          final diagnosticIssue = IssueDatabase.getIssue(
-                            issue.code,
-                          );
-                          if (diagnosticIssue != null) {
-                            context.pushNamed(
-                              AppRoutes.issueDetail,
-                              extra: diagnosticIssue,
-                            );
-                          }
-                        },
-                      );
-                    }),
-
-                    SizedBox(height: 32.h),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Back to Dashboard button ───────────────────────────────
-            Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
-              child: RapidButton(
-                text: 'Back to Dashboard',
-                onPressed: () {
-                  int count = 0;
-                  Navigator.of(context).popUntil((_) => count++ >= 2);
-                },
-              ),
-            ),
-          ],
-        ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+                  ),
+                ],
+              ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
+            },
+          ),
+        ),
       ),
     );
   }
 
-  Widget _issueCard(_Issue issue, {VoidCallback? onTap}) {
+  Widget _issueCard(DiagnosticIssue issue, {VoidCallback? onTap}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: InkWell(
@@ -273,18 +373,18 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          issue.label,
+                          issue.severity.label == 'HIGH' ? 'CRITICAL' : issue.severity.label.toUpperCase(),
                           style: TextStyle(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w700,
-                            color: issue.severity.labelColor,
+                            color: issue.severity.color,
                           ),
                         ),
                       ],
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      issue.description,
+                      issue.title,
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
@@ -304,47 +404,14 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
   }
 }
 
-// ── Data models ──────────────────────────────────────────────────────────────
-
-enum _Severity { critical, warning, info }
-
-extension _SeverityX on _Severity {
-  Color get bgColor => switch (this) {
-    _Severity.critical => const Color(0xFFFFD3CC),
-    _Severity.warning => const Color(0xFFFFF8CD),
-    _Severity.info => const Color(0xFFCCDCEF),
-  };
-
-  Color get labelColor => switch (this) {
-    _Severity.critical => AppColors.red,
-    _Severity.warning => AppColors.yellow,
-    _Severity.info => AppColors.blue,
-  };
-
-  String get icon => switch (this) {
-    _Severity.critical => Assets.danger,
-    _Severity.warning => Assets.warningTriangle,
-    _Severity.info => Assets.infoCircleBlue,
-  };
-}
-
-class _Issue {
-  final String code;
-  final String label;
-  final String description;
-  final _Severity severity;
-
-  const _Issue(this.code, this.label, this.description, this.severity);
-}
-
 // ── Health gauge painter ─────────────────────────────────────────────────────
 
 class _GaugePainter extends CustomPainter {
   final double score;
+  final Color color;
 
-  const _GaugePainter({required this.score});
+  const _GaugePainter({required this.score, required this.color});
 
-  // Full 360° circle starting from the top (-90°)
   static const double _startDeg = -90;
   static const double _sweepDeg = 360;
 
@@ -365,10 +432,10 @@ class _GaugePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawArc(rect, startRad, totalRad, false, trackPaint);
 
-    // Fill (Bright Yellow/Gold as per design)
+    // Fill
     final fillRad = totalRad * (score / 100);
     final fillPaint = Paint()
-      ..color = AppColors.yellow
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.w
       ..strokeCap = StrokeCap.round;
@@ -376,5 +443,5 @@ class _GaugePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_GaugePainter old) => old.score != score;
+  bool shouldRepaint(_GaugePainter old) => old.score != score || old.color != color;
 }
