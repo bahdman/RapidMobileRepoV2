@@ -63,9 +63,7 @@ enum NotificationType { critical, settings, info, success }
 
 // Bloc
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
-  final ApiService _apiService;
-
-  NotificationBloc(this._apiService) : super(NotificationInitial()) {
+  NotificationBloc(ApiService apiService) : super(NotificationInitial()) {
     on<LoadNotifications>((event, emit) async {
       emit(NotificationLoading());
       // Simulate network delay

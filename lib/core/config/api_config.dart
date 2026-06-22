@@ -58,4 +58,20 @@ class ApiConfig {
   // OBD Search
   static const String obdSearch = '/api/ObdSearch/search';
   static String obdCodeDetail(String code) => '/api/ObdSearch/code/$code';
+  static const String obdSearchHistory = '/api/ObdSearch/history';
+
+  // Device Push Notifications
+  static const String registerPushToken = '/api/Device/RegisterPushNotificationToken';
+  static const String deactivatePushToken = '/api/Device/DeactivatePushNotificationToken';
+
+  // User Profile
+  static const String userProfile = '/api/User/profile';
+  static const String updateUserProfile = '/api/User/updateProfile';
+
+  // Schedules
+  static const String createSchedule = '/api/Schedule/CreateSchedule';
+  static const String getAllSchedules = '/api/Schedule/GetAllSchedules';
+  static String getSchedule(String id) => '/api/Schedule/GetSchedule/$id';
+  static String updateSchedule(String id) => '/api/Schedule/UpdateSchedule/$id';
+  static const String deleteSchedules = '/api/Schedule/DeleteSchedules';
 }

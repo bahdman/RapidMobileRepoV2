@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -9,6 +10,27 @@ import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/core/widgets/rapid_text_field.dart';
 import 'package:rapid_app/features/account/presentation/widgets/delete_schedule_bottom_sheet.dart';
+import 'package:rapid_app/core/services/schedule_service.dart';
+
+const Map<String, int> _dayMap = {
+  'Sun': 0,
+  'Mon': 1,
+  'Tue': 2,
+  'Wed': 3,
+  'Thu': 4,
+  'Fri': 5,
+  'Sat': 6,
+};
+
+const Map<int, String> _dayReverseMap = {
+  0: 'Sunday',
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
+};
 
 class SchedulesScreen extends StatefulWidget {
   const SchedulesScreen({super.key});
@@ -31,23 +53,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
   final GlobalKey _dateFieldKey = GlobalKey();
   final GlobalKey _timeFieldKey = GlobalKey();
 
-  final _scanSessions = [
-    _ScheduleItem(
-      title: 'Morning Check',
-      subtitle: 'Monday & Thursday',
-      time: '7:00pm',
-    ),
-    _ScheduleItem(title: 'Weekend Scan', subtitle: 'Saturday', time: '10:00am'),
-  ];
-
-  final _repairSessions = [
-    _ScheduleItem(
-      title: 'Oil Change',
-      subtitle: 'March 15, 2026',
-      time: '7:00pm',
-      description: 'Due every 5,000 miles',
-    ),
-  ];
+  List<_ScheduleItem> _scanSessions = [];
+  List<_ScheduleItem> _repairSessions = [];
+  bool _isLoadingSchedules = false;
 
   @override
   void initState() {
@@ -58,6 +66,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
         setState(() {});
       }
     });
+    _fetchSchedules();
   }
 
   @override
@@ -68,6 +77,246 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     _noteCtrl.dispose();
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchSchedules() async {
+    setState(() {
+      _isLoadingSchedules = true;
+    });
+    try {
+      final scheduleService = context.read<ScheduleService>();
+      final schedules = await scheduleService.getAllSchedules();
+      
+      final List<_ScheduleItem> scans = [];
+      final List<_ScheduleItem> repairs = [];
+
+      for (var schedule in schedules) {
+        final isScan = schedule.note.startsWith('[Scan]');
+        
+        if (isScan) {
+          final daysList = schedule.entries.map((e) => _dayReverseMap[e.day] ?? 'Monday').toList();
+          final daysStr = daysList.join(' & ');
+          
+          String timeStr = '08:00 AM';
+          if (schedule.entries.isNotEmpty) {
+            try {
+              final parsedTime = DateTime.parse(schedule.entries.first.time).toLocal();
+              final isPm = parsedTime.hour >= 12;
+              final hour = parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12;
+              timeStr = '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
+            } catch (_) {}
+          }
+
+          scans.add(_ScheduleItem(
+            id: schedule.id,
+            title: schedule.name,
+            subtitle: daysStr,
+            time: timeStr,
+          ));
+        } else {
+          String noteContent = schedule.note.replaceFirst('[Repair]', '').trim();
+          
+          String dateStr = '';
+          String timeStr = '08:00 AM';
+          if (schedule.entries.isNotEmpty) {
+            try {
+              final parsedTime = DateTime.parse(schedule.entries.first.time).toLocal();
+              final isPm = parsedTime.hour >= 12;
+              final hour = parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12;
+              timeStr = '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
+              
+              final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+              dateStr = '${months[parsedTime.month - 1]} ${parsedTime.day}, ${parsedTime.year}';
+            } catch (_) {}
+          }
+
+          repairs.add(_ScheduleItem(
+            id: schedule.id,
+            title: schedule.name,
+            subtitle: dateStr,
+            time: timeStr,
+            description: noteContent.isNotEmpty ? noteContent : null,
+          ));
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _scanSessions = scans;
+          _repairSessions = repairs;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching schedules: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingSchedules = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deleteSchedule(String id) async {
+    try {
+      final scheduleService = context.read<ScheduleService>();
+      final success = await scheduleService.deleteSchedules([id]);
+      if (success) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Schedule deleted successfully!')),
+          );
+        }
+        _fetchSchedules();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to delete schedule.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting schedule: $e')),
+        );
+      }
+    }
+  }
+
+  DateTime _parseDate(String dateStr) {
+    try {
+      final parts = dateStr.split('/');
+      if (parts.length == 3) {
+        int month = int.parse(parts[0]);
+        int day = int.parse(parts[1]);
+        int year = 2000 + int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (_) {}
+    return DateTime.now();
+  }
+
+  TimeOfDay _parseTimeOfDay(String timeStr) {
+    try {
+      final cleanStr = timeStr.trim().toUpperCase();
+      final parts = cleanStr.split(' ');
+      if (parts.length == 2) {
+        final timeParts = parts[0].split(':');
+        int hour = int.parse(timeParts[0]);
+        int minute = int.parse(timeParts[1]);
+        final isPm = parts[1] == 'PM';
+        if (isPm && hour != 12) {
+          hour += 12;
+        } else if (!isPm && hour == 12) {
+          hour = 0;
+        }
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+    } catch (_) {}
+    return const TimeOfDay(hour: 8, minute: 0);
+  }
+
+  Future<void> _saveSchedule() async {
+    final name = _sessionNameCtrl.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a session name')),
+      );
+      return;
+    }
+
+    final isScan = _tabController.index == 0;
+    try {
+      final scheduleService = context.read<ScheduleService>();
+      
+      List<ScheduleEntry> entries = [];
+      String note = '';
+
+      if (isScan) {
+        note = '[Scan]';
+        if (_selectedDays.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select at least one day')),
+          );
+          return;
+        }
+        if (_timeCtrl.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select a time')),
+          );
+          return;
+        }
+
+        final parsedTime = _parseTimeOfDay(_timeCtrl.text);
+        final now = DateTime.now();
+        final targetTime = DateTime(now.year, now.month, now.day, parsedTime.hour, parsedTime.minute);
+
+        entries = _selectedDays.map((dayStr) {
+          final dayIndex = _dayMap[dayStr] ?? 1;
+          return ScheduleEntry(
+            id: '',
+            day: dayIndex,
+            time: targetTime.toUtc().toIso8601String(),
+          );
+        }).toList();
+      } else {
+        final rawNote = _noteCtrl.text.trim();
+        note = rawNote.isNotEmpty ? '[Repair] $rawNote' : '[Repair]';
+        
+        if (_dateCtrl.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select a date')),
+          );
+          return;
+        }
+        if (_timeCtrl.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select a time')),
+          );
+          return;
+        }
+
+        final parsedDate = _parseDate(_dateCtrl.text);
+        final parsedTime = _parseTimeOfDay(_timeCtrl.text);
+        final targetTime = DateTime(parsedDate.year, parsedDate.month, parsedDate.day, parsedTime.hour, parsedTime.minute);
+
+        entries = [
+          ScheduleEntry(
+            id: '',
+            day: targetTime.weekday % 7,
+            time: targetTime.toUtc().toIso8601String(),
+          )
+        ];
+      }
+
+      final created = await scheduleService.createSchedule(
+        name: name,
+        note: note,
+        entries: entries,
+      );
+
+      if (created != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Schedule created successfully!')),
+        );
+        setState(() {
+          _isCreating = false;
+          _sessionNameCtrl.clear();
+          _dateCtrl.clear();
+          _timeCtrl.clear();
+          _noteCtrl.clear();
+          _selectedDays.clear();
+        });
+        _fetchSchedules();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save schedule: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -137,14 +386,16 @@ class _SchedulesScreenState extends State<SchedulesScreen>
 
             // ── Scrollable tab content ──
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildSessionList(_scanSessions),
-                  _buildSessionList(_repairSessions),
-                ],
-              ),
+              child: _isLoadingSchedules
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildSessionList(_scanSessions),
+                        _buildSessionList(_repairSessions),
+                      ],
+                    ),
             ),
 
             // ── Footer ──
@@ -378,11 +629,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
             width: double.infinity,
             height: 56.h,
             child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _isCreating = false;
-                });
-              },
+              onPressed: _saveSchedule,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
@@ -602,7 +849,12 @@ class _SchedulesScreenState extends State<SchedulesScreen>
             ),
           ),
           IconButton(
-            onPressed: () => showDeleteScheduleBottomSheet(context),
+            onPressed: () async {
+              final confirmed = await showDeleteScheduleBottomSheet(context);
+              if (confirmed == true) {
+                _deleteSchedule(item.id);
+              }
+            },
             icon: SvgPicture.asset(Assets.binRed),
           ),
         ],
@@ -935,12 +1187,14 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
 }
 
 class _ScheduleItem {
+  final String id;
   final String title;
   final String subtitle;
   final String time;
   final String? description;
 
   const _ScheduleItem({
+    required this.id,
     required this.title,
     required this.subtitle,
     required this.time,

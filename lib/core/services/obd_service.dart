@@ -27,11 +27,62 @@ class ObdSearchResult {
   }
 }
 
+class ObdHistoryItem {
+  final String query;
+  final String searchType;
+  final DateTime searchedAt;
+
+  const ObdHistoryItem({
+    required this.query,
+    required this.searchType,
+    required this.searchedAt,
+  });
+
+  factory ObdHistoryItem.fromJson(Map<String, dynamic> json) {
+    return ObdHistoryItem(
+      query: json['query'] as String? ?? '',
+      searchType: json['searchType'] as String? ?? '',
+      searchedAt: json['searchedAt'] != null
+          ? DateTime.parse(json['searchedAt'] as String)
+          : DateTime.now(),
+    );
+  }
+}
+
 class ObdService {
   final ApiService _apiService;
   final Map<String, DiagnosticIssue> _cache = {};
 
   ObdService(this._apiService);
+
+  Future<List<ObdHistoryItem>> getSearchHistory({int limit = 50}) async {
+    try {
+      final response = await _apiService.get(
+        ApiConfig.obdSearchHistory,
+        queryParameters: {'limit': limit},
+      );
+
+      final data = response.data;
+      if (data == null) return [];
+
+      if (data is List) {
+        return data
+            .map((item) => ObdHistoryItem.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+
+      if (data is Map<String, dynamic> && data['data'] is List) {
+        final list = data['data'] as List;
+        return list
+            .map((item) => ObdHistoryItem.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   Future<List<ObdSearchResult>> searchCodes(String query) async {
     try {

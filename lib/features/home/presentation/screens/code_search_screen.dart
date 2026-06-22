@@ -30,6 +30,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
   Timer? _debounce;
   List<ObdSearchResult> _searchResults = [];
   bool _isLoading = false;
+  List<ObdHistoryItem> _dynamicRecentSearches = [];
 
   static const _recentSearches = [
     ('P0A01', 'Drive Motor A Inverter Performance'),
@@ -41,6 +42,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSearchHistory();
     if (widget.initialSearchQuery != null) {
       _controller.text = widget.initialSearchQuery!;
       _performSearch(widget.initialSearchQuery!);
@@ -63,6 +65,20 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
         });
       }
     });
+  }
+
+  Future<void> _loadSearchHistory() async {
+    try {
+      final obdService = context.read<ObdService>();
+      final history = await obdService.getSearchHistory(limit: 50);
+      if (mounted) {
+        setState(() {
+          _dynamicRecentSearches = history;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading search history: $e');
+    }
   }
 
   @override
@@ -257,7 +273,9 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                                 itemCount: hasQuery
                                     ? _searchResults.length
-                                    : _recentSearches.length,
+                                    : (_dynamicRecentSearches.isNotEmpty
+                                        ? _dynamicRecentSearches.length
+                                        : _recentSearches.length),
                                 itemBuilder: (context, index) {
                                   if (hasQuery) {
                                     final result = _searchResults[index];
@@ -270,13 +288,22 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                                       priority: result.priority,
                                     );
                                   } else {
-                                    final (code, description) =
-                                        _recentSearches[index];
-                                    return _searchItem(
-                                      code,
-                                      description,
-                                      isRecent: true,
-                                    );
+                                    if (_dynamicRecentSearches.isNotEmpty) {
+                                      final item = _dynamicRecentSearches[index];
+                                      return _searchItem(
+                                        item.query,
+                                        'Search Type: ${item.searchType}',
+                                        isRecent: true,
+                                      );
+                                    } else {
+                                      final (code, description) =
+                                          _recentSearches[index];
+                                      return _searchItem(
+                                        code,
+                                        description,
+                                        isRecent: true,
+                                      );
+                                    }
                                   }
                                 },
                               ),

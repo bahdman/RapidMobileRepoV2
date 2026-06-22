@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
+import 'package:rapid_app/core/services/obd_connection_service.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
+import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/bluetooth_bloc.dart';
 import 'package:rapid_app/features/home/presentation/screens/code_search_screen.dart';
 import 'package:rapid_app/route_names.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -126,7 +130,9 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
+  @override
   final double maxExtent;
+  @override
   final double minExtent;
   final BuildContext context;
 
@@ -339,7 +345,18 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
           Expanded(
             child: RapidButton(
               text: 'Connect Directly',
-              onPressed: () {},
+              onPressed: () {
+                context.pushNamed(AppRoutes.bluetooth);
+                context.read<BluetoothBloc>().add(
+                  const DeviceSelected(
+                    BluetoothDevice(
+                      id: 'wifi:192.168.0.10:35000',
+                      name: 'WiFi OBD Adapter',
+                      transport: ObdTransport.wifi,
+                    ),
+                  ),
+                );
+              },
               backgroundColor: AppColors.connectDirectBlue,
               textColor: Colors.white,
               fontSize: 13.sp,

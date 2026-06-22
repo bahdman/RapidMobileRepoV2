@@ -1,8 +1,15 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
-import 'package:rapid_app/core/services/api_service.dart';
+import 'dart:async';
 
-// Events
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rapid_app/core/services/obd_connection_service.dart';
+
+// ── Re-export ObdAdapter as the "BluetoothDevice" type the UI already uses ───
+// This keeps the existing screens working with zero UI changes.
+typedef BluetoothDevice = ObdAdapter;
+
+// ── Events ────────────────────────────────────────────────────────────────────
+
 abstract class BluetoothEvent extends Equatable {
   const BluetoothEvent();
   @override
@@ -18,7 +25,24 @@ class DeviceSelected extends BluetoothEvent {
   List<Object?> get props => [device];
 }
 
-// States
+class DisconnectDevice extends BluetoothEvent {}
+
+class _AdaptersUpdated extends BluetoothEvent {
+  final List<BluetoothDevice> devices;
+  const _AdaptersUpdated(this.devices);
+  @override
+  List<Object?> get props => [devices];
+}
+
+class _ConnectionResult extends BluetoothEvent {
+  final ObdConnectionEvent event;
+  const _ConnectionResult(this.event);
+  @override
+  List<Object?> get props => [event];
+}
+
+// ── States ────────────────────────────────────────────────────────────────────
+
 abstract class BluetoothState extends Equatable {
   const BluetoothState();
   @override
@@ -26,6 +50,8 @@ abstract class BluetoothState extends Equatable {
 }
 
 class BluetoothInitial extends BluetoothState {}
+
+class BluetoothPermissionDenied extends BluetoothState {}
 
 class BluetoothSearching extends BluetoothState {}
 
@@ -50,31 +76,111 @@ class BluetoothConnected extends BluetoothState {
   List<Object?> get props => [device];
 }
 
-class BluetoothDevice extends Equatable {
-  final String id;
-  final String name;
-  const BluetoothDevice(this.id, this.name);
+class BluetoothError extends BluetoothState {
+  final String message;
+  const BluetoothError(this.message);
   @override
-  List<Object?> get props => [id, name];
+  List<Object?> get props => [message];
 }
 
-// Bloc
+// ── Bloc ──────────────────────────────────────────────────────────────────────
+
 class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothState> {
-  final ApiService _apiService;
+  final ObdConnectionService _connectionService;
 
-  BluetoothBloc(this._apiService) : super(BluetoothInitial()) {
-    on<StartSearch>((event, emit) async {
-      emit(BluetoothSearching());
-      // Simulate search delay
-      await Future.delayed(const Duration(seconds: 6));
-      emit(const BluetoothDevicesFound([BluetoothDevice('1', 'OBD-II')]));
+  StreamSubscription<List<ObdAdapter>>? _adaptersSub;
+  StreamSubscription<ObdConnectionEvent>? _connectionSub;
+
+  BluetoothBloc(this._connectionService) : super(BluetoothInitial()) {
+    // Internal events piped from service streams
+    on<_AdaptersUpdated>(_onAdaptersUpdated);
+    on<_ConnectionResult>(_onConnectionResult);
+
+    // Public events
+    on<StartSearch>(_onStartSearch);
+    on<DeviceSelected>(_onDeviceSelected);
+    on<DisconnectDevice>(_onDisconnect);
+  }
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  Future<void> _onStartSearch(
+    StartSearch event,
+    Emitter<BluetoothState> emit,
+  ) async {
+    if (state is BluetoothConnecting || state is BluetoothConnected) return;
+
+    // Request permissions first
+    final granted = await _connectionService.requestPermissions();
+    if (!granted) {
+      emit(BluetoothPermissionDenied());
+      return;
+    }
+
+    emit(BluetoothSearching());
+
+    // Subscribe to adapter discovery stream
+    await _adaptersSub?.cancel();
+    _adaptersSub = _connectionService.adaptersStream.listen((adapters) {
+      if (!isClosed) add(_AdaptersUpdated(adapters));
     });
 
-    on<DeviceSelected>((event, emit) async {
-      emit(BluetoothConnecting(event.device));
-      // Simulate connection delay
-      await Future.delayed(const Duration(seconds: 2));
-      emit(BluetoothConnected(event.device));
+    // Subscribe to connection events
+    await _connectionSub?.cancel();
+    _connectionSub = _connectionService.connectionStream.listen((event) {
+      if (!isClosed) add(_ConnectionResult(event));
     });
+
+    // Start scan (returns after timeout)
+    await _connectionService.startScan();
+  }
+
+  void _onAdaptersUpdated(
+    _AdaptersUpdated event,
+    Emitter<BluetoothState> emit,
+  ) {
+    // Don't overwrite connecting/connected states
+    if (state is BluetoothConnecting || state is BluetoothConnected) return;
+    emit(BluetoothDevicesFound(event.devices));
+  }
+
+  Future<void> _onDeviceSelected(
+    DeviceSelected event,
+    Emitter<BluetoothState> emit,
+  ) async {
+    emit(BluetoothConnecting(event.device));
+    try {
+      await _connectionService.connect(event.device);
+      // Connection result will come via _connectionSub → _ConnectionResult
+    } catch (e) {
+      emit(BluetoothError(e.toString()));
+    }
+  }
+
+  void _onConnectionResult(
+    _ConnectionResult event,
+    Emitter<BluetoothState> emit,
+  ) {
+    final e = event.event;
+    if (e.isConnected) {
+      emit(BluetoothConnected(e.adapter));
+    } else if (e.isError) {
+      emit(BluetoothError(e.errorMessage ?? 'Connection failed'));
+    }
+  }
+
+  Future<void> _onDisconnect(
+    DisconnectDevice event,
+    Emitter<BluetoothState> emit,
+  ) async {
+    await _connectionService.disconnect();
+    emit(BluetoothInitial());
+  }
+
+  @override
+  Future<void> close() async {
+    await _adaptersSub?.cancel();
+    await _connectionSub?.cancel();
+    return super.close();
   }
 }

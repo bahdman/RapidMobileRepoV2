@@ -10,10 +10,14 @@ import 'package:rapid_app/core/theme/app_theme.dart';
 import 'package:rapid_app/core/services/api_service.dart';
 import 'package:rapid_app/core/services/auth_event_bus.dart';
 import 'package:rapid_app/core/services/obd_service.dart';
+import 'package:rapid_app/core/services/device_service.dart';
+import 'package:rapid_app/core/services/user_service.dart';
+import 'package:rapid_app/core/services/schedule_service.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/features/notifications/presentation/screens/bloc/notification_bloc.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/bluetooth_bloc.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/obd_scan_bloc.dart';
+import 'package:rapid_app/core/services/obd_connection_service.dart';
 import 'package:rapid_app/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:rapid_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:rapid_app/features/auth/data/repositories/auth_repository_impl.dart';
@@ -28,6 +32,10 @@ void main() async {
   final sharedPrefsHelper = SharedPrefsHelper(prefs);
   final apiService = ApiService(sharedPrefsHelper);
   final obdService = ObdService(apiService);
+  final obdConnectionService = ObdConnectionService();
+  final deviceService = DeviceService(apiService);
+  final userService = UserService(apiService);
+  final scheduleService = ScheduleService(apiService);
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -45,13 +53,25 @@ void main() async {
         RepositoryProvider.value(value: apiService),
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: obdService),
+        RepositoryProvider.value(value: obdConnectionService),
+        RepositoryProvider.value(value: deviceService),
+        RepositoryProvider.value(value: userService),
+        RepositoryProvider.value(value: scheduleService),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => NotificationBloc(apiService)),
-          BlocProvider(create: (context) => BluetoothBloc(apiService)),
-          BlocProvider(create: (context) => ObdScanBloc(obdService)),
-          BlocProvider(create: (context) => AuthBloc(authRepository, sharedPrefsHelper)),
+          BlocProvider(
+            create: (context) => BluetoothBloc(obdConnectionService),
+          ),
+          BlocProvider(
+            create: (context) =>
+                ObdScanBloc(obdService, obdConnectionService),
+          ),
+          BlocProvider(
+            create: (context) =>
+                AuthBloc(authRepository, sharedPrefsHelper),
+          ),
         ],
         child: MainApp(router: router),
       ),

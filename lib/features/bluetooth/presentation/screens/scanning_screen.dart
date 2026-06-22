@@ -123,8 +123,8 @@ class _ScanningScreenState extends State<ScanningScreen>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: AppColors.primary.withOpacity(
-                opacity,
+              color: AppColors.primary.withValues(
+                alpha: opacity,
               ), // Use brand primary for consistency
               width: 2.w,
             ),

@@ -74,6 +74,12 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     } else if (state is BluetoothConnected) {
       title = 'Connected';
       subtitle = 'Device ready to use';
+    } else if (state is BluetoothPermissionDenied) {
+      title = 'Permission Required';
+      subtitle = 'Bluetooth & location access needed';
+    } else if (state is BluetoothError) {
+      title = 'Connection Error';
+      subtitle = state.message;
     }
 
     return Column(
@@ -110,6 +116,14 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       );
     }
 
+    if (state is BluetoothPermissionDenied) {
+      return _permissionDeniedCard(context);
+    }
+
+    if (state is BluetoothError) {
+      return _errorCard(context, state.message);
+    }
+
     if (state is BluetoothDevicesFound ||
         state is BluetoothConnecting ||
         state is BluetoothConnected) {
@@ -124,7 +138,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       return ListView.builder(
         itemCount: devices.length,
         itemBuilder: (context, index) {
-          final device = devices[index];
+          final device = devices[index] as BluetoothDevice;
           return Padding(
             padding: EdgeInsets.only(bottom: 16.h),
             child: _deviceCard(context, device, state),
@@ -134,6 +148,126 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     }
 
     return const SizedBox();
+  }
+
+  Widget _permissionDeniedCard(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(top: 48.h),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: AppColors.borderColor),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.bluetooth_disabled_rounded,
+                    size: 48.w, color: AppColors.textMediumGrey),
+                SizedBox(height: 16.h),
+                Text(
+                  'Bluetooth Permission Denied',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textVeryDarkGrey,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Please allow Bluetooth and Location access in your device settings to scan for OBD adapters.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: AppColors.textMediumGrey,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                GestureDetector(
+                  onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Text(
+                      'Try Again',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _errorCard(BuildContext context, String message) {
+    return Padding(
+      padding: EdgeInsets.only(top: 48.h),
+      child: Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: AppColors.borderColor),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline_rounded,
+                size: 48.w, color: AppColors.tertiaryRed),
+            SizedBox(height: 16.h),
+            Text(
+              'Connection Failed',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textVeryDarkGrey,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: AppColors.textMediumGrey,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            GestureDetector(
+              onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+              child: Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  'Retry Scan',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _deviceCard(
@@ -166,43 +300,90 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.borderColor),
+          border: Border.all(
+            color: isConnected
+                ? AppColors.primary.withValues(alpha: 0.4)
+                : AppColors.borderColor,
+            width: isConnected ? 1.5 : 1,
+          ),
         ),
         child: Row(
           children: [
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: AppColors.greyLight,
+                color: device.isWifi
+                    ? const Color(0xFFEAF4FF)
+                    : AppColors.greyLight,
                 shape: BoxShape.circle,
               ),
-              child: SvgPicture.asset(Assets.bluetoothLightGrey),
+              child: device.isWifi
+                  ? Icon(Icons.wifi_rounded,
+                      size: 22.w, color: AppColors.blue)
+                  : SvgPicture.asset(Assets.bluetoothLightGrey),
             ),
             SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    device.name,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textVeryDarkGrey,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          device.name,
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textVeryDarkGrey,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: device.isWifi
+                              ? const Color(0xFFEAF4FF)
+                              : AppColors.fadedPrimary,
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          device.isWifi ? 'WiFi' : 'BLE',
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w600,
+                            color: device.isWifi
+                                ? AppColors.blue
+                                : AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 4.h),
-                  Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.textMediumGrey,
-                      fontWeight: FontWeight.w400,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: AppColors.textMediumGrey,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      if (device.isBle && device.rssi != null) ...[
+                        SizedBox(width: 8.w),
+                        _rssiIcon(device.rssi!),
+                      ],
+                    ],
                   ),
                 ],
               ),
             ),
+            SizedBox(width: 8.w),
             if (isConnecting)
               SizedBox(
                 width: 24.w,
@@ -221,7 +402,24 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       ),
     );
   }
+
+  Widget _rssiIcon(int rssi) {
+    IconData icon;
+    Color color;
+    if (rssi >= -60) {
+      icon = Icons.signal_wifi_4_bar_rounded;
+      color = AppColors.green;
+    } else if (rssi >= -75) {
+      icon = Icons.network_wifi_3_bar_rounded;
+      color = AppColors.yellow;
+    } else {
+      icon = Icons.network_wifi_1_bar_rounded;
+      color = AppColors.tertiaryRed;
+    }
+    return Icon(icon, size: 16.w, color: color);
+  }
 }
+
 
 class PulsatingBluetoothIcon extends StatelessWidget {
   const PulsatingBluetoothIcon({super.key});
