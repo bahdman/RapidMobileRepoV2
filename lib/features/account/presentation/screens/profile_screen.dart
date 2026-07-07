@@ -10,6 +10,8 @@ import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/services/user_service.dart';
+import 'package:dio/dio.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -55,9 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load profile: $e')),
-        );
+        showGlobalSnackBar('Failed to load profile: ${_getErrorMessage(e)}', isError: true);
       }
     } finally {
       if (mounted) {
@@ -87,16 +87,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
       if (updated != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
+        showGlobalSnackBar('Profile updated successfully!');
         _fetchProfile();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update profile: $e')),
-        );
+        showGlobalSnackBar('Failed to update profile: ${_getErrorMessage(e)}', isError: true);
       }
     } finally {
       if (mounted) {
@@ -241,5 +237,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  String _getErrorMessage(dynamic e) {
+    if (e is DioException) {
+      final response = e.response;
+      if (response != null && response.data is Map<String, dynamic>) {
+        final map = response.data as Map<String, dynamic>;
+        if (map.containsKey('message') && map['message'] != null) {
+          return map['message'].toString();
+        }
+      }
+      return e.message ?? 'A network error occurred';
+    }
+    return e.toString();
   }
 }

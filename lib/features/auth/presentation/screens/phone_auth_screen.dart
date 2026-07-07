@@ -13,9 +13,11 @@ import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:rapid_app/features/auth/data/models/auth_models.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
-  const PhoneAuthScreen({super.key});
+  final String? initialPhoneNumber;
+  const PhoneAuthScreen({super.key, this.initialPhoneNumber});
 
   @override
   State<PhoneAuthScreen> createState() => _PhoneAuthScreenState();
@@ -25,6 +27,14 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusScope = FocusNode();
   String _selectedMethod = 'sms';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialPhoneNumber != null) {
+      _phoneController.text = widget.initialPhoneNumber!;
+    }
+  }
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -54,18 +64,18 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
         ),
         body: SafeArea(
           child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
+             listener: (context, state) {
               if (state is RequestOtpSuccess) {
-                final phone = _phoneController.text.trim();
-                final fullContact = '+234$phone';
-                context.pushNamed(AppRoutes.phoneOtp, extra: {
-                  'challengeId': state.response.challengeId,
-                  'contact': fullContact,
-                });
+                if (ModalRoute.of(context)?.isCurrent == true) {
+                  final phone = _phoneController.text.trim();
+                  final fullContact = '+234$phone';
+                  context.pushNamed(AppRoutes.phoneOtp, extra: {
+                    'challengeId': state.response.challengeId,
+                    'contact': fullContact,
+                  });
+                }
               } else if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                showGlobalSnackBar(state.message, isError: true);
               }
             },
             builder: (context, state) {

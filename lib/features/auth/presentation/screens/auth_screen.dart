@@ -11,6 +11,7 @@ import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/widgets/rapid_auth_animation.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 import 'package:rapid_app/route_names.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -23,7 +24,6 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusScope = FocusNode();
-  bool _isContinuing = false;
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -43,9 +43,7 @@ class _AuthScreenState extends State<AuthScreen> {
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError && state.isApiError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-            );
+            showGlobalSnackBar(state.message, isError: true);
           } else if (state is AuthAuthenticated) {
             context.goNamed(AppRoutes.home);
           } else if (state is AuthRegisterSuccess) {
@@ -131,16 +129,14 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     SizedBox(height: 16.h),
 
-                    // Continue Button
-                    RapidButton(
+                     RapidButton(
                       text: 'Continue',
-                      isLoading: _isContinuing,
-                      onPressed: () async {
-                        setState(() => _isContinuing = true);
-                        await Future.delayed(const Duration(seconds: 3));
-                        if (!mounted) return;
-                        setState(() => _isContinuing = false);
-                        context.pushNamed(AppRoutes.phoneAuth);
+                      onPressed: () {
+                        final phone = _phoneController.text.trim();
+                        context.pushNamed(
+                          AppRoutes.phoneAuth,
+                          extra: phone,
+                        );
                       },
                     ),
 

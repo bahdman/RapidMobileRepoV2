@@ -24,13 +24,14 @@ import 'package:rapid_app/features/auth/data/repositories/auth_repository_impl.d
 import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:rapid_app/route_names.dart';
 import 'package:rapid_app/router.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();
   final sharedPrefsHelper = SharedPrefsHelper(prefs);
-  final apiService = ApiService(sharedPrefsHelper);
+  final apiService = ApiService(sharedPrefsHelper, prefs);
   final obdService = ObdService(apiService);
   final obdConnectionService = ObdConnectionService();
   final deviceService = DeviceService(apiService);
@@ -44,7 +45,9 @@ void main() async {
 
   // Auth Dependencies
   final authRemoteDataSource = AuthRemoteDataSourceImpl(apiService);
-  final AuthRepository authRepository = AuthRepositoryImpl(authRemoteDataSource);
+  final AuthRepository authRepository = AuthRepositoryImpl(
+    authRemoteDataSource,
+  );
 
   runApp(
     MultiRepositoryProvider(
@@ -65,12 +68,10 @@ void main() async {
             create: (context) => BluetoothBloc(obdConnectionService),
           ),
           BlocProvider(
-            create: (context) =>
-                ObdScanBloc(obdService, obdConnectionService),
+            create: (context) => ObdScanBloc(obdService, obdConnectionService),
           ),
           BlocProvider(
-            create: (context) =>
-                AuthBloc(authRepository, sharedPrefsHelper),
+            create: (context) => AuthBloc(authRepository, sharedPrefsHelper, userService),
           ),
         ],
         child: MainApp(router: router),
@@ -149,6 +150,7 @@ class _MainAppState extends State<MainApp> {
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp.router(
+          scaffoldMessengerKey: scaffoldMessengerKey,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
@@ -159,4 +161,3 @@ class _MainAppState extends State<MainApp> {
     );
   }
 }
-

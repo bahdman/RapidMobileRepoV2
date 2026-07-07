@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:rapid_app/core/config/api_config.dart';
 import 'package:rapid_app/core/services/api_service.dart';
+import 'package:rapid_app/core/services/cache_service.dart';
 
 class ScheduleEntry {
   final String id;
@@ -81,6 +82,10 @@ class ScheduleService {
           'entries': entries.map((e) => e.toJson()).toList(),
         },
       );
+      
+      // Invalidate all schedules cache
+      await _apiService.invalidateCache(ApiConfig.getAllSchedules);
+
       final data = response.data;
       if (data == null) return null;
 
@@ -98,9 +103,17 @@ class ScheduleService {
   }
 
   /// Gets all schedules.
-  Future<List<ScheduleModel>> getAllSchedules() async {
+  Future<List<ScheduleModel>> getAllSchedules({bool refresh = false}) async {
     try {
-      final response = await _apiService.get(ApiConfig.getAllSchedules);
+      final response = await _apiService.get(
+        ApiConfig.getAllSchedules,
+        options: CacheOptions.build(
+          cache: true,
+          policy: CachePolicy.memory,
+          duration: const Duration(minutes: 15),
+          refresh: refresh,
+        ),
+      );
       final data = response.data;
       if (data == null) return [];
 
@@ -121,9 +134,17 @@ class ScheduleService {
   }
 
   /// Gets a single schedule by id.
-  Future<ScheduleModel?> getSchedule(String id) async {
+  Future<ScheduleModel?> getSchedule(String id, {bool refresh = false}) async {
     try {
-      final response = await _apiService.get(ApiConfig.getSchedule(id));
+      final response = await _apiService.get(
+        ApiConfig.getSchedule(id),
+        options: CacheOptions.build(
+          cache: true,
+          policy: CachePolicy.memory,
+          duration: const Duration(minutes: 15),
+          refresh: refresh,
+        ),
+      );
       final data = response.data;
       if (data == null) return null;
 
@@ -156,6 +177,11 @@ class ScheduleService {
           'entries': entries.map((e) => e.toJson()).toList(),
         },
       );
+
+      // Invalidate relevant cache keys
+      await _apiService.invalidateCache(ApiConfig.getAllSchedules);
+      await _apiService.invalidateCache(ApiConfig.getSchedule(id));
+
       final data = response.data;
       if (data == null) return null;
 
@@ -181,6 +207,11 @@ class ScheduleService {
           'ids': ids,
         },
       );
+      
+      // Invalidate relevant cache keys
+      await _apiService.invalidateCache(ApiConfig.getAllSchedules);
+      await _apiService.invalidateCache('/api/Schedule/GetSchedule/');
+
       final data = response.data;
       if (data == null) return false;
 

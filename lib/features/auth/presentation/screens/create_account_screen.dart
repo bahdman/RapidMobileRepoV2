@@ -11,7 +11,8 @@ import 'package:rapid_app/core/widgets/rapid_text_field.dart';
 import 'package:rapid_app/route_names.dart';
 
 class CreateAccountScreen extends StatefulWidget {
-  const CreateAccountScreen({super.key});
+  final String? onboardingToken;
+  const CreateAccountScreen({super.key, this.onboardingToken});
 
   @override
   State<CreateAccountScreen> createState() => _CreateAccountScreenState();
@@ -278,9 +279,17 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   text: 'Continue',
                   onPressed: _isFormComplete
                       ? () {
+                          final dob = '${_selectedYear!}-${_selectedMonth.toString().padLeft(2, '0')}-${_selectedDay.toString().padLeft(2, '0')}';
                           context.pushNamed(
                             AppRoutes.createPassword,
-                            extra: AppRoutes.accountSuccess,
+                            extra: {
+                              'onboardingToken': widget.onboardingToken,
+                              'firstName': _firstNameController.text.trim(),
+                              'lastName': _lastNameController.text.trim(),
+                              'dob': dob,
+                              'acceptTerms': _agreedToTerms,
+                              'nextRoute': AppRoutes.accountSuccess,
+                            },
                           );
                         }
                       : null,

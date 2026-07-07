@@ -10,6 +10,7 @@ import 'package:rapid_app/features/auth/data/models/auth_models.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 import 'package:rapid_app/route_names.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
@@ -51,9 +52,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         if (state is AuthAuthenticated) {
           context.pushNamed(AppRoutes.accountSuccess);
         } else if (state is AuthError && state.isApiError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
+          showGlobalSnackBar(state.message, isError: true);
         }
       },
       child: Scaffold(

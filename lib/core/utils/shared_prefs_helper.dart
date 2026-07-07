@@ -108,5 +108,13 @@ class SharedPrefsHelper {
     await _prefs.remove(_accessTokenExpiryKey);
     await _prefs.remove(_refreshTokenExpiryKey);
     await _prefs.remove(_userKey);
+
+    // Clear all persistent HTTP caches
+    try {
+      final keys = _prefs.getKeys().where((k) => k.startsWith('http_cache_')).toList();
+      for (final key in keys) {
+        await _prefs.remove(key);
+      }
+    } catch (_) {}
   }
 }

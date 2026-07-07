@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:rapid_app/core/config/api_config.dart';
 import 'package:rapid_app/core/services/api_service.dart';
+import 'package:rapid_app/core/services/cache_service.dart';
 
 class UserProfile {
   final String userId;
@@ -36,10 +37,23 @@ class UserService {
 
   UserService(this._apiService);
 
+  /// Clears all HTTP request caches (memory and persistent).
+  Future<void> clearCache() async {
+    await _apiService.clearAllCache();
+  }
+
   /// Fetches the user profile.
-  Future<UserProfile?> getUserProfile() async {
+  Future<UserProfile?> getUserProfile({bool refresh = false}) async {
     try {
-      final response = await _apiService.get(ApiConfig.userProfile);
+      final response = await _apiService.get(
+        ApiConfig.userProfile,
+        options: CacheOptions.build(
+          cache: true,
+          policy: CachePolicy.persistent,
+          duration: const Duration(days: 7),
+          refresh: refresh,
+        ),
+      );
       final data = response.data;
       if (data == null) return null;
 
@@ -73,6 +87,10 @@ class UserService {
           'phoneNumber': phoneNumber,
         },
       );
+      
+      // Invalidate user profile cache on successful update
+      await _apiService.invalidateCache(ApiConfig.userProfile);
+
       final data = response.data;
       if (data == null) return null;
 

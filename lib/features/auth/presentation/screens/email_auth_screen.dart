@@ -7,6 +7,7 @@ import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/widgets/rapid_text_field.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 import 'package:rapid_app/route_names.dart';
 
 class EmailAuthScreen extends StatefulWidget {
@@ -142,7 +143,15 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                 RapidButton(
                   text: 'Continue',
                   onPressed: () {
-                    context.pushNamed(AppRoutes.createPassword);
+                    final email = _emailController.text.trim();
+                    if (email.isEmpty) {
+                      showGlobalSnackBar('Please enter your email address', isError: true);
+                      return;
+                    }
+                    context.pushNamed(
+                      AppRoutes.createPassword,
+                      extra: {'email': email},
+                    );
                   },
                 ),
                 SizedBox(height: 32.h),

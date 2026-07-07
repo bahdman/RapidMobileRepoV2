@@ -3,6 +3,7 @@ import 'package:rapid_app/core/config/api_config.dart';
 import 'package:rapid_app/core/models/issue.dart';
 import 'package:rapid_app/core/services/api_service.dart';
 import 'package:rapid_app/core/config/issue_database.dart';
+import 'package:rapid_app/core/services/cache_service.dart';
 
 class ObdSearchResult {
   final String code;
@@ -55,11 +56,17 @@ class ObdService {
 
   ObdService(this._apiService);
 
-  Future<List<ObdHistoryItem>> getSearchHistory({int limit = 50}) async {
+  Future<List<ObdHistoryItem>> getSearchHistory({int limit = 50, bool refresh = false}) async {
     try {
       final response = await _apiService.get(
         ApiConfig.obdSearchHistory,
         queryParameters: {'limit': limit},
+        options: CacheOptions.build(
+          cache: true,
+          policy: CachePolicy.memory,
+          duration: const Duration(minutes: 5),
+          refresh: refresh,
+        ),
       );
 
       final data = response.data;
@@ -84,11 +91,17 @@ class ObdService {
     }
   }
 
-  Future<List<ObdSearchResult>> searchCodes(String query) async {
+  Future<List<ObdSearchResult>> searchCodes(String query, {bool refresh = false}) async {
     try {
       final response = await _apiService.get(
         ApiConfig.obdSearch,
         queryParameters: {'q': query},
+        options: CacheOptions.build(
+          cache: true,
+          policy: CachePolicy.memory,
+          duration: const Duration(hours: 1),
+          refresh: refresh,
+        ),
       );
 
       final data = response.data;
@@ -117,13 +130,21 @@ class ObdService {
     }
   }
 
-  Future<DiagnosticIssue> getCodeDetail(String code) async {
-    if (_cache.containsKey(code)) {
+  Future<DiagnosticIssue> getCodeDetail(String code, {bool refresh = false}) async {
+    if (!refresh && _cache.containsKey(code)) {
       return _cache[code]!;
     }
 
     try {
-      final response = await _apiService.get(ApiConfig.obdCodeDetail(code));
+      final response = await _apiService.get(
+        ApiConfig.obdCodeDetail(code),
+        options: CacheOptions.build(
+          cache: true,
+          policy: CachePolicy.persistent,
+          duration: const Duration(days: 30),
+          refresh: refresh,
+        ),
+      );
 
       final data = response.data;
       if (data == null) {

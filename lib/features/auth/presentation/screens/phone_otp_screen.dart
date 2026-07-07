@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,6 +13,7 @@ import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:rapid_app/features/auth/data/models/auth_models.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 
 class PhoneOtpScreen extends StatefulWidget {
   final String challengeId;
@@ -30,7 +32,35 @@ class PhoneOtpScreen extends StatefulWidget {
 class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
   final TextEditingController _pinController = TextEditingController();
   final FocusNode _pinFocusNode = FocusNode();
+  
+  Timer? _timer;
+  int _countdownSeconds = 30;
+  late String _challengeId;
   bool _isCodeComplete = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _challengeId = widget.challengeId;
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() {
+      _countdownSeconds = 30;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_countdownSeconds > 0) {
+        setState(() {
+          _countdownSeconds--;
+        });
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
 
   void _unfocus() {
     FocusScope.of(context).unfocus();
@@ -38,6 +68,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _pinController.dispose();
     _pinFocusNode.dispose();
     super.dispose();
@@ -80,10 +111,14 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                  context.pushNamed(AppRoutes.createAccount, extra: state.onboardingToken);
               } else if (state is AuthAuthenticated) {
                  context.goNamed(AppRoutes.home);
+              } else if (state is RequestOtpSuccess) {
+                 showGlobalSnackBar('Verification code resent successfully!');
+                 setState(() {
+                   _challengeId = state.response.challengeId;
+                 });
+                 _startTimer();
               } else if (state is AuthError) {
-                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
+                 showGlobalSnackBar(state.message, isError: true);
               }
             },
             builder: (context, state) {
@@ -147,15 +182,25 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
 
                       // Resend Code
                       GestureDetector(
-                        onTap: () {
-                          // Logic to resend code
-                        },
+                        onTap: _countdownSeconds > 0
+                            ? null
+                            : () {
+                                context.read<AuthBloc>().add(
+                                  RequestOtpRequested(RequestOtpRequest(
+                                    contact: widget.contact,
+                                  )),
+                                );
+                              },
                         child: Text(
-                          'Resend code',
+                          _countdownSeconds > 0
+                              ? 'Resend code in ${_countdownSeconds}s'
+                              : 'Resend code',
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.primary,
+                            color: _countdownSeconds > 0
+                                ? AppColors.grey500
+                                : AppColors.primary,
                           ),
                         ),
                       ),
@@ -170,7 +215,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                           onPressed: () {
                             context.read<AuthBloc>().add(
                               VerifyOtpRequested(VerifyOtpRequest(
-                                challengeId: widget.challengeId,
+                                challengeId: _challengeId,
                                 otp: _pinController.text,
                               )),
                             );

@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:rapid_app/core/services/user_service.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:rapid_app/features/auth/data/models/auth_models.dart';
@@ -12,10 +14,11 @@ import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   final SharedPrefsHelper _prefsHelper;
+  final UserService _userService;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   bool _isInitialized = false;
 
-  AuthBloc(this._authRepository, this._prefsHelper) : super(AuthInitial()) {
+  AuthBloc(this._authRepository, this._prefsHelper, this._userService) : super(AuthInitial()) {
     on<GoogleSignInRequested>(_onGoogleSignIn);
     on<TermsAccepted>(_onTermsAccepted);
     on<CreateEmailAccountRequested>(_onCreateEmailAccount);
@@ -67,12 +70,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         final loginResponse = await _authRepository.googleLogin(idToken);
         if (loginResponse.data != null) {
-          await _prefsHelper.saveToken(loginResponse.data!.accessToken);
-          await _prefsHelper.saveRefreshToken(loginResponse.data!.refreshToken);
-          await _prefsHelper.saveAccessTokenExpiry(loginResponse.data!.accessTokenExpiry);
-          await _prefsHelper.saveRefreshTokenExpiry(loginResponse.data!.refreshTokenExpiry);
+          final data = loginResponse.data!;
+          await _prefsHelper.saveToken(data.accessToken);
+          await _prefsHelper.saveRefreshToken(data.refreshToken);
+          await _prefsHelper.saveAccessTokenExpiry(data.accessTokenExpiry);
+          await _prefsHelper.saveRefreshTokenExpiry(data.refreshTokenExpiry);
           // Save userId for logout and other purposes
-          await _prefsHelper.saveUser(loginResponse.data!.id);
+          await _prefsHelper.saveUser(data.id);
+
+          // Populate user profile with Google email and name
+          final email = _getEmailFromJwt(data.accessToken) ?? googleUser.email;
+          final name = data.name;
+          final nameParts = name.trim().split(RegExp(r'\s+'));
+          final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+          final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+          try {
+            await _userService.updateUserProfile(
+              email: email,
+              firstName: firstName,
+              lastName: lastName,
+              phoneNumber: '',
+            );
+          } catch (profileError) {
+            debugPrint('Failed to update user profile on Google login: $profileError');
+          }
+
           emit(AuthAuthenticated());
           return;
         } else {
@@ -109,10 +131,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final termsResponse = await _authRepository.acceptGoogleTerms(event.userId, event.acceptTerms);
       if (termsResponse.data != null && termsResponse.data!.authCredentials != null) {
-        await _prefsHelper.saveToken(termsResponse.data!.authCredentials!.accessToken);
-        await _prefsHelper.saveRefreshToken(termsResponse.data!.authCredentials!.refreshToken);
-        await _prefsHelper.saveAccessTokenExpiry(termsResponse.data!.authCredentials!.accessTokenExpiry);
-        await _prefsHelper.saveRefreshTokenExpiry(termsResponse.data!.authCredentials!.refreshTokenExpiry);
+        final data = termsResponse.data!;
+        final credentials = data.authCredentials!;
+        await _prefsHelper.saveToken(credentials.accessToken);
+        await _prefsHelper.saveRefreshToken(credentials.refreshToken);
+        await _prefsHelper.saveAccessTokenExpiry(credentials.accessTokenExpiry);
+        await _prefsHelper.saveRefreshTokenExpiry(credentials.refreshTokenExpiry);
+
+        // Populate user profile with Google email and name
+        final email = _getEmailFromJwt(credentials.accessToken) ?? '';
+        final firstName = data.firstName;
+        final lastName = data.lastName;
+        try {
+          await _userService.updateUserProfile(
+            email: email,
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: '',
+          );
+        } catch (profileError) {
+          debugPrint('Failed to update user profile on terms accepted: $profileError');
+        }
+
         emit(AuthAuthenticated());
       } else {
         emit(const AuthError('Failed to retrieve tokens after accepting terms.', isApiError: true));
@@ -266,10 +306,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final refreshToken = _prefsHelper.getRefreshToken() ?? '';
       await _authRepository.logout(LogoutRequest(userId: event.userId, refreshToken: refreshToken));
+      await _userService.clearCache();
       await _prefsHelper.clearAuth();
       emit(AuthLoggedOut());
     } catch (e, stackTrace) {
       _handleError(e, stackTrace, emit);
+    }
+  }
+
+  String? _getEmailFromJwt(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      final payload = parts[1];
+      final normalized = base64Url.normalize(payload);
+      final decodedString = utf8.decode(base64Url.decode(normalized));
+      final decodedMap = json.decode(decodedString) as Map<String, dynamic>;
+      return decodedMap['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] as String?;
+    } catch (e) {
+      debugPrint('Error parsing email from JWT: $e');
+      return null;
     }
   }
 
@@ -280,7 +336,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (error is DioException) {
       isApiError = true;
       final statusCode = error.response?.statusCode;
-      userMessage = 'Error [${statusCode ?? 'Unknown'}]';
+      String? apiMessage;
+      if (error.response?.data != null && error.response!.data is Map<String, dynamic>) {
+        final map = error.response!.data as Map<String, dynamic>;
+        if (map.containsKey('message') && map['message'] != null) {
+          apiMessage = map['message'].toString();
+        }
+      }
+      userMessage = apiMessage ?? error.message ?? 'Error [${statusCode ?? 'Unknown'}]';
       
       debugPrint('================ DEVELOPER LOG ================');
       debugPrint('Source: AuthBloc API Call');

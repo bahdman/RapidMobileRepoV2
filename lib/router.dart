@@ -171,8 +171,22 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.createPassword,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
-          final nextRoute = state.extra as String?;
-          return CreatePasswordScreen(nextRoute: nextRoute);
+          final extra = state.extra;
+          if (extra is Map<String, dynamic>) {
+            return CreatePasswordScreen(
+              email: extra['email'] as String?,
+              nextRoute: extra['nextRoute'] as String?,
+              onboardingToken: extra['onboardingToken'] as String?,
+              firstName: extra['firstName'] as String?,
+              lastName: extra['lastName'] as String?,
+              dob: extra['dob'] as String?,
+              acceptTerms: extra['acceptTerms'] as bool?,
+            );
+          } else if (extra is String) {
+            // Backward compatibility: if extra is a plain String, it's a nextRoute
+            return CreatePasswordScreen(nextRoute: extra);
+          }
+          return const CreatePasswordScreen();
         },
       ),
 
@@ -180,14 +194,22 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.emailOtp}',
         name: AppRoutes.emailOtp,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const EmailOtpScreen(),
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>?;
+          final challengeId = data?['challengeId'] as String? ?? '';
+          final contact = data?['contact'] as String? ?? '';
+          return EmailOtpScreen(challengeId: challengeId, contact: contact);
+        },
       ),
 
       GoRoute(
         path: '/${AppRoutes.phoneAuth}',
         name: AppRoutes.phoneAuth,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const PhoneAuthScreen(),
+        builder: (context, state) {
+          final initialPhoneNumber = state.extra as String?;
+          return PhoneAuthScreen(initialPhoneNumber: initialPhoneNumber);
+        },
       ),
 
       GoRoute(
@@ -206,7 +228,10 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.createAccount}',
         name: AppRoutes.createAccount,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const CreateAccountScreen(),
+        builder: (context, state) {
+          final onboardingToken = state.extra as String?;
+          return CreateAccountScreen(onboardingToken: onboardingToken);
+        },
       ),
 
       GoRoute(

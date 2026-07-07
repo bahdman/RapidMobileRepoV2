@@ -11,6 +11,7 @@ import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/core/widgets/rapid_text_field.dart';
 import 'package:rapid_app/features/account/presentation/widgets/delete_schedule_bottom_sheet.dart';
 import 'package:rapid_app/core/services/schedule_service.dart';
+import 'package:dio/dio.dart';
 
 const Map<String, int> _dayMap = {
   'Sun': 0,
@@ -164,21 +165,30 @@ class _SchedulesScreenState extends State<SchedulesScreen>
       if (success) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Schedule deleted successfully!')),
+            const SnackBar(
+              content: Text('Schedule deleted successfully!'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
         _fetchSchedules();
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to delete schedule.')),
+            const SnackBar(
+              content: Text('Failed to delete schedule.'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting schedule: $e')),
+          SnackBar(
+            content: Text('Error deleting schedule: ${_getErrorMessage(e)}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -298,7 +308,10 @@ class _SchedulesScreenState extends State<SchedulesScreen>
 
       if (created != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Schedule created successfully!')),
+          const SnackBar(
+            content: Text('Schedule created successfully!'),
+            backgroundColor: Colors.green,
+          ),
         );
         setState(() {
           _isCreating = false;
@@ -313,7 +326,10 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save schedule: $e')),
+          SnackBar(
+            content: Text('Failed to save schedule: ${_getErrorMessage(e)}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -907,6 +923,20 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     );
 
     Overlay.of(context).insert(overlayEntry!);
+  }
+
+  String _getErrorMessage(dynamic e) {
+    if (e is DioException) {
+      final response = e.response;
+      if (response != null && response.data is Map<String, dynamic>) {
+        final map = response.data as Map<String, dynamic>;
+        if (map.containsKey('message') && map['message'] != null) {
+          return map['message'].toString();
+        }
+      }
+      return e.message ?? 'A network error occurred';
+    }
+    return e.toString();
   }
 }
 

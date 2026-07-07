@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
+import 'package:rapid_app/core/services/obd_service.dart';
 import 'package:rapid_app/core/services/obd_connection_service.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
@@ -13,8 +14,45 @@ import 'package:rapid_app/features/home/presentation/screens/code_search_screen.
 import 'package:rapid_app/route_names.dart';
 
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<ObdHistoryItem> _historyItems = [];
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final obdService = context.read<ObdService>();
+      final history = await obdService.getSearchHistory(limit: 20);
+      if (mounted) {
+        setState(() {
+          _historyItems = history;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading home history: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,22 +91,45 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _recentScansList() {
-    return ListView(
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_historyItems.isEmpty) {
+      return Center(
+        child: Text(
+          'No recent scans found.',
+          style: TextStyle(
+            color: AppColors.textMediumGrey,
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       physics: const BouncingScrollPhysics(),
-      children: [
-        _groupHeader('Yesterday'),
-        _historyItem('Scan Report', 'Scanned via wifi'),
-        SizedBox(height: 24.h),
-        _groupHeader('Sunday'),
-        _historyItem('Scan Report', 'Scanned via OBD'),
-        SizedBox(height: 24.h),
-        _groupHeader('03-04-2026'),
-        _historyItem('Scan Report', 'Scanned via wifi'),
-        SizedBox(height: 24.h),
-        _groupHeader('02-04-2026'),
-        _historyItem('Scan Report', 'Scanned via OBD'),
-      ],
+      itemCount: _historyItems.length,
+      separatorBuilder: (_, __) => SizedBox(height: 24.h),
+      itemBuilder: (context, index) {
+        final item = _historyItems[index];
+        
+        final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        String dateStr = '${months[item.searchedAt.month - 1]} ${item.searchedAt.day}, ${item.searchedAt.year}';
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _groupHeader(dateStr),
+            _historyItem(
+              'Code: ${item.query}',
+              'Scanned via ${item.searchType}',
+              item.query,
+            ),
+          ],
+        );
+      },
     ).animate().fadeIn().slideY(begin: 0.05, end: 0);
   }
 
@@ -86,9 +147,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _historyItem(String title, String subtitle) {
+  Widget _historyItem(String title, String subtitle, String query) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        context.pushNamed(AppRoutes.codeSearch, extra: query);
+      },
       child: Row(
         children: [
           Expanded(
