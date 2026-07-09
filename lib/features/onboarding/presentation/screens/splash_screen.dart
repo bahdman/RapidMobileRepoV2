@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
+import 'package:rapid_app/core/services/push_notification_service.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/route_names.dart';
 
@@ -41,6 +42,10 @@ class _SplashScreenState extends State<SplashScreen>
         final token = prefs.getToken();
 
         if (token != null && token.isNotEmpty) {
+          // Re-register push token for returning authenticated users
+          context
+              .read<PushNotificationService>()
+              .registerDevice();
           context.goNamed(AppRoutes.home);
         } else if (hasCompletedOnboarding) {
           context.goNamed(AppRoutes.auth);

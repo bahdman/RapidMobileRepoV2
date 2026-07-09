@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import 'package:rapid_app/core/services/api_service.dart';
 import 'package:rapid_app/core/services/auth_event_bus.dart';
 import 'package:rapid_app/core/services/obd_service.dart';
 import 'package:rapid_app/core/services/device_service.dart';
+import 'package:rapid_app/core/services/push_notification_service.dart';
 import 'package:rapid_app/core/services/user_service.dart';
 import 'package:rapid_app/core/services/schedule_service.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
@@ -25,9 +27,17 @@ import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:rapid_app/route_names.dart';
 import 'package:rapid_app/router.dart';
 import 'package:rapid_app/core/utils/snackbar_utils.dart';
+import 'package:rapid_app/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Register background message handler (must be top-level)
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   final prefs = await SharedPreferences.getInstance();
   final sharedPrefsHelper = SharedPrefsHelper(prefs);
@@ -35,8 +45,12 @@ void main() async {
   final obdService = ObdService(apiService);
   final obdConnectionService = ObdConnectionService();
   final deviceService = DeviceService(apiService);
+  final pushNotificationService = PushNotificationService(deviceService);
   final userService = UserService(apiService);
   final scheduleService = ScheduleService(apiService);
+
+  // Initialize FCM permissions and listeners (non-blocking)
+  unawaited(pushNotificationService.initialize());
 
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -58,6 +72,7 @@ void main() async {
         RepositoryProvider.value(value: obdService),
         RepositoryProvider.value(value: obdConnectionService),
         RepositoryProvider.value(value: deviceService),
+        RepositoryProvider.value(value: pushNotificationService),
         RepositoryProvider.value(value: userService),
         RepositoryProvider.value(value: scheduleService),
       ],
@@ -71,7 +86,12 @@ void main() async {
             create: (context) => ObdScanBloc(obdService, obdConnectionService),
           ),
           BlocProvider(
-            create: (context) => AuthBloc(authRepository, sharedPrefsHelper, userService),
+            create: (context) => AuthBloc(
+              authRepository,
+              sharedPrefsHelper,
+              userService,
+              pushNotificationService,
+            ),
           ),
         ],
         child: MainApp(router: router),

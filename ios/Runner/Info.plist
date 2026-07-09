@@ -101,5 +101,12 @@
 	<!-- Local Network / WiFi OBD adapter -->
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Rapid needs local network access to connect to WiFi-based OBD-II adapters.</string>
+
+	<!-- Push Notifications background mode -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>

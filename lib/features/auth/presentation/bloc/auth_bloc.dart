@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:rapid_app/core/services/push_notification_service.dart';
 import 'package:rapid_app/core/services/user_service.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/features/auth/domain/repositories/auth_repository.dart';
@@ -15,10 +17,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   final SharedPrefsHelper _prefsHelper;
   final UserService _userService;
+  final PushNotificationService _pushNotificationService;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   bool _isInitialized = false;
 
-  AuthBloc(this._authRepository, this._prefsHelper, this._userService) : super(AuthInitial()) {
+  AuthBloc(
+    this._authRepository,
+    this._prefsHelper,
+    this._userService,
+    this._pushNotificationService,
+  ) : super(AuthInitial()) {
     on<GoogleSignInRequested>(_onGoogleSignIn);
     on<TermsAccepted>(_onTermsAccepted);
     on<CreateEmailAccountRequested>(_onCreateEmailAccount);
@@ -96,6 +104,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           }
 
           emit(AuthAuthenticated());
+          // Register device token with the backend after successful login
+          unawaited(_pushNotificationService.registerDevice());
           return;
         } else {
           emit(const AuthError('Login failed: invalid response data.'));
@@ -154,6 +164,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
 
         emit(AuthAuthenticated());
+        // Register device token with the backend after accepting terms
+        unawaited(_pushNotificationService.registerDevice());
       } else {
         emit(const AuthError('Failed to retrieve tokens after accepting terms.', isApiError: true));
       }
@@ -192,6 +204,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _prefsHelper.saveAccessTokenExpiry(response.data!.authCredentials!.accessTokenExpiry);
         await _prefsHelper.saveRefreshTokenExpiry(response.data!.authCredentials!.refreshTokenExpiry);
         emit(AuthAuthenticated());
+        // Register device token for email onboarding completion
+        unawaited(_pushNotificationService.registerDevice());
       } else {
         emit(const AuthError('Failed to retrieve tokens after onboarding.', isApiError: true));
       }
@@ -240,6 +254,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             // if it's not already in authCredentials or known.
             // For now, if onboardingToken is null and we have credentials, we assume login.
             emit(AuthAuthenticated());
+            // Register device token after OTP verification
+            unawaited(_pushNotificationService.registerDevice());
           } else {
             emit(const AuthError('Missing auth credentials for login.', isApiError: true));
           }
@@ -267,6 +283,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _prefsHelper.saveUser(response.data!.userId);
         emit(AppAuthLoginSuccess(response.data!));
         emit(AuthAuthenticated());
+        // Register device token after app-auth login
+        unawaited(_pushNotificationService.registerDevice());
       } else {
         emit(const AuthError('Login failed: no data returned.', isApiError: true));
       }
@@ -290,6 +308,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // We might not need to emit anything for a background refresh
         // But for completeness we can emit authenticated
         emit(AuthAuthenticated());
+        // Re-register push token in case it was refreshed
+        unawaited(_pushNotificationService.registerDevice());
       } else {
         emit(const AuthError('Failed to refresh token: no data returned.', isApiError: true));
       }
@@ -306,6 +326,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final refreshToken = _prefsHelper.getRefreshToken() ?? '';
       await _authRepository.logout(LogoutRequest(userId: event.userId, refreshToken: refreshToken));
+      // Deactivate push token and clear all caches before wiping credentials
+      await _pushNotificationService.deactivateDevice();
       await _userService.clearCache();
       await _prefsHelper.clearAuth();
       emit(AuthLoggedOut());
