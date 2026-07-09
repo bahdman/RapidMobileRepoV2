@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rapid_app/core/services/api_service.dart';
+import 'package:rapid_app/core/config/api_config.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 
 // Events
 abstract class NotificationEvent extends Equatable {
@@ -55,6 +57,76 @@ class NotificationItem extends Equatable {
     required this.type,
   });
 
+  NotificationItem copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? time,
+    bool? isRead,
+    NotificationType? type,
+  }) {
+    return NotificationItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      time: time ?? this.time,
+      isRead: isRead ?? this.isRead,
+      type: type ?? this.type,
+    );
+  }
+
+  factory NotificationItem.fromJson(Map<String, dynamic> json) {
+    return NotificationItem(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      description: json['body'] as String? ?? '',
+      time: json['createdAt'] != null ? _formatTime(json['createdAt'] as String) : '',
+      isRead: json['isRead'] as bool? ?? false,
+      type: _parseType(json['category'] as String?),
+    );
+  }
+
+  static String _formatTime(String isoString) {
+    try {
+      final dateTime = DateTime.parse(isoString).toLocal();
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inMinutes < 1) {
+        return 'just now';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes}m ago';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours}h ago';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays}d ago';
+      } else {
+        return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      }
+    } catch (_) {
+      return '';
+    }
+  }
+
+  static NotificationType _parseType(String? category) {
+    if (category == null) return NotificationType.info;
+    switch (category.toLowerCase()) {
+      case 'critical':
+      case 'danger':
+      case 'error':
+        return NotificationType.critical;
+      case 'settings':
+      case 'config':
+        return NotificationType.settings;
+      case 'success':
+      case 'completed':
+        return NotificationType.success;
+      case 'info':
+      default:
+        return NotificationType.info;
+    }
+  }
+
   @override
   List<Object?> get props => [id, title, description, time, isRead, type];
 }
@@ -63,84 +135,92 @@ enum NotificationType { critical, settings, info, success }
 
 // Bloc
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
-  NotificationBloc(ApiService apiService) : super(NotificationInitial()) {
+  final ApiService _apiService;
+
+  NotificationBloc(this._apiService) : super(NotificationInitial()) {
     on<LoadNotifications>((event, emit) async {
       emit(NotificationLoading());
-      // Simulate network delay
-      await Future.delayed(const Duration(milliseconds: 800));
-      emit(
-        const NotificationLoaded([
-          NotificationItem(
-            id: '1',
-            title: 'Critical Code Detected',
-            description:
-                'U0201 — ECM/PCM communication issue found during your morning scan.',
-            time: '2:34 PM',
-            type: NotificationType.critical,
-          ),
-          NotificationItem(
-            id: '2',
-            title: 'Oil Change Due',
-            description:
-                'Your scheduled oil change is tomorrow at 9:00 AM. Don\'t forget!',
-            time: '1 hr ago',
-            type: NotificationType.settings,
-          ),
-          NotificationItem(
-            id: '3',
-            title: 'Scan Complete',
-            description:
-                'Your scan completed successfully. No new issues found.',
-            time: '3 hr ago',
-            type: NotificationType.success,
-            isRead: true,
-          ),
-          NotificationItem(
-            id: '4',
-            title: 'Brake Inspection Reminder',
-            description:
-                'It\'s been 6 months since your last brake inspection. Schedule one soon.',
-            time: '3 hr ago',
-            type: NotificationType.info,
-            isRead: true,
-          ),
-          NotificationItem(
-            id: '5',
-            title: 'Subscription Renewal',
-            description: 'Your Pro plan has been renewed for another month.',
-            time: '2 days ago',
-            type: NotificationType.info,
-            isRead: true,
-          ),
-        ]),
-      );
-    });
-
-    on<MarkAsRead>((event, emit) {
-      if (state is NotificationLoaded) {
-        final current = (state as NotificationLoaded).notifications;
-        final updated = current
-            .map(
-              (e) => NotificationItem(
-                id: e.id,
-                title: e.title,
-                description: e.description,
-                time: e.time,
-                type: e.type,
-                isRead: true,
-              ),
-            )
-            .toList();
-        emit(NotificationLoaded(updated));
+      try {
+        final response = await _apiService.get(
+          ApiConfig.getNotifications,
+          queryParameters: {
+            'unreadOnly': false,
+            'skip': 0,
+            'take': 50,
+          },
+        );
+        final dataMap = response.data as Map<String, dynamic>;
+        if (dataMap['isSuccess'] == true) {
+          final list = dataMap['data'] as List<dynamic>? ?? [];
+          final notifications = list
+              .map((e) => NotificationItem.fromJson(e as Map<String, dynamic>))
+              .toList();
+          emit(NotificationLoaded(notifications));
+        } else {
+          showGlobalSnackBar(dataMap['message'] as String? ?? 'Failed to load notifications', isError: true);
+          emit(const NotificationLoaded([]));
+        }
+      } catch (e) {
+        showGlobalSnackBar('Failed to load notifications', isError: true);
+        emit(const NotificationLoaded([]));
       }
     });
 
-    on<DeleteNotification>((event, emit) {
+    on<MarkAsRead>((event, emit) async {
       if (state is NotificationLoaded) {
         final current = (state as NotificationLoaded).notifications;
-        final updated = current.where((e) => e.id != event.id).toList();
-        emit(NotificationLoaded(updated));
+        final hasUnread = current.any((n) => !n.isRead);
+        if (!hasUnread) return;
+
+        try {
+          final response = await _apiService.post(
+            ApiConfig.markAllAsRead,
+          );
+          final dataMap = response.data as Map<String, dynamic>;
+          if (dataMap['isSuccess'] == true) {
+            final updated = current.map((e) => e.copyWith(isRead: true)).toList();
+            emit(NotificationLoaded(updated));
+            showGlobalSnackBar('All notifications marked as read');
+          } else {
+            showGlobalSnackBar(dataMap['message'] as String? ?? 'Failed to mark all as read', isError: true);
+          }
+        } catch (e) {
+          showGlobalSnackBar('Failed to mark all notifications as read', isError: true);
+        }
       }
     });
+
+    on<DeleteNotification>((event, emit) async {
+      if (state is NotificationLoaded) {
+        final current = (state as NotificationLoaded).notifications;
+
+        try {
+          final response = await _apiService.delete(
+            ApiConfig.deleteNotification(event.id),
+          );
+          final dataMap = response.data as Map<String, dynamic>;
+          if (dataMap['isSuccess'] == true) {
+            final updated = current.where((e) => e.id != event.id).toList();
+            emit(NotificationLoaded(updated));
+            showGlobalSnackBar('Notification deleted successfully!');
+          } else {
+            showGlobalSnackBar(dataMap['message'] as String? ?? 'Failed to delete notification', isError: true);
+          }
+        } catch (e) {
+          showGlobalSnackBar('Failed to delete notification', isError: true);
+        }
+      }
+    });
+  }
+
+  Future<int> getUnreadCount() async {
+    try {
+      final response = await _apiService.get(ApiConfig.getUnreadCount);
+      final dataMap = response.data as Map<String, dynamic>;
+      if (dataMap['isSuccess'] == true) {
+        return dataMap['data'] as int? ?? 0;
+      }
+    } catch (_) {}
+    return 0;
   }
 }

@@ -23,9 +23,11 @@ class ApiConfig {
   static const String status = '/api/v1/vendor/status';
 
   // Notifications
-  static const String notifications = '/api/v1/vendor/notifications';
-  static const String markNotificationsRead = '/api/v1/vendor/notifications/mark-all-read';
-  static const String clearNotifications = '/api/v1/vendor/notifications/clear';
+  static const String getNotifications = '/api/InAppNotification/GetNotifications';
+  static const String getUnreadCount = '/api/InAppNotification/GetUnreadCount';
+  static const String markAsRead = '/api/InAppNotification/MarkAsRead';
+  static const String markAllAsRead = '/api/InAppNotification/MarkAllAsRead';
+  static String deleteNotification(String id) => '/api/InAppNotification/DeleteNotification/$id';
 
   // Analytics
   static const String analytics = '/api/v1/vendor/analytics';

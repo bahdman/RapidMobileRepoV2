@@ -22,7 +22,9 @@ class NotificationsScreen extends StatelessWidget {
         title: 'Notifications',
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              context.read<NotificationBloc>().add(MarkAsRead());
+            },
             child: Text(
               'Mark all read',
               style: TextStyle(color: const Color(0xFF007AFF), fontSize: 14.sp),
