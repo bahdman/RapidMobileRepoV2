@@ -26,7 +26,7 @@ class NotificationsScreen extends StatelessWidget {
               context.read<NotificationBloc>().add(MarkAsRead());
             },
             child: Text(
-              'Mark all read',
+              'Mark all as read',
               style: TextStyle(color: const Color(0xFF007AFF), fontSize: 14.sp),
             ),
           ),
@@ -50,7 +50,13 @@ class NotificationsScreen extends StatelessWidget {
                 return _notificationCard(context, item)
                     .animate()
                     .fadeIn(duration: 400.ms, delay: (index * 50).ms)
-                    .slideY(begin: 0.1, end: 0, duration: 400.ms, delay: (index * 50).ms, curve: Curves.easeOut);
+                    .slideY(
+                      begin: 0.1,
+                      end: 0,
+                      duration: 400.ms,
+                      delay: (index * 50).ms,
+                      curve: Curves.easeOut,
+                    );
               },
             );
           }

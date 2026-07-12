@@ -28,6 +28,7 @@ class ApiConfig {
   static const String markAsRead = '/api/InAppNotification/MarkAsRead';
   static const String markAllAsRead = '/api/InAppNotification/MarkAllAsRead';
   static String deleteNotification(String id) => '/api/InAppNotification/DeleteNotification/$id';
+  static const String broadcastNotification = '/api/InAppNotification/BroadcastNotification';
 
   // Analytics
   static const String analytics = '/api/v1/vendor/analytics';

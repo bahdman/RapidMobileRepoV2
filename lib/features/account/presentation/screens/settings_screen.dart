@@ -1,12 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rapid_app/core/config/app_assets.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
+import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
+import 'package:rapid_app/core/services/push_notification_service.dart';
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,11 +20,54 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late final SharedPrefsHelper _prefsHelper;
+  late final PushNotificationService _pushService;
+
   bool _pushNotifications = true;
   bool _emailAlerts = false;
   bool _scanReminder = true;
   bool _shareUsageData = false;
   bool _darkMode = false;
+  bool _isProcessingPush = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefsHelper = context.read<SharedPrefsHelper>();
+    _pushService = context.read<PushNotificationService>();
+    _pushNotifications = _prefsHelper.areNotificationsEnabled();
+  }
+
+  Future<void> _handlePushNotificationToggle(bool value) async {
+    if (_isProcessingPush) return;
+    setState(() {
+      _isProcessingPush = true;
+    });
+
+    try {
+      if (value) {
+        await _pushService.registerDevice();
+        await _prefsHelper.setNotificationsEnabled(true);
+        setState(() {
+          _pushNotifications = true;
+        });
+        showGlobalSnackBar('Push notifications enabled!');
+      } else {
+        await _pushService.deactivateDevice();
+        await _prefsHelper.setNotificationsEnabled(false);
+        setState(() {
+          _pushNotifications = false;
+        });
+        showGlobalSnackBar('Push notifications disabled.');
+      }
+    } catch (e) {
+      showGlobalSnackBar('Failed to update push notification settings.', isError: true);
+    } finally {
+      setState(() {
+        _isProcessingPush = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Push Notifications',
                 subtitle: 'Scan alerts & reminders',
                 value: _pushNotifications,
-                onChanged: (val) => setState(() => _pushNotifications = val),
+                onChanged: _isProcessingPush ? (val) {} : _handlePushNotificationToggle,
               ),
               _buildSwitchRow(
                 title: 'Email Alerts',

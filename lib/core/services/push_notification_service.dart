@@ -71,6 +71,19 @@ class PushNotificationService {
   /// Fetches FCM token and registers it with the backend database.
   Future<void> registerDevice() async {
     try {
+      if (Platform.isIOS) {
+        String? apnsToken;
+        for (int i = 0; i < 5; i++) {
+          apnsToken = await _fcm.getAPNSToken();
+          if (apnsToken != null) break;
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+        if (apnsToken == null) {
+          debugPrint('[PushNotificationService] APNS token is not set (may be running on Simulator or missing APNS Capability).');
+          return;
+        }
+      }
+
       final token = await _fcm.getToken();
       if (token == null || token.isEmpty) {
         debugPrint('[PushNotificationService] FCM token is null or empty.');
@@ -97,6 +110,14 @@ class PushNotificationService {
   /// Deactivates device token on the backend (usually called upon logout).
   Future<void> deactivateDevice() async {
     try {
+      if (Platform.isIOS) {
+        final apnsToken = await _fcm.getAPNSToken();
+        if (apnsToken == null) {
+          debugPrint('[PushNotificationService] APNS token is not set, skipping token deletion.');
+          return;
+        }
+      }
+
       final token = await _fcm.getToken();
       if (token == null || token.isEmpty) return;
 

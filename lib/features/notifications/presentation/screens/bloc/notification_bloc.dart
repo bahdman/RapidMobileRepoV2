@@ -22,6 +22,29 @@ class DeleteNotification extends NotificationEvent {
   List<Object?> get props => [id];
 }
 
+class BroadcastNotification extends NotificationEvent {
+  final String category;
+  final String title;
+  final String body;
+  final String entityType;
+  final String entityId;
+  final int channel;
+  final Map<String, String>? pushData;
+
+  const BroadcastNotification({
+    required this.category,
+    required this.title,
+    required this.body,
+    required this.entityType,
+    required this.entityId,
+    required this.channel,
+    this.pushData,
+  });
+
+  @override
+  List<Object?> get props => [category, title, body, entityType, entityId, channel, pushData];
+}
+
 // States
 abstract class NotificationState extends Equatable {
   const NotificationState();
@@ -170,7 +193,10 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       if (state is NotificationLoaded) {
         final current = (state as NotificationLoaded).notifications;
         final hasUnread = current.any((n) => !n.isRead);
-        if (!hasUnread) return;
+        if (!hasUnread) {
+          showGlobalSnackBar('No unread notifications to mark as read');
+          return;
+        }
 
         try {
           final response = await _apiService.post(
@@ -187,6 +213,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         } catch (e) {
           showGlobalSnackBar('Failed to mark all notifications as read', isError: true);
         }
+      } else {
+        showGlobalSnackBar('No notifications available');
       }
     });
 
@@ -209,6 +237,32 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         } catch (e) {
           showGlobalSnackBar('Failed to delete notification', isError: true);
         }
+      }
+    });
+
+    on<BroadcastNotification>((event, emit) async {
+      try {
+        final response = await _apiService.post(
+          ApiConfig.broadcastNotification,
+          data: {
+            'category': event.category,
+            'title': event.title,
+            'body': event.body,
+            'entityType': event.entityType,
+            'entityId': event.entityId,
+            'channel': event.channel,
+            if (event.pushData != null) 'pushData': event.pushData,
+          },
+        );
+        final dataMap = response.data as Map<String, dynamic>;
+        if (dataMap['isSuccess'] == true) {
+          showGlobalSnackBar('Notification broadcasted successfully!');
+          add(LoadNotifications());
+        } else {
+          showGlobalSnackBar(dataMap['message'] as String? ?? 'Failed to broadcast notification', isError: true);
+        }
+      } catch (e) {
+        showGlobalSnackBar('Failed to broadcast notification', isError: true);
       }
     });
   }
