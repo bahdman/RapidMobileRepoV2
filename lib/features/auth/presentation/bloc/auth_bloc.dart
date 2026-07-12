@@ -203,6 +203,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await _prefsHelper.saveRefreshToken(response.data!.authCredentials!.refreshToken);
         await _prefsHelper.saveAccessTokenExpiry(response.data!.authCredentials!.accessTokenExpiry);
         await _prefsHelper.saveRefreshTokenExpiry(response.data!.authCredentials!.refreshTokenExpiry);
+        // Mark sign-up as fully completed
+        await _prefsHelper.setHasRegistered(true);
         emit(AuthAuthenticated());
         // Register device token for email onboarding completion
         unawaited(_pushNotificationService.registerDevice());
@@ -250,9 +252,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             await _prefsHelper.saveRefreshToken(data.authCredentials!.refreshToken);
             await _prefsHelper.saveAccessTokenExpiry(data.authCredentials!.accessTokenExpiry);
             await _prefsHelper.saveRefreshTokenExpiry(data.authCredentials!.refreshTokenExpiry);
-            // In a real scenario, VerifyOtpResponse might need to include userId
-            // if it's not already in authCredentials or known.
-            // For now, if onboardingToken is null and we have credentials, we assume login.
+            // OTP verified — sign-up is complete, mark it
+            await _prefsHelper.setHasRegistered(true);
             emit(AuthAuthenticated());
             // Register device token after OTP verification
             unawaited(_pushNotificationService.registerDevice());

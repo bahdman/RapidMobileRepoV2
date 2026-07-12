@@ -17,6 +17,7 @@ import 'package:rapid_app/features/account/presentation/screens/schedules_screen
 import 'package:rapid_app/features/account/presentation/screens/settings_screen.dart';
 import 'package:rapid_app/features/account/presentation/screens/refer_a_friend_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/auth_screen.dart';
+import 'package:rapid_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/email_auth_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/create_password_screen.dart';
 import 'package:rapid_app/features/auth/presentation/screens/email_otp_screen.dart';
@@ -157,6 +158,13 @@ GoRouter buildRouter(String initialRoute) {
         name: AppRoutes.auth,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AuthScreen(),
+      ),
+
+      GoRoute(
+        path: '/${AppRoutes.login}',
+        name: AppRoutes.login,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const LoginScreen(),
       ),
 
       GoRoute(

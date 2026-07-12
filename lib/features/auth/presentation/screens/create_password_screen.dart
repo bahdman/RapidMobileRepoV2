@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -57,58 +56,6 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     super.dispose();
   }
 
-  void _showOtpDialog(String challengeId, String email) {
-    showAdaptiveDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        void onAlright() {
-          Navigator.of(dialogContext).pop(); // Close dialog
-          context.pushNamed(
-            AppRoutes.emailOtp,
-            extra: {
-              'challengeId': challengeId,
-              'contact': email,
-            },
-          );
-        }
-
-        final Widget actionText = Text(
-          'Alright',
-          style: TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w600,
-          ),
-        );
-
-        final platform = Theme.of(dialogContext).platform;
-        final isIOS =
-            platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
-
-        return AlertDialog.adaptive(
-          title: Text(
-            'Check your email',
-            style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600),
-          ),
-          content: Padding(
-            padding: EdgeInsets.only(top: 8.h),
-            child: Text(
-              'We sent an OTP to verify your account to $email',
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-                height: 1.3,
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            isIOS
-                ? CupertinoDialogAction(onPressed: onAlright, child: actionText)
-                : TextButton(onPressed: onAlright, child: actionText),
-          ],
-        );
-      },
-    );
-  }
 
   void _handleContinue() {
     final password = _passwordController.text;
@@ -150,8 +97,6 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
       // Fallback
       if (widget.nextRoute != null) {
         context.pushNamed(widget.nextRoute!);
-      } else {
-        _showOtpDialog('placeholder_id', 'your email');
       }
     }
   }
@@ -161,8 +106,14 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is CreateEmailAccountSuccess) {
-          // Account created, show OTP dialog
-          _showOtpDialog(state.response.userId, state.response.email);
+          // Account created — backend auto-sends OTP, go directly to OTP screen
+          context.pushNamed(
+            AppRoutes.emailOtp,
+            extra: {
+              'challengeId': state.response.challengeId,
+              'contact': state.response.email,
+            },
+          );
         } else if (state is AuthAuthenticated) {
           context.goNamed(AppRoutes.home);
         } else if (state is AuthError && state.isApiError) {

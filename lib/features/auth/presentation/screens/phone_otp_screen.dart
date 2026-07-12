@@ -144,7 +144,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                       // Pinput for 4 digit OTP
                       Center(
                         child: Pinput(
-                          length: 4,
+                          length: 6,
                           controller: _pinController,
                           focusNode: _pinFocusNode,
                           defaultPinTheme: defaultPinTheme,
@@ -168,7 +168,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                           ),
                           onChanged: (value) {
                             setState(() {
-                              _isCodeComplete = value.length == 4;
+                              _isCodeComplete = value.length == 6;
                             });
                           },
                           onCompleted: (pin) {

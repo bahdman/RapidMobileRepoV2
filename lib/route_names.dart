@@ -2,6 +2,7 @@ class AppRoutes {
   static const String splash = 'splash';
   static const String onboarding = 'onboarding';
   static const String auth = 'auth';
+  static const String login = 'login';
   static const String emailAuth = 'email-auth';
   static const String createPassword = 'create-password';
   static const String emailOtp = 'email-otp';

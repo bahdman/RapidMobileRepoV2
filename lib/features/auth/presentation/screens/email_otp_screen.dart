@@ -62,7 +62,7 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
     });
   }
 
-  bool get _isPinComplete => _pinController.text.length == 4;
+  bool get _isPinComplete => _pinController.text.length == 6;
 
   @override
   void dispose() {
@@ -162,7 +162,7 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
                           // OTP Input Boxes
                           Center(
                             child: Pinput(
-                              length: 4,
+                              length: 6,
                               controller: _pinController,
                               focusNode: _focusNode,
                               defaultPinTheme: defaultPinTheme,
@@ -186,7 +186,7 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
                               ),
                               onChanged: (value) {
                                 setState(() {
-                                  _isCodeComplete = value.length == 4;
+                                  _isCodeComplete = value.length == 6;
                                 });
                               },
                               onCompleted: (pin) {

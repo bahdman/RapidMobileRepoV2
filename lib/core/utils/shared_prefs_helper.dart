@@ -14,6 +14,8 @@ class SharedPrefsHelper {
   static const _accessTokenExpiryKey = 'access_token_expiry';
   static const _refreshTokenExpiryKey = 'refresh_token_expiry';
   static const _userKey = 'user_data';
+  /// Set to true once the user has completed registration (OTP verified).
+  static const _hasRegisteredKey = 'hasRegistered';
 
   Future<void> setHasOpenedHome(bool value) async {
     await _prefs.setBool(_hasOpenedHomeKey, value);
@@ -21,6 +23,14 @@ class SharedPrefsHelper {
 
   bool hasOpenedHome() {
     return _prefs.getBool(_hasOpenedHomeKey) ?? false;
+  }
+
+  Future<void> setHasRegistered(bool value) async {
+    await _prefs.setBool(_hasRegisteredKey, value);
+  }
+
+  bool hasRegistered() {
+    return _prefs.getBool(_hasRegisteredKey) ?? false;
   }
 
   Future<void> setHasCompletedOnboarding(bool value) async {

@@ -121,12 +121,14 @@ class CreateEmailAccountRequest {
 class CreateEmailAccountResponse {
   final String userId;
   final String email;
+  final String challengeId;
   final bool isFirstLogin;
   final bool termsAccepted;
 
   CreateEmailAccountResponse({
     required this.userId,
     required this.email,
+    required this.challengeId,
     required this.isFirstLogin,
     required this.termsAccepted,
   });
@@ -135,6 +137,7 @@ class CreateEmailAccountResponse {
     return CreateEmailAccountResponse(
       userId: json['userId'] as String? ?? '',
       email: json['email'] as String? ?? '',
+      challengeId: json['challengeId'] as String? ?? '',
       isFirstLogin: json['isFirstLogin'] as bool? ?? false,
       termsAccepted: json['termsAccepted'] as bool? ?? false,
     );

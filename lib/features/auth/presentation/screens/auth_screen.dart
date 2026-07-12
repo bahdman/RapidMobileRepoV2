@@ -168,7 +168,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     _buildAuthButton(
                       label: 'Use Email',
                       onTap: () {
-                        context.pushNamed(AppRoutes.emailAuth);
+                        context.pushNamed(AppRoutes.login);
                       },
                       backgroundColor: AppColors.grey100,
                       textColor: Colors.black,
