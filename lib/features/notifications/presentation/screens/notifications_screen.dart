@@ -8,14 +8,23 @@ import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'bloc/notification_bloc.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Add LoadNotifications event when screen is opened
-    context.read<NotificationBloc>().add(LoadNotifications());
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
 
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load notifications when screen opens
+    context.read<NotificationBloc>().add(LoadNotifications());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       appBar: RapidAppBar(
@@ -40,7 +49,24 @@ class NotificationsScreen extends StatelessWidget {
           if (state is NotificationLoaded) {
             final notifications = state.notifications;
             if (notifications.isEmpty) {
-              return const Center(child: Text('No notifications'));
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notifications_off_outlined,
+                        size: 52, color: AppColors.grey600),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'No notifications yet',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textMediumGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              );
             }
             return ListView.builder(
               padding: EdgeInsets.all(16.w),

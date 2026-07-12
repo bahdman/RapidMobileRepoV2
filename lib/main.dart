@@ -29,6 +29,7 @@ import 'package:rapid_app/router.dart';
 import 'package:rapid_app/core/utils/snackbar_utils.dart';
 import 'package:rapid_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:rapid_app/core/widgets/notification_banner_overlay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -169,13 +170,15 @@ class _MainAppState extends State<MainApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp.router(
-          scaffoldMessengerKey: scaffoldMessengerKey,
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.light,
-          routerConfig: widget.router,
+        return NotificationBannerOverlay(
+          child: MaterialApp.router(
+            scaffoldMessengerKey: scaffoldMessengerKey,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.light,
+            routerConfig: widget.router,
+          ),
         );
       },
     );

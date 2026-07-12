@@ -11,6 +11,7 @@ import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/features/bluetooth/presentation/screens/bloc/bluetooth_bloc.dart';
 import 'package:rapid_app/features/home/presentation/screens/code_search_screen.dart';
+import 'package:rapid_app/features/notifications/presentation/screens/bloc/notification_bloc.dart';
 import 'package:rapid_app/route_names.dart';
 
 
@@ -24,11 +25,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<ObdHistoryItem> _historyItems = [];
   bool _isLoading = false;
+  int _unreadCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadHistory();
+    _fetchUnreadCount();
+  }
+
+  Future<void> _fetchUnreadCount() async {
+    final count = await context.read<NotificationBloc>().getUnreadCount();
+    if (mounted) setState(() => _unreadCount = count);
   }
 
   Future<void> _loadHistory() async {
@@ -72,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   maxExtent: maxHeaderHeight,
                   minExtent: minHeaderHeight,
                   context: context,
+                  unreadCount: _unreadCount,
                 ),
               ),
             ];
@@ -198,11 +207,13 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   final double minExtent;
   final BuildContext context;
+  final int unreadCount;
 
   _DashboardHeaderDelegate({
     required this.maxExtent,
     required this.minExtent,
     required this.context,
+    required this.unreadCount,
   });
 
   @override
@@ -248,13 +259,35 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                       ),
                       GestureDetector(
                         onTap: () => context.pushNamed(AppRoutes.notification),
-                        child: SvgPicture.asset(
-                          Assets.notification,
-                          height: 28.h,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            SvgPicture.asset(
+                              Assets.notification,
+                              height: 28.h,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.white,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                top: -2,
+                                right: -2,
+                                child: Container(
+                                  width: 10.w,
+                                  height: 10.w,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF3B30),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.primary,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -468,6 +501,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _DashboardHeaderDelegate oldDelegate) {
     return maxExtent != oldDelegate.maxExtent ||
         minExtent != oldDelegate.minExtent ||
-        context != oldDelegate.context;
+        context != oldDelegate.context ||
+        unreadCount != oldDelegate.unreadCount;
   }
 }

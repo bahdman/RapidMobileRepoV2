@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'device_service.dart';
 
 /// Top-level background message handler for FCM.
@@ -12,13 +16,31 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('[PushNotificationService] Background message received: ${message.messageId}');
 }
 
+/// Android notification channel details.
+const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+  'rapid_high_importance_channel',
+  'Rapid Notifications',
+  description: 'Important notifications from Rapid.',
+  importance: Importance.high,
+  playSound: true,
+);
+
 class PushNotificationService {
   final DeviceService _deviceService;
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
+  // Broadcast stream for in-app notification banners
+  final StreamController<RemoteMessage> _foregroundMessageController =
+      StreamController<RemoteMessage>.broadcast();
+
+  Stream<RemoteMessage> get foregroundMessageStream =>
+      _foregroundMessageController.stream;
 
   PushNotificationService(this._deviceService);
 
-  /// Initializes permissions and sets up callbacks for foreground & interaction events.
+  /// Initializes permissions, local notifications plugin, and FCM listeners.
   Future<void> initialize() async {
     try {
       // 1. Request permissions (iOS and Android 13+ prompt)
@@ -42,30 +64,95 @@ class PushNotificationService {
 
       // 2. Set presentation options for when the app is in the foreground
       await _fcm.setForegroundNotificationPresentationOptions(
-        alert: true,
+        alert: false, // We handle this ourselves with local notifications
         badge: true,
         sound: true,
       );
 
-      // 3. Listen to foreground incoming messages
+      // 3. Initialize flutter_local_notifications
+      await _initLocalNotifications();
+
+      // 4. Listen to foreground incoming messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('[PushNotificationService] Foreground message received: ${message.notification?.title}');
-        // You can use a local notification service here to show a custom banner if needed.
+        debugPrint('[PushNotificationService] Foreground message: ${message.notification?.title}');
+
+        // Show a local (system) notification since FCM suppresses foreground notifications
+        _showLocalNotification(message);
+
+        // Emit to in-app banner stream
+        _foregroundMessageController.add(message);
       });
 
-      // 4. Handle clicks/interactions when app is opened via a notification click
+      // 5. Handle clicks/interactions when app is opened via a notification click
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        debugPrint('[PushNotificationService] User opened app via notification click: ${message.data}');
+        debugPrint('[PushNotificationService] App opened via notification: ${message.data}');
+        // Emit so the overlay can handle navigation if needed
+        _foregroundMessageController.add(message);
       });
 
-      // 5. Handle initial message (if the app was completely terminated and opened by notification click)
+      // 6. Handle initial message (app terminated, opened via notification click)
       final initialMessage = await _fcm.getInitialMessage();
       if (initialMessage != null) {
-        debugPrint('[PushNotificationService] App launched from terminated state via notification click: ${initialMessage.data}');
+        debugPrint('[PushNotificationService] Launched from terminated state: ${initialMessage.data}');
       }
     } catch (e) {
       debugPrint('[PushNotificationService] Initialization error: $e');
     }
+  }
+
+  /// Sets up FlutterLocalNotificationsPlugin for Android + iOS.
+  Future<void> _initLocalNotifications() async {
+    const initSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initSettingsIOS = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const initSettings = InitializationSettings(
+      android: initSettingsAndroid,
+      iOS: initSettingsIOS,
+    );
+
+    await _localNotifications.initialize(initSettings);
+
+    // Create Android channel (no-op on other platforms)
+    final androidPlugin = _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(_channel);
+  }
+
+  /// Displays a notification in the system notification centre.
+  Future<void> _showLocalNotification(RemoteMessage message) async {
+    final notification = message.notification;
+    if (notification == null) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      'rapid_high_importance_channel',
+      'Rapid Notifications',
+      channelDescription: 'Important notifications from Rapid.',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+      playSound: true,
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _localNotifications.show(
+      notification.hashCode,
+      notification.title,
+      notification.body,
+      notificationDetails,
+    );
   }
 
   /// Fetches FCM token and registers it with the backend database.
@@ -79,10 +166,18 @@ class PushNotificationService {
           await Future<void>.delayed(const Duration(milliseconds: 500));
         }
         if (apnsToken == null) {
-          debugPrint('[PushNotificationService] APNS token is not set (may be running on Simulator or missing APNS Capability).');
+          debugPrint('[PushNotificationService] APNS token not set (Simulator or missing capability).');
           return;
         }
       }
+
+      // Log the Firebase Options used to fetch the device token
+      final options = _fcm.app.options;
+      debugPrint('[PushNotificationService] Fetching FCM token with options: '
+          'Project ID: ${options.projectId}, '
+          'Sender ID (Project Number): ${options.messagingSenderId}, '
+          'API Key: ${options.apiKey}, '
+          'App ID: ${options.appId}');
 
       final token = await _fcm.getToken();
       if (token == null || token.isEmpty) {
@@ -91,14 +186,14 @@ class PushNotificationService {
       }
 
       debugPrint('[PushNotificationService] Registering device token: $token');
-      final platform = Platform.isAndroid ? 2 : 1; // 2 for Android, 1 for iOS
+      final platform = Platform.isAndroid ? 2 : 1;
       final success = await _deviceService.registerPushToken(
         deviceToken: token,
         platform: platform,
       );
 
       if (success) {
-        debugPrint('[PushNotificationService] Device token registered successfully with backend.');
+        debugPrint('[PushNotificationService] Device token registered successfully.');
       } else {
         debugPrint('[PushNotificationService] Backend failed to register device token.');
       }
@@ -107,13 +202,13 @@ class PushNotificationService {
     }
   }
 
-  /// Deactivates device token on the backend (usually called upon logout).
+  /// Deactivates device token on the backend (called on logout or push toggle off).
   Future<void> deactivateDevice() async {
     try {
       if (Platform.isIOS) {
         final apnsToken = await _fcm.getAPNSToken();
         if (apnsToken == null) {
-          debugPrint('[PushNotificationService] APNS token is not set, skipping token deletion.');
+          debugPrint('[PushNotificationService] APNS token not set, skipping deactivation.');
           return;
         }
       }
@@ -121,21 +216,22 @@ class PushNotificationService {
       final token = await _fcm.getToken();
       if (token == null || token.isEmpty) return;
 
-      debugPrint('[PushNotificationService] Deactivating device token on logout.');
-      final success = await _deviceService.deactivatePushToken(
-        deviceToken: token,
-      );
+      debugPrint('[PushNotificationService] Deactivating device token.');
+      final success = await _deviceService.deactivatePushToken(deviceToken: token);
 
       if (success) {
-        debugPrint('[PushNotificationService] Device token deactivated successfully on backend.');
+        debugPrint('[PushNotificationService] Device token deactivated successfully.');
       } else {
         debugPrint('[PushNotificationService] Backend failed to deactivate device token.');
       }
 
-      // Clear token to prevent stale registrations
       await _fcm.deleteToken();
     } catch (e) {
       debugPrint('[PushNotificationService] Error deactivating device token: $e');
     }
+  }
+
+  void dispose() {
+    _foregroundMessageController.close();
   }
 }
