@@ -10,6 +10,8 @@ import 'package:rapid_app/core/services/push_notification_service.dart';
 import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/route_names.dart';
 
+import 'package:rapid_app/features/notifications/presentation/screens/bloc/notification_bloc.dart';
+
 class NotificationBannerOverlay extends StatefulWidget {
   final Widget child;
   const NotificationBannerOverlay({super.key, required this.child});
@@ -38,6 +40,9 @@ class _NotificationBannerOverlayState
   }
 
   void _showBanner(RemoteMessage message) {
+    // Dynamically refresh the notifications state in the app
+    context.read<NotificationBloc>().add(LoadNotifications());
+
     // Don't show if there's no useful content
     if (message.notification?.title == null && message.notification?.body == null) return;
     _dismissTimer?.cancel();

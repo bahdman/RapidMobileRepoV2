@@ -31,12 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadHistory();
-    _fetchUnreadCount();
-  }
-
-  Future<void> _fetchUnreadCount() async {
-    final count = await context.read<NotificationBloc>().getUnreadCount();
-    if (mounted) setState(() => _unreadCount = count);
+    context.read<NotificationBloc>().add(LoadNotifications());
   }
 
   Future<void> _loadHistory() async {
@@ -71,29 +66,38 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.primary,
       body: DefaultTabController(
         length: 2,
-        child: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _DashboardHeaderDelegate(
-                  maxExtent: maxHeaderHeight,
-                  minExtent: minHeaderHeight,
-                  context: context,
-                  unreadCount: _unreadCount,
+        child: BlocBuilder<NotificationBloc, NotificationState>(
+          builder: (context, state) {
+            int unreadCount = 0;
+            if (state is NotificationLoaded) {
+              unreadCount = state.notifications.where((n) => !n.isRead).length;
+            }
+
+            return NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _DashboardHeaderDelegate(
+                      maxExtent: maxHeaderHeight,
+                      minExtent: minHeaderHeight,
+                      context: context,
+                      unreadCount: unreadCount,
+                    ),
+                  ),
+                ];
+              },
+              body: Container(
+                color: Colors.white,
+                child: TabBarView(
+                  children: [
+                    _recentScansList().animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+                    const Center(child: Text('Vehicle Health Content')).animate().fadeIn(delay: 200.ms),
+                  ],
                 ),
               ),
-            ];
+            );
           },
-          body: Container(
-            color: Colors.white,
-            child: TabBarView(
-              children: [
-                _recentScansList().animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
-                const Center(child: Text('Vehicle Health Content')).animate().fadeIn(delay: 200.ms),
-              ],
-            ),
-          ),
         ),
       ),
     ).animate().fadeIn(duration: 400.ms);

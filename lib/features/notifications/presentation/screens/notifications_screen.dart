@@ -32,7 +32,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              context.read<NotificationBloc>().add(MarkAsRead());
+              context.read<NotificationBloc>().add(MarkAllAsRead());
             },
             child: Text(
               'Mark all as read',
@@ -73,7 +73,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final item = notifications[index];
-                return _notificationCard(context, item)
+                return GestureDetector(
+                  onTap: () {
+                    context.read<NotificationBloc>().add(MarkSingleAsRead(item.id));
+                  },
+                  child: _notificationCard(context, item),
+                )
                     .animate()
                     .fadeIn(duration: 400.ms, delay: (index * 50).ms)
                     .slideY(

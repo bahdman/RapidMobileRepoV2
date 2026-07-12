@@ -13,7 +13,14 @@ abstract class NotificationEvent extends Equatable {
 
 class LoadNotifications extends NotificationEvent {}
 
-class MarkAsRead extends NotificationEvent {}
+class MarkAllAsRead extends NotificationEvent {}
+
+class MarkSingleAsRead extends NotificationEvent {
+  final String id;
+  const MarkSingleAsRead(this.id);
+  @override
+  List<Object?> get props => [id];
+}
 
 class DeleteNotification extends NotificationEvent {
   final String id;
@@ -189,7 +196,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       }
     });
 
-    on<MarkAsRead>((event, emit) async {
+    on<MarkAllAsRead>((event, emit) async {
       if (state is NotificationLoaded) {
         final current = (state as NotificationLoaded).notifications;
         final hasUnread = current.any((n) => !n.isRead);
@@ -215,6 +222,38 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         }
       } else {
         showGlobalSnackBar('No notifications available');
+      }
+    });
+
+    on<MarkSingleAsRead>((event, emit) async {
+      if (state is NotificationLoaded) {
+        final current = (state as NotificationLoaded).notifications;
+        final index = current.indexWhere((n) => n.id == event.id);
+        if (index == -1) return;
+        if (current[index].isRead) return;
+
+        try {
+          final response = await _apiService.post(
+            ApiConfig.markAsRead,
+            data: {
+              'ids': [event.id],
+            },
+          );
+          final dataMap = response.data as Map<String, dynamic>;
+          if (dataMap['isSuccess'] == true) {
+            final updated = current.map((e) {
+              if (e.id == event.id) {
+                return e.copyWith(isRead: true);
+              }
+              return e;
+            }).toList();
+            emit(NotificationLoaded(updated));
+          } else {
+            showGlobalSnackBar(dataMap['message'] as String? ?? 'Failed to mark notification as read', isError: true);
+          }
+        } catch (e) {
+          showGlobalSnackBar('Failed to mark notification as read', isError: true);
+        }
       }
     });
 
