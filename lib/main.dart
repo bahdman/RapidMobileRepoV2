@@ -47,7 +47,7 @@ void main() async {
   final obdService = ObdService(apiService);
   final obdConnectionService = ObdConnectionService();
   final deviceService = DeviceService(apiService);
-  final pushNotificationService = PushNotificationService(deviceService);
+  final pushNotificationService = PushNotificationService(deviceService, sharedPrefsHelper);
   final userService = UserService(apiService);
   final scheduleService = ScheduleService(apiService);
 

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'device_service.dart';
+import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 
 /// Top-level background message handler for FCM.
 /// Must be annotated with @pragma('vm:entry-point') to prevent tree shaking.
@@ -27,6 +28,7 @@ const AndroidNotificationChannel _channel = AndroidNotificationChannel(
 
 class PushNotificationService {
   final DeviceService _deviceService;
+  final SharedPrefsHelper _prefsHelper;
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
@@ -38,7 +40,7 @@ class PushNotificationService {
   Stream<RemoteMessage> get foregroundMessageStream =>
       _foregroundMessageController.stream;
 
-  PushNotificationService(this._deviceService);
+  PushNotificationService(this._deviceService, this._prefsHelper);
 
   /// Initializes permissions, local notifications plugin, and FCM listeners.
   Future<void> initialize() async {
@@ -60,6 +62,7 @@ class PushNotificationService {
         debugPrint('[PushNotificationService] Notification permission provisionally granted.');
       } else {
         debugPrint('[PushNotificationService] Notification permission denied.');
+        await _prefsHelper.setNotificationsEnabled(false);
       }
 
       // 2. Set presentation options for when the app is in the foreground
@@ -158,6 +161,26 @@ class PushNotificationService {
   /// Fetches FCM token and registers it with the backend database.
   Future<void> registerDevice() async {
     try {
+      // 1. Request/Verify permissions
+      final settings = await _fcm.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+
+      final isGranted = settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+
+      if (!isGranted) {
+        debugPrint('[PushNotificationService] Notification permission not granted. Skipping device registration.');
+        await _prefsHelper.setNotificationsEnabled(false);
+        return;
+      }
+
       if (Platform.isIOS) {
         String? apnsToken;
         for (int i = 0; i < 5; i++) {
@@ -194,6 +217,7 @@ class PushNotificationService {
 
       if (success) {
         debugPrint('[PushNotificationService] Device token registered successfully.');
+        await _prefsHelper.setNotificationsEnabled(true);
       } else {
         debugPrint('[PushNotificationService] Backend failed to register device token.');
       }

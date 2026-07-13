@@ -12,6 +12,7 @@ import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/core/services/push_notification_service.dart';
 import 'package:rapid_app/core/utils/snackbar_utils.dart';
 import 'package:rapid_app/core/theme/theme_cubit.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -41,6 +42,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final currentThemeMode = context.read<ThemeCubit>().state;
     _useDeviceTheme = currentThemeMode == ThemeMode.system;
     _darkMode = currentThemeMode == ThemeMode.dark;
+    _syncNotificationSettings();
+  }
+
+  Future<void> _syncNotificationSettings() async {
+    try {
+      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      final isGranted = settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+      final localEnabled = _prefsHelper.areNotificationsEnabled();
+
+      if (mounted) {
+        setState(() {
+          _pushNotifications = localEnabled && isGranted;
+        });
+      }
+
+      // If the local preference was enabled but system permissions are denied, disable it locally
+      if (localEnabled && !isGranted) {
+        await _prefsHelper.setNotificationsEnabled(false);
+      }
+    } catch (e) {
+      debugPrint('Error syncing notification settings: $e');
+    }
   }
 
   Future<void> _handlePushNotificationToggle(bool value) async {
@@ -52,11 +76,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       if (value) {
         await _pushService.registerDevice();
-        await _prefsHelper.setNotificationsEnabled(true);
+        final isEnabled = _prefsHelper.areNotificationsEnabled();
         setState(() {
-          _pushNotifications = true;
+          _pushNotifications = isEnabled;
         });
-        showGlobalSnackBar('Push notifications enabled!');
+        if (isEnabled) {
+          showGlobalSnackBar('Push notifications enabled!');
+        } else {
+          showGlobalSnackBar('Notification permission is required to enable this feature.', isError: true);
+        }
       } else {
         await _pushService.deactivateDevice();
         await _prefsHelper.setNotificationsEnabled(false);
