@@ -180,16 +180,30 @@ class ObdService {
 
       String formattedCost = estimatedRepairCost;
       if (estimatedRepairCost.isNotEmpty) {
-        try {
-          final doubleCost = double.parse(
-            estimatedRepairCost.replaceAll(RegExp(r'[^0-9.]'), ''),
-          );
-          formattedCost = NumberFormat.currency(
-            symbol: '₦',
-            decimalDigits: 2,
-          ).format(doubleCost);
-        } catch (e) {
-          // Keep original string if parsing fails
+        final formatter = NumberFormat.currency(
+          symbol: '₦',
+          decimalDigits: 2,
+        );
+        if (estimatedRepairCost.contains('-')) {
+          final parts = estimatedRepairCost.split('-');
+          if (parts.length == 2) {
+            try {
+              final double cost1 = double.parse(parts[0].replaceAll(RegExp(r'[^0-9.]'), ''));
+              final double cost2 = double.parse(parts[1].replaceAll(RegExp(r'[^0-9.]'), ''));
+              formattedCost = '${formatter.format(cost1)} - ${formatter.format(cost2)}';
+            } catch (_) {
+              // Keep original if parsing fails
+            }
+          }
+        } else {
+          try {
+            final doubleCost = double.parse(
+              estimatedRepairCost.replaceAll(RegExp(r'[^0-9.]'), ''),
+            );
+            formattedCost = formatter.format(doubleCost);
+          } catch (_) {
+            // Keep original if parsing fails
+          }
         }
       }
 

@@ -31,6 +31,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
   List<ObdSearchResult> _searchResults = [];
   bool _isLoading = false;
   List<ObdHistoryItem> _dynamicRecentSearches = [];
+  bool _hasSuccessfulSearch = false;
 
   static const _recentSearches = [
     ('P0A01', 'Drive Motor A Inverter Performance'),
@@ -67,10 +68,10 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
     });
   }
 
-  Future<void> _loadSearchHistory() async {
+  Future<void> _loadSearchHistory({bool refresh = false}) async {
     try {
       final obdService = context.read<ObdService>();
-      final history = await obdService.getSearchHistory(limit: 50);
+      final history = await obdService.getSearchHistory(limit: 50, refresh: refresh);
       if (mounted) {
         setState(() {
           _dynamicRecentSearches = history;
@@ -117,7 +118,13 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
         setState(() {
           _searchResults = results;
           _isLoading = false;
+          if (results.isNotEmpty) {
+            _hasSuccessfulSearch = true;
+          }
         });
+        if (results.isNotEmpty) {
+          _loadSearchHistory(refresh: true);
+        }
       }
     } catch (_) {
       if (mounted) {
@@ -130,6 +137,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
 
   void _onResultTapped(String code) {
     if (mounted) {
+      _hasSuccessfulSearch = true;
       context.pushNamed(AppRoutes.issueDetail, extra: code);
     }
   }
@@ -148,105 +156,99 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
         : AppColors.textVeryDarkGrey;
     final backIconColor = isDark ? AppColors.darkTextSub : AppColors.hintGrey;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 12.h),
-
-            // ── Hero search bar ──────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Hero(
-                tag: kInputCodeHeroTag,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 12.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: searchBg,
-                      borderRadius: BorderRadius.circular(100.r),
-                    ),
-                    child: Row(
-                      children: [
-                        // Back button inside the pill
-                        GestureDetector(
-                          onTap: () => context.pop(),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12.h,
-                            ).copyWith(right: 12.w),
-                            child: Icon(
-                              Icons.arrow_back_ios_new,
-                              color: backIconColor,
-                              size: 22.sp,
-                            ),
-                          ),
-                        ),
-                        // Text field
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            focusNode: _focusNode,
-                            decoration: InputDecoration(
-                              fillColor: Colors.transparent,
-                              hintText: 'Input code',
-                              hintStyle: TextStyle(
-                                color: backIconColor,
-                                fontSize: 15.sp,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.symmetric(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        context.pop(_hasSuccessfulSearch);
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 12.h),
+  
+              // ── Hero search bar ──────────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Hero(
+                  tag: kInputCodeHeroTag,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: searchBg,
+                        borderRadius: BorderRadius.circular(100.r),
+                      ),
+                      child: Row(
+                        children: [
+                          // Back button inside the pill
+                          GestureDetector(
+                            onTap: () => context.pop(_hasSuccessfulSearch),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
                                 vertical: 12.h,
+                              ).copyWith(right: 12.w),
+                              child: Icon(
+                                Icons.arrow_back_ios_new,
+                                color: backIconColor,
+                                size: 22.sp,
                               ),
                             ),
-                            style: TextStyle(
-                              fontSize: 15.sp,
-                              color: inputTextColor,
+                          ),
+                          // Text field
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              focusNode: _focusNode,
+                              decoration: InputDecoration(
+                                fillColor: Colors.transparent,
+                                hintText: 'Input code',
+                                hintStyle: TextStyle(
+                                  color: backIconColor,
+                                  fontSize: 15.sp,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12.h,
+                                ),
+                              ),
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                color: inputTextColor,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 12.w),
-                      ],
+                          SizedBox(width: 12.w),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-
-            // ── Selective Animation for Content ──────────────────────────────
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!hasQuery) ...[
-                    SizedBox(height: 20.h),
-                    // ── Recent searches header ─────────────────────────────
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Recent Searches',
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w400,
-                              color: isDark
-                                  ? AppColors.darkTextPrimary
-                                  : Colors.black,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {},
-                            child: Text(
-                              'MANAGE HISTORY',
+  
+              // ── Selective Animation for Content ──────────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!hasQuery) ...[
+                      SizedBox(height: 20.h),
+                      // ── Recent searches header ─────────────────────────────
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Recent Searches',
                               style: TextStyle(
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.w400,
@@ -255,76 +257,89 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                                     : Colors.black,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                  ] else ...[
-                    SizedBox(height: 12.h),
-                  ],
-
-                  // ── List / Loader ───────────────────────────────────────────────
-                  Expanded(
-                    child: _isLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                            ),
-                          )
-                        : hasQuery && _searchResults.isEmpty
-                        ? Center(
-                            child: Text(
-                              'No results found for "$query"',
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                color: AppColors.textMediumGrey,
+                            GestureDetector(
+                              onTap: () {},
+                              child: Text(
+                                'MANAGE HISTORY',
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: isDark
+                                      ? AppColors.darkTextPrimary
+                                      : Colors.black,
+                                ),
                               ),
                             ),
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            itemCount: hasQuery
-                                ? _searchResults.length
-                                : (_dynamicRecentSearches.isNotEmpty
-                                      ? _dynamicRecentSearches.length
-                                      : _recentSearches.length),
-                            itemBuilder: (context, index) {
-                              if (hasQuery) {
-                                final result = _searchResults[index];
-                                return _searchItem(
-                                  result.code,
-                                  result.faultDescription.isNotEmpty
-                                      ? result.faultDescription
-                                      : result.primaryCause,
-                                  isRecent: false,
-                                  priority: result.priority,
-                                );
-                              } else {
-                                if (_dynamicRecentSearches.isNotEmpty) {
-                                  final item = _dynamicRecentSearches[index];
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                    ] else ...[
+                      SizedBox(height: 12.h),
+                    ],
+  
+                    // ── List / Loader ───────────────────────────────────────────────
+                    Expanded(
+                      child: _isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : hasQuery && _searchResults.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No results found for "$query"',
+                                style: TextStyle(
+                                  fontSize: 15.sp,
+                                  color: AppColors.textMediumGrey,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: EdgeInsets.symmetric(horizontal: 20.w),
+                              itemCount: hasQuery
+                                  ? _searchResults.length
+                                  : (_dynamicRecentSearches.isNotEmpty
+                                        ? _dynamicRecentSearches.length
+                                        : _recentSearches.length),
+                              itemBuilder: (context, index) {
+                                if (hasQuery) {
+                                  final result = _searchResults[index];
                                   return _searchItem(
-                                    item.query,
-                                    'Search Type: ${item.searchType}',
-                                    isRecent: true,
+                                    result.code,
+                                    result.faultDescription.isNotEmpty
+                                        ? result.faultDescription
+                                        : result.primaryCause,
+                                    isRecent: false,
+                                    priority: result.priority,
                                   );
                                 } else {
-                                  final (code, description) =
-                                      _recentSearches[index];
-                                  return _searchItem(
-                                    code,
-                                    description,
-                                    isRecent: true,
-                                  );
+                                  if (_dynamicRecentSearches.isNotEmpty) {
+                                    final item = _dynamicRecentSearches[index];
+                                    return _searchItem(
+                                      item.query,
+                                      'Search Type: ${item.searchType}',
+                                      isRecent: true,
+                                    );
+                                  } else {
+                                    final (code, description) =
+                                        _recentSearches[index];
+                                    return _searchItem(
+                                      code,
+                                      description,
+                                      isRecent: true,
+                                    );
+                                  }
                                 }
-                              }
-                            },
-                          ),
-                  ),
-                ],
-              ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
-            ),
-          ],
+                              },
+                            ),
+                    ),
+                  ],
+                ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
+              ),
+            ],
+          ),
         ),
       ),
     );

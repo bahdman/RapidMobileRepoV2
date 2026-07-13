@@ -25,4 +25,21 @@ class ThemeCubit extends Cubit<ThemeMode> {
     await _prefsHelper.setThemeMode(isDark ? 'dark' : 'light');
     emit(mode);
   }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    String modeStr;
+    switch (mode) {
+      case ThemeMode.dark:
+        modeStr = 'dark';
+        break;
+      case ThemeMode.light:
+        modeStr = 'light';
+        break;
+      case ThemeMode.system:
+        modeStr = 'system';
+        break;
+    }
+    await _prefsHelper.setThemeMode(modeStr);
+    emit(mode);
+  }
 }

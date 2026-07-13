@@ -33,13 +33,15 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<NotificationBloc>().add(LoadNotifications());
   }
 
-  Future<void> _loadHistory() async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _loadHistory({bool refresh = false}) async {
+    if (!refresh && _historyItems.isEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
     try {
       final obdService = context.read<ObdService>();
-      final history = await obdService.getSearchHistory(limit: 20);
+      final history = await obdService.getSearchHistory(limit: 20, refresh: refresh);
       if (mounted) {
         setState(() {
           _historyItems = history;
@@ -48,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       debugPrint('Error loading home history: $e');
     } finally {
-      if (mounted) {
+      if (mounted && !refresh) {
         setState(() {
           _isLoading = false;
         });
@@ -82,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       minExtent: minHeaderHeight,
                       context: context,
                       unreadCount: unreadCount,
+                      onRefreshHistory: () => _loadHistory(refresh: true),
                     ),
                   ),
                 ];
@@ -106,43 +109,63 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    final Widget child;
     if (_historyItems.isEmpty) {
-      return Center(
-        child: Text(
-          'No recent scans found.',
-          style: TextStyle(
-            color: AppColors.textMediumGrey,
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+      child = LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: Center(
+                child: Text(
+                  'No recent scans found.',
+                  style: TextStyle(
+                    color: AppColors.textMediumGrey,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      child = ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: _historyItems.length,
+        separatorBuilder: (_, __) => SizedBox(height: 24.h),
+        itemBuilder: (context, index) {
+          final item = _historyItems[index];
+          
+          final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          String dateStr = '${months[item.searchedAt.month - 1]} ${item.searchedAt.day}, ${item.searchedAt.year}';
+          
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _groupHeader(dateStr),
+              _historyItem(
+                'Code: ${item.query}',
+                'Scanned via ${item.searchType}',
+                item.query,
+              ),
+            ],
+          );
+        },
       );
     }
 
-    return ListView.separated(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      physics: const BouncingScrollPhysics(),
-      itemCount: _historyItems.length,
-      separatorBuilder: (_, __) => SizedBox(height: 24.h),
-      itemBuilder: (context, index) {
-        final item = _historyItems[index];
-        
-        final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        String dateStr = '${months[item.searchedAt.month - 1]} ${item.searchedAt.day}, ${item.searchedAt.year}';
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _groupHeader(dateStr),
-            _historyItem(
-              'Code: ${item.query}',
-              'Scanned via ${item.searchType}',
-              item.query,
-            ),
-          ],
-        );
-      },
-    ).animate().fadeIn().slideY(begin: 0.05, end: 0);
+    return RefreshIndicator(
+      onRefresh: () => _loadHistory(refresh: true),
+      color: AppColors.primary,
+      child: child,
+    );
   }
 
   Widget _groupHeader(String title) {
@@ -161,8 +184,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _historyItem(String title, String subtitle, String query) {
     return InkWell(
-      onTap: () {
-        context.pushNamed(AppRoutes.codeSearch, extra: query);
+      onTap: () async {
+        final result = await context.pushNamed(AppRoutes.codeSearch, extra: query);
+        if (result == true) {
+          _loadHistory(refresh: true);
+        }
       },
       child: Row(
         children: [
@@ -211,12 +237,14 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
   final double minExtent;
   final BuildContext context;
   final int unreadCount;
+  final VoidCallback onRefreshHistory;
 
   _DashboardHeaderDelegate({
     required this.maxExtent,
     required this.minExtent,
     required this.context,
     required this.unreadCount,
+    required this.onRefreshHistory,
   });
 
   @override
@@ -314,8 +342,12 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                               child: Material(
                                 color: Colors.transparent,
                                 child: GestureDetector(
-                                  onTap: () =>
-                                      context.pushNamed(AppRoutes.codeSearch),
+                                  onTap: () async {
+                                    final result = await context.pushNamed(AppRoutes.codeSearch);
+                                    if (result == true) {
+                                      onRefreshHistory();
+                                    }
+                                  },
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16.w,
@@ -414,8 +446,11 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   Widget _tagItem(String text) {
     return GestureDetector(
-      onTap: () {
-        context.pushNamed(AppRoutes.codeSearch, extra: text);
+      onTap: () async {
+        final result = await context.pushNamed(AppRoutes.codeSearch, extra: text);
+        if (result == true) {
+          onRefreshHistory();
+        }
       },
       child: Container(
         margin: EdgeInsets.only(right: 8.w),
@@ -505,6 +540,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
     return maxExtent != oldDelegate.maxExtent ||
         minExtent != oldDelegate.minExtent ||
         context != oldDelegate.context ||
-        unreadCount != oldDelegate.unreadCount;
+        unreadCount != oldDelegate.unreadCount ||
+        onRefreshHistory != oldDelegate.onRefreshHistory;
   }
 }

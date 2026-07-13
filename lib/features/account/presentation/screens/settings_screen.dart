@@ -29,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _scanReminder = true;
   bool _shareUsageData = false;
   bool _darkMode = false;
+  bool _useDeviceTheme = false;
   bool _isProcessingPush = false;
 
   @override
@@ -37,7 +38,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _prefsHelper = context.read<SharedPrefsHelper>();
     _pushService = context.read<PushNotificationService>();
     _pushNotifications = _prefsHelper.areNotificationsEnabled();
-    _darkMode = context.read<ThemeCubit>().state == ThemeMode.dark;
+    final currentThemeMode = context.read<ThemeCubit>().state;
+    _useDeviceTheme = currentThemeMode == ThemeMode.system;
+    _darkMode = currentThemeMode == ThemeMode.dark;
   }
 
   Future<void> _handlePushNotificationToggle(bool value) async {
@@ -73,6 +76,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_useDeviceTheme) {
+      _darkMode = Theme.of(context).brightness == Brightness.dark;
+    }
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const RapidAppBar(title: 'Settings'),
@@ -130,14 +136,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             _buildSettingsGroup([
               _buildSwitchRow(
-                title: 'Dark Mode',
-                subtitle: 'Switch to dark theme',
-                value: _darkMode,
+                title: 'Use Device Theme',
+                subtitle: 'Use system theme settings',
+                value: _useDeviceTheme,
                 onChanged: (val) {
-                  setState(() => _darkMode = val);
-                  context.read<ThemeCubit>().toggleTheme(val);
+                  setState(() {
+                    _useDeviceTheme = val;
+                    if (val) {
+                      context.read<ThemeCubit>().setThemeMode(ThemeMode.system);
+                    } else {
+                      final manualMode = _darkMode ? ThemeMode.dark : ThemeMode.light;
+                      context.read<ThemeCubit>().setThemeMode(manualMode);
+                    }
+                  });
                 },
+                showDivider: true,
+              ),
+              _buildSwitchRow(
+                title: 'Dark Mode',
+                subtitle: _useDeviceTheme ? 'Managed by device theme' : 'Switch to dark theme',
+                value: _darkMode,
+                onChanged: _useDeviceTheme
+                    ? null
+                    : (val) {
+                        setState(() => _darkMode = val);
+                        context.read<ThemeCubit>().setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
+                      },
                 showDivider: false,
+                enabled: !_useDeviceTheme,
               ),
             ]),
 
@@ -209,11 +235,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String subtitle,
     required bool value,
-    required ValueChanged<bool> onChanged,
+    required ValueChanged<bool>? onChanged,
     bool showDivider = true,
+    bool enabled = true,
   }) {
-    final titleColor = Theme.of(context).colorScheme.onSurface;
-    final subColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final titleColor = enabled
+        ? Theme.of(context).colorScheme.onSurface
+        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38);
+    final subColor = enabled
+        ? Theme.of(context).colorScheme.onSurfaceVariant
+        : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.38);
     final dividerColor = Theme.of(context).colorScheme.outline.withValues(alpha: 0.5);
     return Column(
       children: [
@@ -249,7 +280,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 scale: 0.9,
                 child: CupertinoSwitch(
                   value: value,
-                  onChanged: onChanged,
+                  onChanged: enabled ? onChanged : null,
                   activeTrackColor: AppColors.primary,
                 ),
               ),
