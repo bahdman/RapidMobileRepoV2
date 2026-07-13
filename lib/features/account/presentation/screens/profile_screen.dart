@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +11,7 @@ import 'package:rapid_app/core/widgets/rapid_button.dart';
 import 'package:rapid_app/core/services/user_service.dart';
 import 'package:dio/dio.dart';
 import 'package:rapid_app/core/utils/snackbar_utils.dart';
+import 'package:rapid_app/core/widgets/user_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -26,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneCtrl = TextEditingController();
   bool _isLoading = false;
   bool _isSaving = false;
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -53,6 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _nameCtrl.text = '${profile.firstName} ${profile.lastName}'.trim();
           _emailCtrl.text = profile.email;
           _phoneCtrl.text = profile.phoneNumber;
+          _avatarUrl = profile.avatar;
         });
       }
     } catch (e) {
@@ -106,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const RapidAppBar(title: 'Profile'),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -123,19 +125,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Stack(
                             clipBehavior: Clip.none,
                             children: [
-                              Container(
-                                width: 90.w,
-                                height: 90.w,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.grey200,
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    image: CachedNetworkImageProvider(
-                                      'https://i.pravatar.cc/150?img=3',
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                              UserAvatar(
+                                avatar: _avatarUrl ?? 'https://i.pravatar.cc/150?img=3',
+                                size: 90.w,
                               ),
                               Positioned(
                                 bottom: 0,
@@ -197,6 +189,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required TextEditingController controller,
     TextInputType? keyboardType,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? AppColors.darkTextSub : const Color(0xFF9CA3AF);
+    final fieldBg = Theme.of(context).colorScheme.surface;
+    final fieldBorder = Theme.of(context).colorScheme.outline;
+    final textColor = Theme.of(context).colorScheme.onSurface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -205,7 +202,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(
             fontSize: 12.sp,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF9CA3AF),
+            color: labelColor,
             letterSpacing: 0.5,
           ),
         ),
@@ -216,18 +213,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: textColor,
           ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white,
+            fillColor: fieldBg,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 20.w,
               vertical: 22.h,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16.r),
-              borderSide: const BorderSide(color: AppColors.grey200),
+              borderSide: BorderSide(color: fieldBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16.r),

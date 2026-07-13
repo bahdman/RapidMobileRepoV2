@@ -77,8 +77,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final grouped = groupedHistory;
     final dateKeys = grouped.keys.toList();
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -113,6 +114,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHeader() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 20.h),
       child: Text(
@@ -120,13 +122,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
         style: TextStyle(
           fontSize: 21.sp,
           fontWeight: FontWeight.w700,
-          color: AppColors.black400,
+          color: isDark ? AppColors.darkTextPrimary : AppColors.black400,
         ),
       ),
     );
   }
 
   Widget _buildFilterBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       height: 48.h,
       child: ListView.builder(
@@ -142,7 +145,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
               label: Text(filter),
               selected: isSelected,
               onSelected: (val) => setState(() => selectedFilter = filter),
-              backgroundColor: AppColors.btnGrey,
+              backgroundColor: isDark
+                  ? AppColors.darkSurface
+                  : AppColors.btnGrey,
               selectedColor: AppColors.primary,
               showCheckmark: false,
               labelPadding: EdgeInsets.symmetric(
@@ -150,13 +155,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 vertical: 2.h,
               ),
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : AppColors.black400,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? AppColors.darkTextSub : AppColors.black400),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 14.sp,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24.r),
-                side: BorderSide(color: AppColors.borderColor),
+                side: BorderSide(
+                  color: isDark ? AppColors.darkBorder : AppColors.borderColor,
+                ),
               ),
             ),
           );
@@ -166,19 +175,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildDateGroup(String date, List<ScanHistory> items) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.darkSurface : const Color(0xffFAFAFA);
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.grey200;
+    final titleColor = isDark ? AppColors.darkTextPrimary : AppColors.black400;
+    final dividerColor = isDark ? AppColors.darkBorder : AppColors.grey200;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 24.h),
-        Container(
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Color(0xffFAFAFA),
+            color: cardBg,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColors.grey200, width: 0.6),
+            border: Border.all(color: borderColor, width: 0.6),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
+                color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -194,11 +210,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.black400,
+                    color: titleColor,
                   ),
                 ),
               ),
-              Divider(color: AppColors.grey200, thickness: 1, height: 0.6),
+              Divider(color: dividerColor, thickness: 1, height: 0.6),
               ...items.asMap().entries.map((entry) {
                 final idx = entry.key;
                 final item = entry.value;
@@ -206,11 +222,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   children: [
                     _buildHistoryItem(item),
                     if (idx != items.length - 1)
-                      Divider(
-                        color: AppColors.grey200,
-                        thickness: 1,
-                        height: 0.6,
-                      ),
+                      Divider(color: dividerColor, thickness: 1, height: 0.6),
                   ],
                 );
               }),
@@ -224,6 +236,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildHistoryItem(ScanHistory history) {
     final issue = IssueDatabase.getIssue(history.issueCode);
     if (issue == null) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final itemTitleColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.black400;
+    final itemSubtitleColor = isDark
+        ? AppColors.darkTextSub
+        : AppColors.grey500;
+    final arrowFilter = isDark
+        ? ColorFilter.mode(AppColors.darkTextSub, BlendMode.srcIn)
+        : null;
 
     String iconPath;
 
@@ -261,7 +284,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         style: TextStyle(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.black400,
+                          color: itemTitleColor,
                         ),
                       ),
                       SizedBox(width: 8.w),
@@ -270,7 +293,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.grey500,
+                          color: itemSubtitleColor,
                         ),
                       ),
                     ],
@@ -281,7 +304,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.grey500,
+                      color: itemSubtitleColor,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -290,7 +313,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             SizedBox(width: 8.w),
-            SvgPicture.asset(Assets.arrowRight),
+            SvgPicture.asset(Assets.arrowRight, colorFilter: arrowFilter),
           ],
         ),
       ),

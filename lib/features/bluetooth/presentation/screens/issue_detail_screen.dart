@@ -14,7 +14,11 @@ class IssueDetailScreen extends StatelessWidget {
   final String issueCode;
   final DiagnosticIssue? initialIssue;
 
-  const IssueDetailScreen({super.key, required this.issueCode, this.initialIssue});
+  const IssueDetailScreen({
+    super.key,
+    required this.issueCode,
+    this.initialIssue,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +34,9 @@ class IssueDetailScreen extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Scaffold(
             appBar: AppBar(title: const Text('Error')),
-            body: Center(child: Text('Failed to load issue details: ${snapshot.error}')),
+            body: Center(
+              child: Text('Failed to load issue details: ${snapshot.error}'),
+            ),
           );
         } else if (snapshot.hasData) {
           return _buildContent(context, snapshot.data!);
@@ -42,7 +48,7 @@ class IssueDetailScreen extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, DiagnosticIssue issue) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // ── Fixed Header ───────────────────────────────────────────
@@ -55,11 +61,11 @@ class IssueDetailScreen extends StatelessWidget {
               padding: EdgeInsets.only(top: 10.h, bottom: 40.h),
               child: Column(
                 children: [
-                  _buildWhatsHappeningSection(issue),
+                  _buildWhatsHappeningSection(context, issue),
                   SizedBox(height: 10.h),
-                  _buildRepairCostSection(issue),
+                  _buildRepairCostSection(context, issue),
                   SizedBox(height: 10.h),
-                  _buildPossibleCauseSection(issue),
+                  _buildPossibleCauseSection(context, issue),
                   SizedBox(height: 32.h),
                   Text('Rapid V1.2', style: AppTextStyles.rapidVersion),
                 ],
@@ -72,73 +78,118 @@ class IssueDetailScreen extends StatelessWidget {
   }
 
   Widget _buildShimmer(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+    final shimmerBg = isDark ? AppColors.darkSurface2 : const Color(0xFFF0F0F0);
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
-      body: Column(
-        children: [
-          Container(
-            height: 280.h,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(34.r)),
-            ),
-            padding: EdgeInsets.fromLTRB(20.w, 60.h, 20.w, 24.h),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(width: 44.w, height: 44.w, decoration: const BoxDecoration(color: Color(0xFFF0F0F0), shape: BoxShape.circle)),
-                      Container(width: 44.w, height: 44.w, decoration: const BoxDecoration(color: Color(0xFFF0F0F0), shape: BoxShape.circle)),
-                    ],
-                  ),
-                  SizedBox(height: 24.h),
-                  Container(width: 150.w, height: 30.h, color: const Color(0xFFF0F0F0)),
-                  SizedBox(height: 12.h),
-                  Container(width: 250.w, height: 20.h, color: const Color(0xFFF0F0F0)),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              child: Column(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body:
+          Column(
                 children: [
                   Container(
-                    height: 180.h,
-                    margin: EdgeInsets.symmetric(horizontal: 20.w),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(34.r)),
+                    height: 280.h,
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(34.r),
+                      ),
+                    ),
+                    padding: EdgeInsets.fromLTRB(20.w, 60.h, 20.w, 24.h),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: 44.w,
+                                height: 44.w,
+                                decoration: BoxDecoration(
+                                  color: shimmerBg,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Container(
+                                width: 44.w,
+                                height: 44.w,
+                                decoration: BoxDecoration(
+                                  color: shimmerBg,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 24.h),
+                          Container(
+                            width: 150.w,
+                            height: 30.h,
+                            color: shimmerBg,
+                          ),
+                          SizedBox(height: 12.h),
+                          Container(
+                            width: 250.w,
+                            height: 20.h,
+                            color: shimmerBg,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   SizedBox(height: 10.h),
-                  Container(
-                    height: 80.h,
-                    margin: EdgeInsets.symmetric(horizontal: 20.w),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(34.r)),
-                  ),
-                  SizedBox(height: 10.h),
-                  Container(
-                    height: 220.h,
-                    margin: EdgeInsets.symmetric(horizontal: 20.w),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(34.r)),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 180.h,
+                            margin: EdgeInsets.symmetric(horizontal: 20.w),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(34.r),
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          Container(
+                            height: 80.h,
+                            margin: EdgeInsets.symmetric(horizontal: 20.w),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(34.r),
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          Container(
+                            height: 220.h,
+                            margin: EdgeInsets.symmetric(horizontal: 20.w),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(34.r),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
+              )
+              .animate(onPlay: (controller) => controller.repeat())
+              .shimmer(
+                duration: 1200.ms,
+                color: isDark ? Colors.white12 : Colors.white54,
               ),
-            ),
-          ),
-        ],
-      ).animate(onPlay: (controller) => controller.repeat()).shimmer(duration: 1200.ms, color: Colors.white54),
     );
   }
 
   Widget _buildHeader(BuildContext context, DiagnosticIssue issue) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+    final codeColor = isDark ? AppColors.darkTextPrimary : AppColors.black400;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(34.r)),
       ),
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
@@ -151,12 +202,17 @@ class IssueDetailScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _appbarButton(
-                  svg: Assets.appbarBackBtn,
+                  isRoundedRectButton: false,
+                  context: context,
+                  svg: Assets.arrowBack,
                   onTap: () => context.pop(),
                 ),
+
                 _appbarButton(
-                  svg: Assets.share,
-                  onTap: () {}, // Not implemented
+                  isRoundedRectButton: true,
+                  context: context,
+                  svg: Assets.shareOutline,
+                  onTap: () {},
                 ),
               ],
             ),
@@ -168,7 +224,7 @@ class IssueDetailScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.black400,
+                    color: codeColor,
                   ),
                 ),
                 SizedBox(width: 16.w),
@@ -200,7 +256,7 @@ class IssueDetailScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
-                color: AppColors.black400,
+                color: codeColor,
               ),
             ),
             if (issue.unsafeToDrive) ...[
@@ -234,11 +290,23 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWhatsHappeningSection(DiagnosticIssue issue) {
-    return Container(
+  Widget _buildWhatsHappeningSection(
+    BuildContext context,
+    DiagnosticIssue issue,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+    final titleColor = isDark ? AppColors.darkTextPrimary : Colors.black;
+    final bodyColor = isDark ? AppColors.darkTextSub : AppColors.black400;
+    final recommendedBg = isDark
+        ? AppColors.darkSurface2
+        : const Color(0xFFF1F6FE);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(34.r),
       ),
       child: Column(
@@ -249,7 +317,7 @@ class IssueDetailScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.black,
+              color: titleColor,
             ),
           ),
           SizedBox(height: 10.h),
@@ -258,14 +326,15 @@ class IssueDetailScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
-              color: AppColors.black400,
+              color: bodyColor,
             ),
           ),
           SizedBox(height: 24.h),
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F6FE), // Light blue bg
+              color: recommendedBg,
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -282,7 +351,7 @@ class IssueDetailScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: titleColor,
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -291,7 +360,7 @@ class IssueDetailScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.black400,
+                          color: bodyColor,
                           height: 1.5,
                         ),
                       ),
@@ -306,11 +375,16 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRepairCostSection(DiagnosticIssue issue) {
-    return Container(
+  Widget _buildRepairCostSection(BuildContext context, DiagnosticIssue issue) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+    final textColor = isDark ? AppColors.darkTextPrimary : Colors.black;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(34.r),
       ),
       child: Row(
@@ -325,7 +399,7 @@ class IssueDetailScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w400,
-                  color: Colors.black,
+                  color: textColor,
                 ),
               ),
               SizedBox(height: 4.h),
@@ -334,7 +408,7 @@ class IssueDetailScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black,
+                  color: textColor,
                 ),
               ),
             ],
@@ -344,11 +418,20 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPossibleCauseSection(DiagnosticIssue issue) {
-    return Container(
+  Widget _buildPossibleCauseSection(
+    BuildContext context,
+    DiagnosticIssue issue,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+    final titleColor = isDark ? AppColors.darkTextPrimary : Colors.black;
+    final bodyColor = isDark ? AppColors.darkTextSub : Colors.black;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(34.r),
       ),
       child: Column(
@@ -363,7 +446,7 @@ class IssueDetailScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: titleColor,
                 ),
               ),
             ],
@@ -372,8 +455,6 @@ class IssueDetailScreen extends StatelessWidget {
           ...issue.possibleCauses.asMap().entries.map((entry) {
             final index = entry.key + 1;
             final cause = entry.value;
-            // Split cause into title and description if it's in "Title: Description" format
-            // or just use it as a title if not.
             final parts = cause.contains(': ')
                 ? cause.split(': ')
                 : [cause, ''];
@@ -390,7 +471,7 @@ class IssueDetailScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: titleColor,
                     ),
                   ),
                   if (detail.isNotEmpty) ...[
@@ -402,7 +483,7 @@ class IssueDetailScreen extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 15.sp,
-                          color: Colors.black,
+                          color: bodyColor,
                           height: 1.5,
                         ),
                       ),
@@ -417,11 +498,34 @@ class IssueDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _appbarButton({required String svg, required VoidCallback onTap}) {
+  Widget _appbarButton({
+    required BuildContext context,
+    required String svg,
+    required VoidCallback onTap,
+    required bool isRoundedRectButton,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(100),
-      child: SizedBox(width: 44.w, height: 44.w, child: SvgPicture.asset(svg)),
+      borderRadius: BorderRadius.circular(isRoundedRectButton ? 16.r : 100.r),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 1.w,
+            color: isDark ? AppColors.grey800 : const Color(0xFFE5E7EB),
+          ),
+          borderRadius: BorderRadius.circular(
+            isRoundedRectButton ? 16.r : 100.r,
+          ),
+        ),
+        padding: EdgeInsets.all(10.0),
+        child: SvgPicture.asset(
+          svg,
+          colorFilter: isDark
+              ? ColorFilter.mode(AppColors.darkTextPrimary, BlendMode.srcIn)
+              : null,
+        ),
+      ),
     );
   }
 }

@@ -25,7 +25,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<ObdHistoryItem> _historyItems = [];
   bool _isLoading = false;
-  int _unreadCount = 0;
 
   @override
   void initState() {
@@ -88,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ];
               },
               body: Container(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 child: TabBarView(
                   children: [
                     _recentScansList().animate().fadeIn(delay: 200.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
@@ -176,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textVeryDarkGrey,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -323,7 +322,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                                       vertical: 20.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface : Colors.white,
                                       borderRadius: BorderRadius.circular(
                                         100.r,
                                       ),
@@ -368,7 +367,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(32.r * (1 - progress).clamp(0.0, 1.0)),
                 ),
@@ -379,7 +378,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
-                labelColor: Colors.black,
+                labelColor: Theme.of(context).colorScheme.onSurface,
                 unselectedLabelColor: AppColors.textMediumGrey,
                 labelStyle: TextStyle(
                   fontSize: 15.sp,

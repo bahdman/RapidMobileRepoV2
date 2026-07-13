@@ -11,6 +11,7 @@ import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 import 'package:rapid_app/core/utils/shared_prefs_helper.dart';
 import 'package:rapid_app/core/services/push_notification_service.dart';
 import 'package:rapid_app/core/utils/snackbar_utils.dart';
+import 'package:rapid_app/core/theme/theme_cubit.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -36,6 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _prefsHelper = context.read<SharedPrefsHelper>();
     _pushService = context.read<PushNotificationService>();
     _pushNotifications = _prefsHelper.areNotificationsEnabled();
+    _darkMode = context.read<ThemeCubit>().state == ThemeMode.dark;
   }
 
   Future<void> _handlePushNotificationToggle(bool value) async {
@@ -72,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const RapidAppBar(title: 'Settings'),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
@@ -131,7 +133,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Dark Mode',
                 subtitle: 'Switch to dark theme',
                 value: _darkMode,
-                onChanged: (val) => setState(() => _darkMode = val),
+                onChanged: (val) {
+                  setState(() => _darkMode = val);
+                  context.read<ThemeCubit>().toggleTheme(val);
+                },
                 showDivider: false,
               ),
             ]),
@@ -181,14 +186,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsGroup(List<Widget> children) {
-    return Container(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.grey200.withValues(alpha: 0.5)),
+        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.grey200.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -205,6 +212,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
     bool showDivider = true,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = Theme.of(context).colorScheme.onSurface;
+    final subColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final dividerColor = Theme.of(context).colorScheme.outline.withValues(alpha: 0.5);
     return Column(
       children: [
         Padding(
@@ -220,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black,
+                        color: titleColor,
                       ),
                     ),
                     SizedBox(height: 2.h),
@@ -228,7 +239,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle,
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.textMediumGrey,
+                        color: subColor,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -247,7 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         if (showDivider)
-          Divider(color: AppColors.grey200.withValues(alpha: 0.5), height: 1),
+          Divider(color: dividerColor, height: 1),
       ],
     );
   }
@@ -257,6 +268,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),
@@ -272,7 +284,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textMediumGrey,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -280,7 +292,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           if (showDivider)
-            Divider(color: AppColors.grey200.withValues(alpha: 0.5), height: 1),
+            Divider(
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
+              height: 1,
+            ),
         ],
       ),
     );

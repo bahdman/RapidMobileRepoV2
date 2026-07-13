@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,9 +12,42 @@ import 'package:rapid_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:rapid_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:rapid_app/route_names.dart';
+import 'package:rapid_app/core/services/user_service.dart';
+import 'package:rapid_app/core/widgets/user_avatar.dart';
 
-class AccountScreen extends StatelessWidget {
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  String _displayName = 'User';
+  String? _avatar;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfileName();
+  }
+
+  Future<void> _fetchProfileName() async {
+    try {
+      final userService = context.read<UserService>();
+      // We pass refresh: true to bypass the cache to ensure we get latest if updated
+      final profile = await userService.getUserProfile(refresh: true);
+      if (profile != null && mounted) {
+        final fullName = '${profile.firstName} ${profile.lastName}'.trim();
+        setState(() {
+          _displayName = fullName.isNotEmpty ? fullName : 'User';
+          _avatar = profile.avatar;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching profile name for AccountScreen: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +66,7 @@ class AccountScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return Stack(
@@ -49,26 +81,17 @@ class AccountScreen extends StatelessWidget {
                         Center(
                           child: Column(
                             children: [
-                              Container(
-                                width: 60.w,
-                                height: 60.w,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    image: CachedNetworkImageProvider(
-                                      'https://i.pravatar.cc/150?img=3',
-                                    ),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                              UserAvatar(
+                                avatar: _avatar ?? 'https://i.pravatar.cc/150?img=3',
+                                size: 60.w,
                               ),
                               SizedBox(height: 10.h),
                               Text(
-                                'John Doe',
+                                _displayName,
                                 style: TextStyle(
                                   fontSize: 17.sp,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.black,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               SizedBox(height: 8.h),
@@ -144,7 +167,10 @@ class AccountScreen extends StatelessWidget {
                             svg: Assets.profile,
                             title: 'Profile Setup',
                             subtitle: 'Name, photo, phone',
-                            onTap: () => context.pushNamed(AppRoutes.profile),
+                            onTap: () async {
+                              await context.pushNamed(AppRoutes.profile);
+                              _fetchProfileName();
+                            },
                           ),
                           _buildMenuItem(
                             svg: Assets.subscriptions,
@@ -236,14 +262,16 @@ class AccountScreen extends StatelessWidget {
   }
 
   Widget _buildGroupedCard(List<Widget> children) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = cs.brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.grey200),
+        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.grey200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -260,6 +288,9 @@ class AccountScreen extends StatelessWidget {
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = cs.brightness == Brightness.dark;
+    final subColor = isDark ? AppColors.darkTextSub : const Color(0xFF9CA3AF);
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -279,14 +310,14 @@ class AccountScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: cs.onSurface,
                         ),
                       ),
                       Text(
                         subtitle,
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: const Color(0xFF9CA3AF),
+                          color: subColor,
                         ),
                       ),
                     ],
@@ -294,14 +325,18 @@ class AccountScreen extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: const Color(0xFF9CA3AF),
+                  color: subColor,
                   size: 20.w,
                 ),
               ],
             ),
           ),
           if (showDivider)
-            Divider(color: AppColors.grey200, thickness: 1, height: 0.5),
+            Divider(
+              color: isDark ? AppColors.darkBorder : AppColors.grey200,
+              thickness: 1,
+              height: 0.5,
+            ),
         ],
       ),
     );

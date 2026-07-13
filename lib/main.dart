@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rapid_app/core/theme/app_theme.dart';
+import 'package:rapid_app/core/theme/theme_cubit.dart';
 import 'package:rapid_app/core/services/api_service.dart';
 import 'package:rapid_app/core/services/auth_event_bus.dart';
 import 'package:rapid_app/core/services/obd_service.dart';
@@ -94,6 +95,7 @@ void main() async {
               pushNotificationService,
             ),
           ),
+          BlocProvider(create: (context) => ThemeCubit(sharedPrefsHelper)),
         ],
         child: MainApp(router: router),
       ),
@@ -170,15 +172,20 @@ class _MainAppState extends State<MainApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return NotificationBannerOverlay(
-          child: MaterialApp.router(
-            scaffoldMessengerKey: scaffoldMessengerKey,
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.light,
-            routerConfig: widget.router,
-          ),
+        return BlocBuilder<ThemeCubit, ThemeMode>(
+          builder: (context, themeMode) {
+            return MaterialApp.router(
+              scaffoldMessengerKey: scaffoldMessengerKey,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: themeMode,
+              routerConfig: widget.router,
+              builder: (context, routerChild) {
+                return NotificationBannerOverlay(child: routerChild ?? const SizedBox.shrink());
+              },
+            );
+          },
         );
       },
     );

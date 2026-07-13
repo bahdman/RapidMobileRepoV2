@@ -43,4 +43,12 @@ class AppColors {
   static const Color lightBlue = Color(0xffDBEAFE);
   static const Color connectDirectBlue = Color(0xFF4EA3FF);
   static const Color connectObdBlue = Color(0xFF074180);
+
+  // Dark mode surfaces
+  static const Color darkSurface = Color(0xFF1C1C1E);      // card background in dark
+  static const Color darkSurface2 = Color(0xFF2C2C2E);     // slightly elevated surface
+  static const Color darkScaffoldBg = Color(0xFF111113);   // page background in dark
+  static const Color darkBorder = Color(0xFF3A3A3C);       // border in dark
+  static const Color darkTextPrimary = Color(0xFFEFEFF0);  // main text in dark
+  static const Color darkTextSub = Color(0xFF8E8E93);      // subtitle/muted text in dark
 }

@@ -10,6 +10,7 @@ class UserProfile {
   final String lastName;
   final String phoneNumber;
   final String createdAt;
+  final String? avatar;
 
   UserProfile({
     required this.userId,
@@ -18,6 +19,7 @@ class UserProfile {
     required this.lastName,
     required this.phoneNumber,
     required this.createdAt,
+    this.avatar,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class UserProfile {
       lastName: json['lastName'] as String? ?? '',
       phoneNumber: json['phoneNumber'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
+      avatar: json['avatar'] as String?,
     );
   }
 }

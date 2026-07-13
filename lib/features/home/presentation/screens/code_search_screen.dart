@@ -26,7 +26,7 @@ class CodeSearchScreen extends StatefulWidget {
 class _CodeSearchScreenState extends State<CodeSearchScreen> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  
+
   Timer? _debounce;
   List<ObdSearchResult> _searchResults = [];
   bool _isLoading = false;
@@ -139,8 +139,17 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
     final String query = _controller.text.trim();
     final bool hasQuery = query.isNotEmpty;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final searchBg = isDark
+        ? AppColors.darkSurface2
+        : AppColors.secondaryTxtFieldBg;
+    final inputTextColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textVeryDarkGrey;
+    final backIconColor = isDark ? AppColors.darkTextSub : AppColors.hintGrey;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +169,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                       vertical: 12.h,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.secondaryTxtFieldBg,
+                      color: searchBg,
                       borderRadius: BorderRadius.circular(100.r),
                     ),
                     child: Row(
@@ -174,7 +183,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                             ).copyWith(right: 12.w),
                             child: Icon(
                               Icons.arrow_back_ios_new,
-                              color: AppColors.hintGrey,
+                              color: backIconColor,
                               size: 22.sp,
                             ),
                           ),
@@ -188,7 +197,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                               fillColor: Colors.transparent,
                               hintText: 'Input code',
                               hintStyle: TextStyle(
-                                color: AppColors.hintGrey,
+                                color: backIconColor,
                                 fontSize: 15.sp,
                               ),
                               border: InputBorder.none,
@@ -199,7 +208,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                             ),
                             style: TextStyle(
                               fontSize: 15.sp,
-                              color: AppColors.textVeryDarkGrey,
+                              color: inputTextColor,
                             ),
                           ),
                         ),
@@ -229,7 +238,9 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w400,
-                              color: Colors.black,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : Colors.black,
                             ),
                           ),
                           GestureDetector(
@@ -239,7 +250,9 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                               style: TextStyle(
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.w400,
-                                color: Colors.black,
+                                color: isDark
+                                    ? AppColors.darkTextPrimary
+                                    : Colors.black,
                               ),
                             ),
                           ),
@@ -260,53 +273,53 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                             ),
                           )
                         : hasQuery && _searchResults.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No results found for "$query"',
-                                  style: TextStyle(
-                                    fontSize: 15.sp,
-                                    color: AppColors.textMediumGrey,
-                                  ),
-                                ),
-                              )
-                            : ListView.builder(
-                                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                                itemCount: hasQuery
-                                    ? _searchResults.length
-                                    : (_dynamicRecentSearches.isNotEmpty
-                                        ? _dynamicRecentSearches.length
-                                        : _recentSearches.length),
-                                itemBuilder: (context, index) {
-                                  if (hasQuery) {
-                                    final result = _searchResults[index];
-                                    return _searchItem(
-                                      result.code,
-                                      result.faultDescription.isNotEmpty
-                                          ? result.faultDescription
-                                          : result.primaryCause,
-                                      isRecent: false,
-                                      priority: result.priority,
-                                    );
-                                  } else {
-                                    if (_dynamicRecentSearches.isNotEmpty) {
-                                      final item = _dynamicRecentSearches[index];
-                                      return _searchItem(
-                                        item.query,
-                                        'Search Type: ${item.searchType}',
-                                        isRecent: true,
-                                      );
-                                    } else {
-                                      final (code, description) =
-                                          _recentSearches[index];
-                                      return _searchItem(
-                                        code,
-                                        description,
-                                        isRecent: true,
-                                      );
-                                    }
-                                  }
-                                },
+                        ? Center(
+                            child: Text(
+                              'No results found for "$query"',
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                color: AppColors.textMediumGrey,
                               ),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            itemCount: hasQuery
+                                ? _searchResults.length
+                                : (_dynamicRecentSearches.isNotEmpty
+                                      ? _dynamicRecentSearches.length
+                                      : _recentSearches.length),
+                            itemBuilder: (context, index) {
+                              if (hasQuery) {
+                                final result = _searchResults[index];
+                                return _searchItem(
+                                  result.code,
+                                  result.faultDescription.isNotEmpty
+                                      ? result.faultDescription
+                                      : result.primaryCause,
+                                  isRecent: false,
+                                  priority: result.priority,
+                                );
+                              } else {
+                                if (_dynamicRecentSearches.isNotEmpty) {
+                                  final item = _dynamicRecentSearches[index];
+                                  return _searchItem(
+                                    item.query,
+                                    'Search Type: ${item.searchType}',
+                                    isRecent: true,
+                                  );
+                                } else {
+                                  final (code, description) =
+                                      _recentSearches[index];
+                                  return _searchItem(
+                                    code,
+                                    description,
+                                    isRecent: true,
+                                  );
+                                }
+                              }
+                            },
+                          ),
                   ),
                 ],
               ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
@@ -341,6 +354,13 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
       }
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final codeTitleColor = isDark ? AppColors.darkTextPrimary : Colors.black;
+    final descColor = isDark ? AppColors.darkTextSub : AppColors.black400;
+    final arrowFilter = isDark
+        ? ColorFilter.mode(AppColors.darkTextSub, BlendMode.srcIn)
+        : null;
+
     return InkWell(
       onTap: () => _onResultTapped(code),
       splashColor: AppColors.primaryDisabled.withValues(alpha: 0.15),
@@ -350,7 +370,13 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SvgPicture.asset(Assets.recentSearches),
+            CircleAvatar(
+              radius: 20.r,
+              backgroundColor: isDark
+                  ? AppColors.darkSurface
+                  : const Color(0xFFF0F0F0),
+              child: SvgPicture.asset(Assets.clock),
+            ),
             SizedBox(width: 16.w),
             Expanded(
               child: Column(
@@ -363,7 +389,7 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                          color: codeTitleColor,
                         ),
                       ),
                       if (severity != null) ...[
@@ -397,13 +423,13 @@ class _CodeSearchScreenState extends State<CodeSearchScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 14.sp,
-                      color: AppColors.black400,
+                      color: descColor,
                     ),
                   ),
                 ],
               ),
             ),
-            SvgPicture.asset(Assets.arrowRight),
+            SvgPicture.asset(Assets.arrowRight, colorFilter: arrowFilter),
           ],
         ),
       ),

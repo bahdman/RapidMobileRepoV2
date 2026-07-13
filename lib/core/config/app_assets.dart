@@ -6,6 +6,7 @@ class Assets {
 
   ///svgs
   static const String appbarBackBtn = 'assets/svgs/appbar_back_btn.svg';
+  static const String arrowBack = 'assets/svgs/arrow_back.svg';
   static const String arrowRight = 'assets/svgs/arrow_right.svg';
   static const String bluetoothBlue = 'assets/svgs/bluetooth_blue.svg';
   static const String bluetoothGrey = 'assets/svgs/bluetooth_grey.svg';
@@ -30,6 +31,7 @@ class Assets {
   static const String bulbOrange = 'assets/svgs/bulb_orange.svg';
   static const String moneyBlue = 'assets/svgs/money_blue.svg';
   static const String share = 'assets/svgs/share.svg';
+  static const String shareOutline = 'assets/svgs/share_outline.svg';
   static const String arrowDown = 'assets/svgs/arrow_down.svg';
   static const String calendar = 'assets/svgs/calendar.svg';
 
@@ -72,7 +74,7 @@ class Assets {
   static const String whatsapp = 'assets/svgs/onboarding/whatsapp.svg';
   static const String bigCheckCircle =
       'assets/svgs/onboarding/big_check_cricle.svg';
-  
+
   //auth
   static const String google = 'assets/svgs/auth/google.svg';
   static const String apple = 'assets/svgs/auth/apple.svg';

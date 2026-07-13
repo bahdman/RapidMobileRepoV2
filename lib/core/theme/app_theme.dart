@@ -93,7 +93,10 @@ class AppTheme {
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
       surface: Colors.white,
-      outline: AppColors.textGrey,
+      surfaceContainerHighest: AppColors.secondaryTxtFieldBg,
+      outline: AppColors.grey200,
+      onSurface: Colors.black,
+      onSurfaceVariant: AppColors.black400,
     ),
   );
 
@@ -103,7 +106,7 @@ class AppTheme {
   static ThemeData get darkTheme => ThemeData(
     brightness: Brightness.dark,
     primaryColor: AppColors.primary,
-    scaffoldBackgroundColor: Colors.black,
+    scaffoldBackgroundColor: AppColors.darkScaffoldBg,
     fontFamily: "Inter",
 
     textTheme: TextTheme(
@@ -147,7 +150,9 @@ class AppTheme {
       ),
     ),
 
-    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: Colors.black),
+    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: AppColors.darkSurface),
+
+    dialogTheme: const DialogThemeData(backgroundColor: AppColors.darkSurface),
 
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: AppColors.primary,
@@ -182,8 +187,11 @@ class AppTheme {
     ),
     colorScheme: ColorScheme.dark(
       primary: AppColors.primary,
-      surface: Colors.black,
-      outline: AppColors.textGrey,
+      surface: AppColors.darkSurface,
+      surfaceContainerHighest: AppColors.darkSurface2,
+      outline: AppColors.darkBorder,
+      onSurface: AppColors.darkTextPrimary,
+      onSurfaceVariant: AppColors.darkTextSub,
     ),
   );
 }

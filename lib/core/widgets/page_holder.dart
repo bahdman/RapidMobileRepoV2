@@ -35,20 +35,26 @@ class _PageHolderState extends State<PageHolder> {
       {'asset': Assets.account, 'label': 'Account', 'index': 2},
     ];
 
-    final navBar = Container(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBarBg = isDark ? AppColors.darkSurface : Colors.white;
+    final navBorder = isDark ? AppColors.darkBorder.withValues(alpha: 0.5) : AppColors.borderColor.withValues(alpha: 0.5);
+    final selectedBadgeBg = isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.selectedNavBar;
+
+    final navBar = AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
       height: 110.h,
       padding: EdgeInsets.only(top: 12.h, bottom: 20.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: navBarBg,
         border: Border(
           top: BorderSide(
             width: 0.5,
-            color: AppColors.borderColor.withValues(alpha: 0.5),
+            color: navBorder,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
             blurRadius: 6,
             offset: const Offset(0, -10),
           ),
@@ -64,11 +70,12 @@ class _PageHolderState extends State<PageHolder> {
           return GestureDetector(
             onTap: () => widget.child.goBranch(targetIndex),
             behavior: HitTestBehavior.opaque,
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.selectedNavBar
+                    ? selectedBadgeBg
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -106,7 +113,7 @@ class _PageHolderState extends State<PageHolder> {
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: widget.child,
       bottomNavigationBar:
           Platform.isAndroid && MediaQuery.of(context).padding.bottom > 0
