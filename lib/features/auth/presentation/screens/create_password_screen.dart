@@ -103,6 +103,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is CreateEmailAccountSuccess) {
@@ -121,10 +122,10 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
         appBar: AppBar(
           toolbarHeight: 75.h,
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,
           leadingWidth: 100.w,
@@ -171,7 +172,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         style: TextStyle(
                           fontSize: 21.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                          color: isDark ? AppColors.darkTextPrimary : Colors.black,
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -180,7 +181,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         'At least 8 characters',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: AppColors.grey800,
+                          color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -201,7 +202,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                         'Re-type your password',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: AppColors.grey800,
+                          color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                           fontWeight: FontWeight.w400,
                         ),
                       ),

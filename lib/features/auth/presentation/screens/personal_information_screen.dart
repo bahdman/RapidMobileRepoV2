@@ -47,6 +47,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
@@ -56,10 +57,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
         appBar: AppBar(
           toolbarHeight: 75.h,
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
           elevation: 0,
           leadingWidth: 80.w,
           leading: GestureDetector(
@@ -92,6 +93,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             child: BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
                 final isLoading = state is AuthLoading;
+                final isDark = Theme.of(context).brightness == Brightness.dark;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +104,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                       style: TextStyle(
                         fontSize: 21.sp,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                        color: isDark ? AppColors.darkTextPrimary : Colors.black,
                       ),
                     ),
                     SizedBox(height: 12.h),
@@ -110,7 +112,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                       'Confirm your name(s)',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: AppColors.grey500,
+                        color: isDark ? AppColors.darkTextSub : AppColors.grey500,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -167,7 +169,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4.r),
                             ),
-                            side: BorderSide(color: AppColors.grey800, width: 1.5),
+                            side: BorderSide(
+                              color: isDark ? AppColors.darkBorder : AppColors.grey800,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                         SizedBox(width: 12.w),
@@ -176,7 +181,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                             text: TextSpan(
                               style: TextStyle(
                                 fontSize: 14.sp,
-                                color: AppColors.grey600,
+                                color: isDark ? AppColors.darkTextSub : AppColors.grey600,
                               ),
                               children: [
                                 const TextSpan(text: 'I agree to follow the '),

@@ -49,16 +49,17 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: _unfocus,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
         appBar: AppBar(
         toolbarHeight: 75.h,
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.w),
+            icon: Icon(Icons.arrow_back, color: isDark ? AppColors.darkTextPrimary : Colors.black, size: 24.w),
             onPressed: () => context.pop(),
           ),
         ),
@@ -92,7 +93,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                       style: TextStyle(
                         fontSize: 21.sp,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: isDark ? AppColors.darkTextPrimary : Colors.black,
                       ),
                     ),
                     SizedBox(height: 32.h),
@@ -101,7 +102,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     Container(
                       height: 56.h,
                       decoration: BoxDecoration(
-                        color: AppColors.secondaryTxtFieldBg,
+                        color: isDark ? AppColors.darkSurface : AppColors.secondaryTxtFieldBg,
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Row(
@@ -116,7 +117,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                              color: isDark ? AppColors.darkTextPrimary : Colors.black,
                             ),
                           ),
                           SizedBox(width: 8.w),
@@ -128,14 +129,14 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.black,
+                                color: isDark ? AppColors.darkTextPrimary : Colors.black,
                               ),
                               decoration: InputDecoration(
                                 filled: false,
                                 border: InputBorder.none,
                                 hintText: '81000531338',
                                 hintStyle: TextStyle(
-                                  color: AppColors.grey400,
+                                  color: isDark ? AppColors.darkTextSub : AppColors.grey400,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -161,7 +162,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                               'Use SMS',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: Colors.black,
+                                color: isDark ? AppColors.darkTextPrimary : Colors.black,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -173,7 +174,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     ),
                     Padding(
                       padding: EdgeInsets.only(top: 10.h, bottom: 5.h),
-                      child: const Divider(color: AppColors.grey200, height: 1),
+                      child: Divider(color: isDark ? AppColors.darkBorder : AppColors.grey200, height: 1),
                     ),
 
                     // Use Whatsapp Option
@@ -190,7 +191,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                               'Use Whatsapp',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: Colors.black,
+                                color: isDark ? AppColors.darkTextPrimary : Colors.black,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -206,7 +207,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                       'Rapid will not send anything without your consent.',
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.grey600,
+                        color: isDark ? AppColors.darkTextSub : AppColors.grey600,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -242,16 +243,17 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   }
 
   Widget _buildRadioObject(bool isSelected) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: 24.w,
       width: 24.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.grey200,
+          color: isSelected ? AppColors.primary : (isDark ? AppColors.darkBorder : AppColors.grey200),
           width: isSelected ? 6.5.w : 1.5.w,
         ),
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
       ),
     );
   }

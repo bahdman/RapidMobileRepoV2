@@ -83,18 +83,32 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Mesh colors
+    final baseBgColor = isDark ? const Color(0xFF0F1015) : const Color(0xFF007AFF);
+    final blob1Color = isDark 
+        ? const Color(0xFF1E293B).withValues(alpha: 0.8) 
+        : const Color(0xFF6ABFFF).withValues(alpha: 0.9);
+    final blob2Color = isDark 
+        ? const Color(0xFF0F172A).withValues(alpha: 0.8) 
+        : const Color(0xFF004DA0).withValues(alpha: 0.7);
+    final blob3Color = isDark 
+        ? const Color(0xFF1E3A8A).withValues(alpha: 0.6) 
+        : const Color(0xFF4FA5E2).withValues(alpha: 0.8);
+
     return Scaffold(
       body: Stack(
         children: [
-          // Animated Mesh Gradient Background (Vibrant Blue randomized)
+          // Animated Mesh Gradient Background
           Stack(
             children: [
               Container(
-                color: const Color(0xFF007AFF),
-              ), // Solid Vibrant Blue Base
-              // Blob 1 - Very Lighter Blue
+                color: baseBgColor,
+              ),
+              // Blob 1
               _buildBlob(
-                color: const Color(0xFF6ABFFF).withValues(alpha: 0.9),
+                color: blob1Color,
                 size: 700.w,
                 offset: Offset(
                   math.sin(_time * 1.2) * 150.w + math.cos(_time * 0.5) * 80.w,
@@ -103,9 +117,9 @@ class _SplashScreenState extends State<SplashScreen>
                 alignment: Alignment.topLeft,
               ),
 
-              // Blob 2 - Dark Deep Blue
+              // Blob 2
               _buildBlob(
-                color: const Color(0xFF004DA0).withValues(alpha: 0.7),
+                color: blob2Color,
                 size: 800.w,
                 offset: Offset(
                   math.cos(_time * 0.7) * 200.w + math.sin(_time * 0.3) * 100.w,
@@ -114,9 +128,9 @@ class _SplashScreenState extends State<SplashScreen>
                 alignment: Alignment.bottomRight,
               ),
 
-              // Blob 3 - Electric Blue Accent
+              // Blob 3
               _buildBlob(
-                color: const Color(0xFF4FA5E2).withValues(alpha: 0.8),
+                color: blob3Color,
                 size: 650.w,
                 offset: Offset(
                   math.sin(_time * 1.5) * 180.w,
@@ -125,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen>
                 alignment: Alignment.center,
               ),
 
-              // Final Blur for Mesh Effect (Reduced slightly for prominence)
+              // Final Blur for Mesh Effect
               Positioned.fill(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 75, sigmaY: 75),
@@ -136,7 +150,12 @@ class _SplashScreenState extends State<SplashScreen>
           ),
 
           // Central Logo
-          Center(child: Image.asset(Assets.rapidLogoBig, width: 114.w)),
+          Center(
+            child: Image.asset(
+              isDark ? Assets.logoWhite : Assets.rapidLogoBig, 
+              width: 114.w,
+            ),
+          ),
         ],
       ),
     );

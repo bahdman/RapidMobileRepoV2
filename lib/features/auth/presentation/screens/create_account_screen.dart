@@ -115,13 +115,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: _unfocus,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
         appBar: AppBar(
         toolbarHeight: 75.h,
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
           elevation: 0,
           scrolledUnderElevation: 0,
           leadingWidth: 80.w,
@@ -161,7 +162,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   style: TextStyle(
                     fontSize: 21.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: isDark ? AppColors.darkTextPrimary : Colors.black,
                   ),
                 ),
                 // SizedBox(height: 8.h),
@@ -245,7 +246,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           side: BorderSide(
-                            color: AppColors.grey400,
+                            color: isDark ? AppColors.darkBorder : AppColors.grey400,
                             width: 1.5,
                           ),
                         ),
@@ -256,7 +257,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           text: TextSpan(
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: AppColors.grey600,
+                              color: isDark ? AppColors.darkTextSub : AppColors.grey600,
                             ),
                             children: [
                               const TextSpan(text: 'I agree to follow the '),
@@ -304,23 +305,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   }
 
   Widget _buildDateChip({required String label, required bool isSelected}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: AppColors.primaryTxtFieldBg,
+        color: isDark ? AppColors.darkSurface : AppColors.primaryTxtFieldBg,
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SvgPicture.asset(Assets.arrowDown),
+          SvgPicture.asset(
+            Assets.arrowDown,
+            colorFilter: isDark
+                ? const ColorFilter.mode(AppColors.darkTextSub, BlendMode.srcIn)
+                : null,
+          ),
           SizedBox(width: 6.w),
           Text(
             label,
             style: TextStyle(
               fontSize: 19.sp,
               fontWeight: FontWeight.w400,
-              color: Color(0xff5F5858),
+              color: isDark ? AppColors.darkTextSub : const Color(0xff5F5858),
             ),
           ),
         ],

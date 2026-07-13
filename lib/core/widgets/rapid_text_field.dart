@@ -57,14 +57,31 @@ class _RapidTextFieldState extends State<RapidTextField> {
   @override
   Widget build(BuildContext context) {
     _focusNode.canRequestFocus = !widget.readOnly;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Color bgColor = widget.backgroundColor;
+    if (isDark) {
+      if (bgColor == Colors.white ||
+          bgColor == AppColors.primaryTxtFieldBg ||
+          bgColor == AppColors.secondaryTxtFieldBg) {
+        bgColor = AppColors.darkSurface;
+      }
+    }
+
+    final textColor = isDark ? AppColors.darkTextPrimary : Colors.black;
+    final hintColor = isDark ? AppColors.darkTextSub : AppColors.grey400;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: widget.backgroundColor,
+        color: bgColor,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: (_isFocused && !widget.readOnly) ? AppColors.primary : widget.inactiveBorderColor,
+          color: (_isFocused && !widget.readOnly)
+              ? AppColors.primary
+              : (isDark && widget.inactiveBorderColor == Colors.transparent
+                  ? Colors.transparent
+                  : (isDark ? AppColors.darkBorder : widget.inactiveBorderColor)),
           width: (_isFocused && !widget.readOnly) ? 2 : 1.5,
         ),
       ),
@@ -80,14 +97,14 @@ class _RapidTextFieldState extends State<RapidTextField> {
         style: TextStyle(
           fontSize: 16.sp,
           fontWeight: FontWeight.w400,
-          color: Colors.black,
+          color: textColor,
         ),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: widget.hintText,
-          hintStyle: TextStyle(color: AppColors.grey400),
+          hintStyle: TextStyle(color: hintColor),
           filled: false,
-          contentPadding: EdgeInsets.symmetric(vertical: 16.h), // Changed to 16.h for better padding
+          contentPadding: EdgeInsets.symmetric(vertical: 16.h),
           prefixIcon: widget.prefixIcon != null
               ? Padding(
                   padding: EdgeInsets.only(right: 12.w),
@@ -116,6 +133,12 @@ class _RapidTextFieldState extends State<RapidTextField> {
                         : Assets.onboardingHidePwd,
                     width: 24.w,
                     height: 24.h,
+                    colorFilter: isDark
+                        ? const ColorFilter.mode(
+                            AppColors.darkTextSub,
+                            BlendMode.srcIn,
+                          )
+                        : null,
                     fit: BoxFit.scaleDown,
                   ),
                 )

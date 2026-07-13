@@ -46,12 +46,15 @@ class RapidButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultOutlineColor = isDark ? Colors.white : Colors.black;
+    final defaultOutlineBorderColor = isDark ? AppColors.darkBorder : AppColors.grey200;
     final Widget buttonChild = isLoading
         ? SizedBox(
             height: 24.h,
             width: 24.h,
             child: _GradientSpinner(
-              color: textColor ?? (isOutline ? Colors.black : Colors.white),
+              color: textColor ?? (isOutline ? defaultOutlineColor : Colors.white),
             ),
           )
         : isFullWidthLeading
@@ -77,7 +80,7 @@ class RapidButton extends StatelessWidget {
                       fontWeight: fontWeight ?? FontWeight.w700,
                       color:
                           textColor ??
-                          (isOutline ? Colors.black : Colors.white),
+                          (isOutline ? defaultOutlineColor : Colors.white),
                     ),
                   ),
                   if (suffixIcon != null) ...[
@@ -98,7 +101,7 @@ class RapidButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: fontSize ?? 16.sp,
                   fontWeight: fontWeight ?? FontWeight.w700,
-                  color: textColor ?? (isOutline ? Colors.black : Colors.white),
+                  color: textColor ?? (isOutline ? defaultOutlineColor : Colors.white),
                 ),
               ),
               if (suffixIcon != null) ...[SizedBox(width: 8.w), suffixIcon!],
@@ -110,7 +113,7 @@ class RapidButton extends StatelessWidget {
             onPressed: (isLoading || onPressed == null) ? null : onPressed,
             style: OutlinedButton.styleFrom(
               backgroundColor: backgroundColor ?? Colors.transparent,
-              foregroundColor: textColor ?? Colors.black,
+              foregroundColor: textColor ?? defaultOutlineColor,
               minimumSize: Size(width ?? 0, height.h),
               maximumSize: Size(width ?? double.infinity, height.h),
               shape: RoundedRectangleBorder(
@@ -118,7 +121,7 @@ class RapidButton extends StatelessWidget {
               ),
               side:
                   borderSide ??
-                  BorderSide(color: AppColors.grey200, width: 1.5),
+                  BorderSide(color: defaultOutlineBorderColor, width: 1.5),
               padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w),
             ),
             child: buttonChild,

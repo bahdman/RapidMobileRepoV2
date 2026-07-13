@@ -56,18 +56,19 @@ class _AuthScreenState extends State<AuthScreen> {
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             final isGoogleLoading = state is AuthLoading;
+            final isDark = Theme.of(context).brightness == Brightness.dark;
             return Scaffold(
-              backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-        ),
-        body: SafeArea(
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+              backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
+              appBar: AppBar(
+                backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+              ),
+              body: SafeArea(
+                child: Stack(
+                  children: [
+                    SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -77,7 +78,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       style: TextStyle(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                        color: isDark ? AppColors.darkTextPrimary : Colors.black,
                       ),
                     ),
                     SizedBox(height: 24.h),
@@ -86,7 +87,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     Container(
                       height: 56.h,
                       decoration: BoxDecoration(
-                        color: AppColors.grey100,
+                        color: isDark ? AppColors.darkSurface : AppColors.grey100,
                         borderRadius: BorderRadius.circular(28.r),
                       ),
                       child: Row(
@@ -102,7 +103,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.grey800,
+                              color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                             ),
                           ),
                           Expanded(
@@ -119,7 +120,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.black,
+                                color: isDark ? AppColors.darkTextPrimary : Colors.black,
                               ),
                             ),
                           ),
@@ -170,8 +171,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       onTap: () {
                         context.pushNamed(AppRoutes.login);
                       },
-                      backgroundColor: AppColors.grey100,
-                      textColor: Colors.black,
+                      backgroundColor: isDark ? AppColors.darkSurface : AppColors.grey100,
+                      textColor: isDark ? AppColors.darkTextPrimary : Colors.black,
                       isOutline: false,
                     ),
                     SizedBox(height: 16.h),

@@ -126,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
@@ -138,10 +139,10 @@ class _LoginScreenState extends State<LoginScreen>
         builder: (context, state) {
           final isLoading = state is AuthLoading;
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
             appBar: AppBar(
               toolbarHeight: 75.h,
-              backgroundColor: Colors.white,
+              backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
               elevation: 0,
               scrolledUnderElevation: 0,
               leadingWidth: 100.w,
@@ -198,6 +199,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   // ── Login content ──────────────────────────────────────────
   Widget _buildLoginContent(bool isLoading) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -211,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen>
           style: TextStyle(
             fontSize: 21.sp,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: isDark ? AppColors.darkTextPrimary : Colors.black,
           ),
         ),
         SizedBox(height: 8.h),
@@ -220,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen>
           'Sign in to your account to continue.',
           style: TextStyle(
             fontSize: 14.sp,
-            color: AppColors.grey800,
+            color: isDark ? AppColors.darkTextSub : AppColors.grey800,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -232,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen>
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
-            color: AppColors.grey800,
+            color: isDark ? AppColors.darkTextSub : AppColors.grey800,
           ),
         ),
         SizedBox(height: 8.h),
@@ -251,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen>
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
-            color: AppColors.grey800,
+            color: isDark ? AppColors.darkTextSub : AppColors.grey800,
           ),
         ),
         SizedBox(height: 8.h),
@@ -278,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen>
             text: TextSpan(
               style: TextStyle(
                 fontSize: 14.sp,
-                color: AppColors.grey800,
+                color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                 fontWeight: FontWeight.w400,
               ),
               children: [
@@ -302,6 +304,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   // ── Sign-up content ────────────────────────────────────────
   Widget _buildSignUpContent() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -315,7 +318,7 @@ class _LoginScreenState extends State<LoginScreen>
           style: TextStyle(
             fontSize: 21.sp,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: isDark ? AppColors.darkTextPrimary : Colors.black,
           ),
         ),
         SizedBox(height: 8.h),
@@ -324,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen>
           "It's helpful to provide a good reason for why the email address is required.",
           style: TextStyle(
             fontSize: 14.sp,
-            color: AppColors.grey800,
+            color: isDark ? AppColors.darkTextSub : AppColors.grey800,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -356,7 +359,7 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4.r),
                 ),
-                side: BorderSide(color: AppColors.grey800, width: 1.5),
+                side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.grey800, width: 1.5),
               ),
             ),
             SizedBox(width: 12.w),
@@ -365,7 +368,7 @@ class _LoginScreenState extends State<LoginScreen>
                 'Stay up to date with the latest news and resources delivered directly to your inbox',
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: AppColors.grey800,
+                  color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -387,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen>
             text: TextSpan(
               style: TextStyle(
                 fontSize: 14.sp,
-                color: AppColors.grey800,
+                color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                 fontWeight: FontWeight.w400,
               ),
               children: [

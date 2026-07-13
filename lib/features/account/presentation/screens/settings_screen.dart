@@ -212,7 +212,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
     bool showDivider = true,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final titleColor = Theme.of(context).colorScheme.onSurface;
     final subColor = Theme.of(context).colorScheme.onSurfaceVariant;
     final dividerColor = Theme.of(context).colorScheme.outline.withValues(alpha: 0.5);
@@ -268,7 +267,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16.r),

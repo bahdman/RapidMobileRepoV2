@@ -29,11 +29,12 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
       appBar: AppBar(
         toolbarHeight: 75.h,
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         leadingWidth: 100.w,
@@ -78,7 +79,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   style: TextStyle(
                     fontSize: 21.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: isDark ? AppColors.darkTextPrimary : Colors.black,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -87,7 +88,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                   "It's helpful to provide a good reason for why the email address is required.",
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: AppColors.grey800,
+                    color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -121,7 +122,10 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4.r),
                         ),
-                        side: BorderSide(color: AppColors.grey800, width: 1.5),
+                        side: BorderSide(
+                          color: isDark ? AppColors.darkBorder : AppColors.grey800,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -130,7 +134,7 @@ class _EmailAuthScreenState extends State<EmailAuthScreen> {
                         'Stay up to date with the latest news and resources delivered directly to your inbox',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: AppColors.grey800,
+                          color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                           fontWeight: FontWeight.w400,
                         ),
                       ),

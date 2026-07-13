@@ -76,31 +76,32 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final defaultPinTheme = PinTheme(
       width: 72.w,
       height: 83.1.h,
       textStyle: TextStyle(
         fontSize: 35.sp,
         fontWeight: FontWeight.w500,
-        color: Colors.black,
+        color: isDark ? AppColors.darkTextPrimary : Colors.black,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.grey200, width: 1),
+        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.grey200, width: 1),
       ),
     );
 
     return GestureDetector(
       onTap: _unfocus,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
         appBar: AppBar(
         toolbarHeight: 75.h,
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? AppColors.darkScaffoldBg : Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.black, size: 24.w),
+            icon: Icon(Icons.arrow_back, color: isDark ? AppColors.darkTextPrimary : Colors.black, size: 24.w),
             onPressed: () => context.pop(),
           ),
         ),
@@ -136,7 +137,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                         style: TextStyle(
                           fontSize: 21.sp,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: isDark ? AppColors.darkTextPrimary : Colors.black,
                         ),
                       ),
                       SizedBox(height: 32.h),
@@ -154,7 +155,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                                 color: AppColors.primary,
                                 width: 1.5,
                               ),
-                              color: Colors.white,
+                              color: isDark ? AppColors.darkSurface : Colors.white,
                             ),
                           ),
                           submittedPinTheme: defaultPinTheme.copyWith(
@@ -163,7 +164,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                                 color: AppColors.primary,
                                 width: 1.5,
                               ),
-                              color: Colors.white,
+                              color: isDark ? AppColors.darkSurface : Colors.white,
                             ),
                           ),
                           onChanged: (value) {

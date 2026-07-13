@@ -49,8 +49,9 @@ class _ScanningScreenState extends State<ScanningScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : AppColors.scaffoldBg,
       body: SafeArea(
         child: AnimatedBuilder(
           animation: _progress,
@@ -75,7 +76,7 @@ class _ScanningScreenState extends State<ScanningScreen>
                         width: 156.w,
                         height: 156.w,
                         child: CustomPaint(
-                          painter: _ScanPainter(progress: _progress.value),
+                          painter: _ScanPainter(progress: _progress.value, isDark: isDark),
                           child: Center(child: _innerCircle(pct)),
                         ),
                       ),
@@ -91,7 +92,7 @@ class _ScanningScreenState extends State<ScanningScreen>
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textVeryDarkGrey,
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -99,7 +100,7 @@ class _ScanningScreenState extends State<ScanningScreen>
                   'This usually takes about 30 seconds',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: AppColors.textMediumGrey,
+                    color: isDark ? AppColors.darkTextSub : AppColors.textMediumGrey,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -147,15 +148,16 @@ class _ScanningScreenState extends State<ScanningScreen>
   }
 
   Widget _innerCircle(int pct) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: 126.w,
       height: 126.w,
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F6FA),
+        color: isDark ? AppColors.darkSurface : const Color(0xFFF2F6FA),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -169,7 +171,7 @@ class _ScanningScreenState extends State<ScanningScreen>
             style: TextStyle(
               fontSize: 32.sp,
               fontWeight: FontWeight.w700,
-              color: AppColors.textVeryDarkGrey,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
               height: 1,
             ),
           ),
@@ -178,7 +180,7 @@ class _ScanningScreenState extends State<ScanningScreen>
             'Scanning..',
             style: TextStyle(
               fontSize: 14.sp,
-              color: AppColors.textMediumGrey,
+              color: isDark ? AppColors.darkTextSub : AppColors.textMediumGrey,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -190,8 +192,9 @@ class _ScanningScreenState extends State<ScanningScreen>
 
 class _ScanPainter extends CustomPainter {
   final double progress;
+  final bool isDark;
 
-  _ScanPainter({required this.progress});
+  _ScanPainter({required this.progress, required this.isDark});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -201,7 +204,7 @@ class _ScanPainter extends CustomPainter {
 
     // Track (faint background circle)
     final trackPaint = Paint()
-      ..color = const Color(0xFFE8F1F9)
+      ..color = isDark ? AppColors.darkSurface2 : const Color(0xFFE8F1F9)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 8.w;
     canvas.drawCircle(center, radius, trackPaint);
@@ -224,5 +227,5 @@ class _ScanPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_ScanPainter old) => old.progress != progress;
+  bool shouldRepaint(_ScanPainter old) => old.progress != progress || old.isDark != isDark;
 }

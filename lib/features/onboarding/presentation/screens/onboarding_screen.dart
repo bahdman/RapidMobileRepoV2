@@ -94,16 +94,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Stack(
         children: [
           // Animated Mesh Gradient Background (Randomized & Continuous)
           Stack(
             children: [
-              Container(color: Colors.white), // Base layer
+              Container(color: isDark ? AppColors.darkScaffoldBg : Colors.white), // Base layer
               // Blob 1 - Complex non-repeating path
               _buildBlob(
-                color: const Color(0xFF90CFFF).withValues(alpha: 0.6),
+                color: isDark
+                    ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                    : const Color(0xFF90CFFF).withValues(alpha: 0.6),
                 size: 500.w,
                 offset: Offset(
                   math.sin(_time * 0.7) * 150.w + math.cos(_time * 0.3) * 50.w,
@@ -114,7 +117,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
               // Blob 2
               _buildBlob(
-                color: AppColors.primary.withValues(alpha: 0.4),
+                color: isDark
+                    ? AppColors.primaryDark.withValues(alpha: 0.3)
+                    : AppColors.primary.withValues(alpha: 0.4),
                 size: 600.w,
                 offset: Offset(
                   math.cos(_time * 0.6) * 180.w + math.sin(_time * 0.4) * 60.w,
@@ -125,7 +130,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
               // Blob 3
               _buildBlob(
-                color: const Color(0xFFD6EFFF).withValues(alpha: 0.8),
+                color: isDark
+                    ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+                    : const Color(0xFFD6EFFF).withValues(alpha: 0.8),
                 size: 550.w,
                 offset: Offset(
                   math.sin(_time * 0.4) * 200.w,
@@ -136,7 +143,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
               // Blob 4 - Extra depth
               _buildBlob(
-                color: const Color(0xFF4FA5E2).withValues(alpha: 0.2),
+                color: isDark
+                    ? const Color(0xFF1E3B8A).withValues(alpha: 0.2)
+                    : const Color(0xFF4FA5E2).withValues(alpha: 0.2),
                 size: 400.w,
                 offset: Offset(
                   math.cos(_time * 1.1) * 100.w,
@@ -166,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     Image.asset(
                       Assets.rapidTxt,
                       width: 66.w,
-                      color: Colors.black,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ],
                 ),
@@ -220,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                         fontWeight: FontWeight.w800,
                                         color: page.isPrimaryHighlighted
                                             ? AppColors.primary
-                                            : Colors.black,
+                                            : (isDark ? Colors.white : Colors.black),
                                         height: 1.1,
                                       ),
                                     ),
@@ -230,7 +239,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                         fontSize: 40.sp,
                                         fontWeight: FontWeight.w800,
                                         color: page.isPrimaryHighlighted
-                                            ? Colors.black
+                                            ? (isDark ? Colors.white : Colors.black)
                                             : AppColors.primary,
                                         height: 1.1,
                                       ),
@@ -244,7 +253,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16.sp,
-                                  color: Colors.black.withValues(alpha: 0.8),
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.8)
+                                      : Colors.black.withValues(alpha: 0.8),
                                   height: 1.5,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -273,7 +284,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       decoration: BoxDecoration(
                         color: _currentPage == index
                             ? AppColors.primary
-                            : Colors.grey.withValues(alpha: 0.5),
+                            : (isDark ? Colors.white24 : Colors.grey.withValues(alpha: 0.5)),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
@@ -320,7 +331,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
                     ),
                   )
@@ -338,7 +349,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               text: 'Already have an account? ',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: Colors.black.withValues(alpha: 0.6),
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.6)
+                                    : Colors.black.withValues(alpha: 0.6),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -346,7 +359,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               text: 'Login',
                               style: TextStyle(
                                 fontSize: 16.sp,
-                                color: Colors.black,
+                                color: isDark ? Colors.white : Colors.black,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
