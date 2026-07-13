@@ -7,10 +7,11 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 40.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
       ),
       child: Column(
@@ -22,7 +23,7 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
             height: 4.h,
             margin: EdgeInsets.only(bottom: 12.h),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10.r),
             ),
           ),
@@ -36,13 +37,13 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: AppColors.btnGrey.withValues(alpha: 0.5),
+                    color: isDark ? AppColors.darkSurface2 : AppColors.btnGrey.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.close_rounded,
                     size: 24.w,
-                    color: AppColors.textVeryDarkGrey,
+                    color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
                   ),
                 ),
               ),
@@ -57,7 +58,7 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 22.sp,
               fontWeight: FontWeight.w700,
-              color: AppColors.textVeryDarkGrey,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
             ),
           ),
 
@@ -70,7 +71,7 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16.sp,
-                color: AppColors.black300,
+                color: isDark ? AppColors.darkTextSub : AppColors.black300,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -106,7 +107,7 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
               minimumSize: Size(double.infinity, 64.h),
-              backgroundColor: AppColors.btnGrey.withValues(alpha: 0.5),
+              backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.btnGrey.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(100.r),
               ),
@@ -116,7 +117,7 @@ class DeleteScheduleBottomSheet extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textVeryDarkGrey,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
               ),
             ),
           ),

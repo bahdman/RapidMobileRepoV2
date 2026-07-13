@@ -80,6 +80,27 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     super.dispose();
   }
 
+  DateTime _parseScheduleTime(String timeStr) {
+    try {
+      if (timeStr.contains('T') || timeStr.contains('-')) {
+        return DateTime.parse(timeStr).toLocal();
+      }
+      final parts = timeStr.split(':');
+      if (parts.isNotEmpty) {
+        final hour = int.parse(parts[0]);
+        final minute = parts.length > 1 ? int.parse(parts[1]) : 0;
+        final second = parts.length > 2 ? int.parse(parts[2].split('.').first) : 0;
+        
+        final now = DateTime.now();
+        final utcDateTime = DateTime.utc(now.year, now.month, now.day, hour, minute, second);
+        return utcDateTime.toLocal();
+      }
+    } catch (e) {
+      debugPrint('Error parsing schedule time: $e');
+    }
+    return DateTime.now();
+  }
+
   Future<void> _fetchSchedules() async {
     setState(() {
       _isLoadingSchedules = true;
@@ -101,7 +122,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
           String timeStr = '08:00 AM';
           if (schedule.entries.isNotEmpty) {
             try {
-              final parsedTime = DateTime.parse(schedule.entries.first.time).toLocal();
+              final parsedTime = _parseScheduleTime(schedule.entries.first.time);
               final isPm = parsedTime.hour >= 12;
               final hour = parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12;
               timeStr = '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
@@ -121,7 +142,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
           String timeStr = '08:00 AM';
           if (schedule.entries.isNotEmpty) {
             try {
-              final parsedTime = DateTime.parse(schedule.entries.first.time).toLocal();
+              final parsedTime = _parseScheduleTime(schedule.entries.first.time);
               final isPm = parsedTime.hour >= 12;
               final hour = parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12;
               timeStr = '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
@@ -1165,7 +1186,7 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
             textStyle: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
-              color: AppColors.black300,
+              color: isDark ? AppColors.darkTextSub : AppColors.black300,
             ),
           ),
         ),
@@ -1181,12 +1202,12 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
           trailingDatesTextStyle: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-            color: AppColors.grey200,
+            color: isDark ? AppColors.darkTextSub.withValues(alpha: 0.4) : AppColors.grey200,
           ),
           leadingDatesTextStyle: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-            color: AppColors.grey200,
+            color: isDark ? AppColors.darkTextSub.withValues(alpha: 0.4) : AppColors.grey200,
           ),
         ),
         cellBuilder:
@@ -1204,9 +1225,9 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
               if (isSelected) {
                 textColor = Colors.white;
               } else if (isCurrentMonth) {
-                textColor = AppColors.textVeryDarkGrey;
+                textColor = isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey;
               } else {
-                textColor = AppColors.grey200;
+                textColor = isDark ? AppColors.darkTextSub.withValues(alpha: 0.4) : AppColors.grey200;
               }
 
               return Container(

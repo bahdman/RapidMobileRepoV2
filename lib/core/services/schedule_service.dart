@@ -23,9 +23,24 @@ class ScheduleEntry {
   }
 
   Map<String, dynamic> toJson() {
+    String formattedTime = time;
+    try {
+      if (time.contains('T') || time.contains('-')) {
+        final parsed = DateTime.parse(time).toUtc();
+        formattedTime = '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}:${parsed.second.toString().padLeft(2, '0')}';
+      } else {
+        final parts = time.split(':');
+        if (parts.isNotEmpty) {
+          final hour = int.parse(parts[0]).toString().padLeft(2, '0');
+          final minute = parts.length > 1 ? int.parse(parts[1]).toString().padLeft(2, '0') : '00';
+          final second = parts.length > 2 ? int.parse(parts[2].split('.').first).toString().padLeft(2, '0') : '00';
+          formattedTime = '$hour:$minute:$second';
+        }
+      }
+    } catch (_) {}
     return {
       'day': day,
-      'time': time,
+      'time': formattedTime,
     };
   }
 }
