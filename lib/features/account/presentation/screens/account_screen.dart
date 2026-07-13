@@ -82,7 +82,8 @@ class _AccountScreenState extends State<AccountScreen> {
                           child: Column(
                             children: [
                               UserAvatar(
-                                avatar: _avatar ?? 'https://i.pravatar.cc/150?img=3',
+                                icon: Icons.person_rounded,
+                                avatar: _avatar,
                                 size: 60.w,
                               ),
                               SizedBox(height: 10.h),

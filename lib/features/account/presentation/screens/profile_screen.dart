@@ -135,9 +135,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     clipBehavior: Clip.none,
                                     children: [
                                       UserAvatar(
-                                        avatar:
-                                            _avatarUrl ??
-                                            'https://i.pravatar.cc/150?img=3',
+                                        icon: Icons.person_rounded,
+                                        avatar: _avatarUrl,
                                         size: 90.w,
                                       ),
                                       // Positioned(
