@@ -89,10 +89,19 @@ class _SchedulesScreenState extends State<SchedulesScreen>
       if (parts.isNotEmpty) {
         final hour = int.parse(parts[0]);
         final minute = parts.length > 1 ? int.parse(parts[1]) : 0;
-        final second = parts.length > 2 ? int.parse(parts[2].split('.').first) : 0;
-        
+        final second = parts.length > 2
+            ? int.parse(parts[2].split('.').first)
+            : 0;
+
         final now = DateTime.now();
-        final utcDateTime = DateTime.utc(now.year, now.month, now.day, hour, minute, second);
+        final utcDateTime = DateTime.utc(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+          second,
+        );
         return utcDateTime.toLocal();
       }
     } catch (e) {
@@ -108,57 +117,89 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     try {
       final scheduleService = context.read<ScheduleService>();
       final schedules = await scheduleService.getAllSchedules();
-      
+
       final List<_ScheduleItem> scans = [];
       final List<_ScheduleItem> repairs = [];
 
       for (var schedule in schedules) {
         final isScan = schedule.note.startsWith('[Scan]');
-        
+
         if (isScan) {
-          final daysList = schedule.entries.map((e) => _dayReverseMap[e.day] ?? 'Monday').toList();
+          final daysList = schedule.entries
+              .map((e) => _dayReverseMap[e.day] ?? 'Monday')
+              .toList();
           final daysStr = daysList.join(' & ');
-          
+
           String timeStr = '08:00 AM';
           if (schedule.entries.isNotEmpty) {
             try {
-              final parsedTime = _parseScheduleTime(schedule.entries.first.time);
+              final parsedTime = _parseScheduleTime(
+                schedule.entries.first.time,
+              );
               final isPm = parsedTime.hour >= 12;
-              final hour = parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12;
-              timeStr = '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
+              final hour = parsedTime.hour % 12 == 0
+                  ? 12
+                  : parsedTime.hour % 12;
+              timeStr =
+                  '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
             } catch (_) {}
           }
 
-          scans.add(_ScheduleItem(
-            id: schedule.id,
-            title: schedule.name,
-            subtitle: daysStr,
-            time: timeStr,
-          ));
+          scans.add(
+            _ScheduleItem(
+              id: schedule.id,
+              title: schedule.name,
+              subtitle: daysStr,
+              time: timeStr,
+            ),
+          );
         } else {
-          String noteContent = schedule.note.replaceFirst('[Repair]', '').trim();
-          
+          String noteContent = schedule.note
+              .replaceFirst('[Repair]', '')
+              .trim();
+
           String dateStr = '';
           String timeStr = '08:00 AM';
           if (schedule.entries.isNotEmpty) {
             try {
-              final parsedTime = _parseScheduleTime(schedule.entries.first.time);
+              final parsedTime = _parseScheduleTime(
+                schedule.entries.first.time,
+              );
               final isPm = parsedTime.hour >= 12;
-              final hour = parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12;
-              timeStr = '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
-              
-              final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-              dateStr = '${months[parsedTime.month - 1]} ${parsedTime.day}, ${parsedTime.year}';
+              final hour = parsedTime.hour % 12 == 0
+                  ? 12
+                  : parsedTime.hour % 12;
+              timeStr =
+                  '${hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')} ${isPm ? 'PM' : 'AM'}';
+
+              final months = [
+                'January',
+                'February',
+                'March',
+                'April',
+                'May',
+                'June',
+                'July',
+                'August',
+                'September',
+                'October',
+                'November',
+                'December',
+              ];
+              dateStr =
+                  '${months[parsedTime.month - 1]} ${parsedTime.day}, ${parsedTime.year}';
             } catch (_) {}
           }
 
-          repairs.add(_ScheduleItem(
-            id: schedule.id,
-            title: schedule.name,
-            subtitle: dateStr,
-            time: timeStr,
-            description: noteContent.isNotEmpty ? noteContent : null,
-          ));
+          repairs.add(
+            _ScheduleItem(
+              id: schedule.id,
+              title: schedule.name,
+              subtitle: dateStr,
+              time: timeStr,
+              description: noteContent.isNotEmpty ? noteContent : null,
+            ),
+          );
         }
       }
 
@@ -260,7 +301,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     final isScan = _tabController.index == 0;
     try {
       final scheduleService = context.read<ScheduleService>();
-      
+
       List<ScheduleEntry> entries = [];
       String note = '';
 
@@ -273,15 +314,21 @@ class _SchedulesScreenState extends State<SchedulesScreen>
           return;
         }
         if (_timeCtrl.text.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a time')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Please select a time')));
           return;
         }
 
         final parsedTime = _parseTimeOfDay(_timeCtrl.text);
         final now = DateTime.now();
-        final targetTime = DateTime(now.year, now.month, now.day, parsedTime.hour, parsedTime.minute);
+        final targetTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          parsedTime.hour,
+          parsedTime.minute,
+        );
 
         entries = _selectedDays.map((dayStr) {
           final dayIndex = _dayMap[dayStr] ?? 1;
@@ -294,30 +341,36 @@ class _SchedulesScreenState extends State<SchedulesScreen>
       } else {
         final rawNote = _noteCtrl.text.trim();
         note = rawNote.isNotEmpty ? '[Repair] $rawNote' : '[Repair]';
-        
+
         if (_dateCtrl.text.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a date')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Please select a date')));
           return;
         }
         if (_timeCtrl.text.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select a time')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Please select a time')));
           return;
         }
 
         final parsedDate = _parseDate(_dateCtrl.text);
         final parsedTime = _parseTimeOfDay(_timeCtrl.text);
-        final targetTime = DateTime(parsedDate.year, parsedDate.month, parsedDate.day, parsedTime.hour, parsedTime.minute);
+        final targetTime = DateTime(
+          parsedDate.year,
+          parsedDate.month,
+          parsedDate.day,
+          parsedTime.hour,
+          parsedTime.minute,
+        );
 
         entries = [
           ScheduleEntry(
             id: '',
             day: targetTime.weekday % 7,
             time: targetTime.toUtc().toIso8601String(),
-          )
+          ),
         ];
       }
 
@@ -386,7 +439,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                   borderRadius: BorderRadius.circular(100.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.07),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.0 : 0.07,
+                      ),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -702,7 +757,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkTextSub : AppColors.textVeryDarkGrey,
+                  color: isDark
+                      ? AppColors.darkTextSub
+                      : AppColors.textVeryDarkGrey,
                 ),
               ),
             ),
@@ -745,7 +802,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
       readOnly: readOnly,
       onTap: onTap,
       backgroundColor: isDark ? AppColors.darkSurface : const Color(0xFFF3F4F6),
-      inactiveBorderColor: isDark ? AppColors.darkBorder : AppColors.borderColor2,
+      inactiveBorderColor: isDark
+          ? AppColors.darkBorder
+          : AppColors.borderColor2,
       prefixIcon: icon != null
           ? SvgPicture.asset(
               icon,
@@ -852,35 +911,51 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? AppColors.darkTextPrimary : Colors.black,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : Colors.black,
                         ),
                       ),
                       SizedBox(height: 4.h),
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8.w,
+                        runSpacing: 4.h,
                         children: [
                           Text(
                             item.subtitle,
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: isDark ? AppColors.darkTextSub : AppColors.black300,
+                              color: isDark
+                                  ? AppColors.darkTextSub
+                                  : AppColors.black300,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(width: 8.w),
-                          SvgPicture.asset(
-                            Assets.clock,
-                            colorFilter: isDark
-                                ? const ColorFilter.mode(AppColors.darkTextSub, BlendMode.srcIn)
-                                : null,
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            item.time,
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              color: isDark ? AppColors.darkTextSub : AppColors.black300,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SvgPicture.asset(
+                                Assets.clock,
+                                colorFilter: isDark
+                                    ? const ColorFilter.mode(
+                                        AppColors.darkTextSub,
+                                        BlendMode.srcIn,
+                                      )
+                                    : null,
+                              ),
+                              SizedBox(width: 4.w),
+                              Text(
+                                item.time,
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  color: isDark
+                                      ? AppColors.darkTextSub
+                                      : AppColors.black300,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -890,7 +965,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                           item.description!,
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: isDark ? AppColors.darkTextSub : AppColors.black300,
+                            color: isDark
+                                ? AppColors.darkTextSub
+                                : AppColors.black300,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -1171,7 +1248,9 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
           textStyle: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
+            color: isDark
+                ? AppColors.darkTextPrimary
+                : AppColors.textVeryDarkGrey,
           ),
           backgroundColor: Colors.transparent,
           textAlign: TextAlign.center,
@@ -1197,17 +1276,23 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
           textStyle: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-            color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
+            color: isDark
+                ? AppColors.darkTextPrimary
+                : AppColors.textVeryDarkGrey,
           ),
           trailingDatesTextStyle: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-            color: isDark ? AppColors.darkTextSub.withValues(alpha: 0.4) : AppColors.grey200,
+            color: isDark
+                ? AppColors.darkTextSub.withValues(alpha: 0.4)
+                : AppColors.grey200,
           ),
           leadingDatesTextStyle: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-            color: isDark ? AppColors.darkTextSub.withValues(alpha: 0.4) : AppColors.grey200,
+            color: isDark
+                ? AppColors.darkTextSub.withValues(alpha: 0.4)
+                : AppColors.grey200,
           ),
         ),
         cellBuilder:
@@ -1225,9 +1310,13 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
               if (isSelected) {
                 textColor = Colors.white;
               } else if (isCurrentMonth) {
-                textColor = isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey;
+                textColor = isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textVeryDarkGrey;
               } else {
-                textColor = isDark ? AppColors.darkTextSub.withValues(alpha: 0.4) : AppColors.grey200;
+                textColor = isDark
+                    ? AppColors.darkTextSub.withValues(alpha: 0.4)
+                    : AppColors.grey200;
               }
 
               return Container(
