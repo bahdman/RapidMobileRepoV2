@@ -29,7 +29,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const RapidAppBar(title: 'Bluetooth'),
       body: BlocListener<BluetoothBloc, BluetoothState>(
         listener: (context, state) {
@@ -89,7 +89,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w700,
-            color: AppColors.textVeryDarkGrey,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: 12.h),
@@ -151,6 +151,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   }
 
   Widget _permissionDeniedCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.only(top: 48.h),
       child: Column(
@@ -158,9 +159,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: AppColors.borderColor),
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.borderColor,
+              ),
             ),
             child: Column(
               children: [
@@ -172,7 +175,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textVeryDarkGrey,
+                    color: isDark
+                        ? AppColors.darkTextPrimary
+                        : AppColors.textVeryDarkGrey,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -213,14 +218,17 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   }
 
   Widget _errorCard(BuildContext context, String message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.only(top: 48.h),
       child: Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: AppColors.borderColor),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.borderColor,
+          ),
         ),
         child: Column(
           children: [
@@ -232,7 +240,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textVeryDarkGrey,
+                color: isDark
+                    ? AppColors.darkTextPrimary
+                    : AppColors.textVeryDarkGrey,
               ),
             ),
             SizedBox(height: 8.h),
@@ -287,6 +297,8 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       isConnected = true;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: isConnecting
           ? null
@@ -298,12 +310,12 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isConnected
                 ? AppColors.primary.withValues(alpha: 0.4)
-                : AppColors.borderColor,
+                : (isDark ? AppColors.darkBorder : AppColors.borderColor),
             width: isConnected ? 1.5 : 1,
           ),
         ),
@@ -335,7 +347,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textVeryDarkGrey,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),

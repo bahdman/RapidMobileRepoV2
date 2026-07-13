@@ -9,6 +9,9 @@ class RapidAuthAnimation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final circleBg = isDark ? AppColors.darkSurface : Colors.white;
+
     return Center(
       child: Stack(
         alignment: Alignment.center,
@@ -40,9 +43,16 @@ class RapidAuthAnimation extends StatelessWidget {
           // Logo in the middle
           Container(
             padding: EdgeInsets.all(16.w),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: circleBg,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
             child:
                 Image.asset(
@@ -80,8 +90,14 @@ class RapidAuthLoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isVisible) return const SizedBox.shrink();
 
-    return Container(
-      color: Colors.white.withValues(alpha: 0.95),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final overlayBg = isDark
+        ? AppColors.darkScaffoldBg.withValues(alpha: 0.97)
+        : Colors.white.withValues(alpha: 0.95);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      color: overlayBg,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

@@ -59,7 +59,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        showGlobalSnackBar('Failed to load profile: ${_getErrorMessage(e)}', isError: true);
+        showGlobalSnackBar(
+          'Failed to load profile: ${_getErrorMessage(e)}',
+          isError: true,
+        );
       }
     } finally {
       if (mounted) {
@@ -78,7 +81,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final userService = context.read<UserService>();
       final fullName = _nameCtrl.text.trim();
       final spaceIdx = fullName.indexOf(' ');
-      final firstName = spaceIdx != -1 ? fullName.substring(0, spaceIdx) : fullName;
+      final firstName = spaceIdx != -1
+          ? fullName.substring(0, spaceIdx)
+          : fullName;
       final lastName = spaceIdx != -1 ? fullName.substring(spaceIdx + 1) : '';
 
       final updated = await userService.updateUserProfile(
@@ -94,7 +99,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        showGlobalSnackBar('Failed to update profile: ${_getErrorMessage(e)}', isError: true);
+        showGlobalSnackBar(
+          'Failed to update profile: ${_getErrorMessage(e)}',
+          isError: true,
+        );
       }
     } finally {
       if (mounted) {
@@ -117,52 +125,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 32.h),
-                        // Avatar Header
-                        Center(
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              UserAvatar(
-                                avatar: _avatarUrl ?? 'https://i.pravatar.cc/150?img=3',
-                                size: 90.w,
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: -16,
-                                child: SvgPicture.asset(Assets.camera),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 48.h),
-                        // Profile Fields
-                        _buildProfileItem(
-                          label: 'Full Name',
-                          controller: _nameCtrl,
-                        ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.2, end: 0),
-                        SizedBox(height: 20.h),
-                        _buildProfileItem(
-                          label: 'Email',
-                          controller: _emailCtrl,
-                          keyboardType: TextInputType.emailAddress,
-                        ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
-                        SizedBox(height: 20.h),
-                        _buildProfileItem(
-                          label: 'Phone',
-                          controller: _phoneCtrl,
-                          keyboardType: TextInputType.phone,
-                        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2, end: 0),
-                        SizedBox(height: 50.h),
-                        RapidButton(
-                          text: _isSaving ? 'Saving...' : 'Save Changes',
-                          backgroundColor: AppColors.primary,
-                          onPressed: _isSaving ? null : _saveProfile,
-                        ),
-                      ],
-                    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0),
+                    child:
+                        Column(
+                              children: [
+                                SizedBox(height: 32.h),
+                                // Avatar Header
+                                Center(
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      UserAvatar(
+                                        avatar:
+                                            _avatarUrl ??
+                                            'https://i.pravatar.cc/150?img=3',
+                                        size: 90.w,
+                                      ),
+                                      // Positioned(
+                                      //   bottom: 0,
+                                      //   right: -16,
+                                      //   child: SvgPicture.asset(Assets.camera),
+                                      // ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 48.h),
+                                // Profile Fields
+                                _buildProfileItem(
+                                      label: 'Full Name',
+                                      controller: _nameCtrl,
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 100.ms)
+                                    .slideY(begin: 0.2, end: 0),
+                                SizedBox(height: 20.h),
+                                _buildProfileItem(
+                                      label: 'Email',
+                                      controller: _emailCtrl,
+                                      keyboardType: TextInputType.emailAddress,
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 200.ms)
+                                    .slideY(begin: 0.2, end: 0),
+                                SizedBox(height: 20.h),
+                                _buildProfileItem(
+                                      label: 'Phone',
+                                      controller: _phoneCtrl,
+                                      keyboardType: TextInputType.phone,
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 300.ms)
+                                    .slideY(begin: 0.2, end: 0),
+                                SizedBox(height: 50.h),
+                                RapidButton(
+                                  text: _isSaving
+                                      ? 'Saving...'
+                                      : 'Save Changes',
+                                  backgroundColor: AppColors.primary,
+                                  onPressed: _isSaving ? null : _saveProfile,
+                                ),
+                              ],
+                            )
+                            .animate()
+                            .fadeIn(duration: 400.ms)
+                            .slideY(begin: 0.05, end: 0),
                   ),
                 ),
                 SliverFillRemaining(

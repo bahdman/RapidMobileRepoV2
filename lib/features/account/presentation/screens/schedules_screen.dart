@@ -337,8 +337,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : AppColors.scaffoldBg,
       appBar: RapidAppBar(
         title: 'Schedules',
         onLeadingPressed: _isCreating
@@ -354,17 +355,17 @@ class _SchedulesScreenState extends State<SchedulesScreen>
             child: Container(
               padding: EdgeInsets.all(4.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
+                color: isDark ? AppColors.darkSurface : const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(100.r),
               ),
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? AppColors.darkSurface2 : Colors.white,
                   borderRadius: BorderRadius.circular(100.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.07),
+                      color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.07),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -372,7 +373,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
-                labelColor: Colors.black,
+                labelColor: isDark ? AppColors.darkTextPrimary : Colors.black,
                 splashBorderRadius: BorderRadius.circular(100.r),
                 unselectedLabelColor: AppColors.grey600,
                 labelStyle: TextStyle(
@@ -496,6 +497,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
   }
 
   Widget _buildCreateForm() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isScan = _tabController.index == 0;
 
     return SingleChildScrollView(
@@ -504,11 +506,11 @@ class _SchedulesScreenState extends State<SchedulesScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // White Card
+          // Form Card
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? AppColors.darkSurface : Colors.white,
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Column(
@@ -519,7 +521,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: isDark ? AppColors.darkTextPrimary : Colors.black,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -529,7 +531,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                       : "Schedule repair & maintenance reminders so you never miss a service appointment.",
                   style: TextStyle(
                     fontSize: 13.sp,
-                    color: AppColors.black300,
+                    color: isDark ? AppColors.darkTextSub : AppColors.black300,
                     height: 1.4,
                   ),
                 ),
@@ -679,7 +681,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textVeryDarkGrey,
+                  color: isDark ? AppColors.darkTextSub : AppColors.textVeryDarkGrey,
                 ),
               ),
             ),
@@ -694,12 +696,13 @@ class _SchedulesScreenState extends State<SchedulesScreen>
   }
 
   Widget _buildFormLabel(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       text,
       style: TextStyle(
         fontSize: 13.sp,
         fontWeight: FontWeight.w600,
-        color: AppColors.grey500,
+        color: isDark ? AppColors.darkTextSub : AppColors.grey500,
         letterSpacing: 0.5,
       ),
     );
@@ -713,21 +716,22 @@ class _SchedulesScreenState extends State<SchedulesScreen>
     bool readOnly = false,
     VoidCallback? onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return RapidTextField(
       key: fieldKey,
       controller: controller,
       hintText: hint,
       readOnly: readOnly,
       onTap: onTap,
-      backgroundColor: const Color(0xFFF3F4F6),
-      inactiveBorderColor: AppColors.borderColor2,
+      backgroundColor: isDark ? AppColors.darkSurface : const Color(0xFFF3F4F6),
+      inactiveBorderColor: isDark ? AppColors.darkBorder : AppColors.borderColor2,
       prefixIcon: icon != null
           ? SvgPicture.asset(
               icon,
               height: 20.w,
               width: 20.w,
-              colorFilter: const ColorFilter.mode(
-                AppColors.black300,
+              colorFilter: ColorFilter.mode(
+                isDark ? AppColors.darkTextSub : AppColors.black300,
                 BlendMode.srcIn,
               ),
             )
@@ -736,6 +740,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
   }
 
   Widget _buildDaysSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return Wrap(
       spacing: 8.w,
@@ -755,7 +760,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.blue : const Color(0xFFF3F4F6),
+              color: isSelected
+                  ? AppColors.blue
+                  : (isDark ? AppColors.darkSurface2 : const Color(0xFFF3F4F6)),
               borderRadius: BorderRadius.circular(100.r),
             ),
             child: Text(
@@ -763,7 +770,9 @@ class _SchedulesScreenState extends State<SchedulesScreen>
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.black,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? AppColors.darkTextPrimary : Colors.black),
               ),
             ),
           ),
@@ -790,14 +799,16 @@ class _SchedulesScreenState extends State<SchedulesScreen>
   }
 
   Widget _buildScheduleCard(_ScheduleItem item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16.r),
+        border: isDark ? Border.all(color: AppColors.darkBorder) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -820,7 +831,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                          color: isDark ? AppColors.darkTextPrimary : Colors.black,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -830,18 +841,23 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                             item.subtitle,
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: AppColors.black300,
+                              color: isDark ? AppColors.darkTextSub : AppColors.black300,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           SizedBox(width: 8.w),
-                          SvgPicture.asset(Assets.clock),
+                          SvgPicture.asset(
+                            Assets.clock,
+                            colorFilter: isDark
+                                ? const ColorFilter.mode(AppColors.darkTextSub, BlendMode.srcIn)
+                                : null,
+                          ),
                           SizedBox(width: 4.w),
                           Text(
                             item.time,
                             style: TextStyle(
                               fontSize: 13.sp,
-                              color: AppColors.black300,
+                              color: isDark ? AppColors.darkTextSub : AppColors.black300,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -853,7 +869,7 @@ class _SchedulesScreenState extends State<SchedulesScreen>
                           item.description!,
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: AppColors.black300,
+                            color: isDark ? AppColors.darkTextSub : AppColors.black300,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -962,22 +978,25 @@ class _TimeDropdownUIState extends State<_TimeDropdownUI> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         width: 180.w,
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         decoration: BoxDecoration(
-          color: AppColors.scaffoldBg,
+          color: isDark ? AppColors.darkSurface : AppColors.scaffoldBg,
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: AppColors.borderColor2),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.borderColor2,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -998,7 +1017,7 @@ class _TimeDropdownUIState extends State<_TimeDropdownUI> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: isDark ? AppColors.darkTextPrimary : Colors.black,
               ),
             ),
             _buildSpinner(
@@ -1035,6 +1054,7 @@ class _TimeDropdownUIState extends State<_TimeDropdownUI> {
     required VoidCallback onUp,
     required VoidCallback onDown,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1042,7 +1062,7 @@ class _TimeDropdownUIState extends State<_TimeDropdownUI> {
           onTap: onUp,
           child: Icon(
             Icons.keyboard_arrow_up,
-            color: AppColors.textVeryDarkGrey,
+            color: isDark ? AppColors.darkTextSub : AppColors.textVeryDarkGrey,
             size: 24.w,
           ),
         ),
@@ -1052,7 +1072,7 @@ class _TimeDropdownUIState extends State<_TimeDropdownUI> {
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: isDark ? AppColors.darkTextPrimary : Colors.black,
           ),
         ),
         SizedBox(height: 8.h),
@@ -1060,7 +1080,7 @@ class _TimeDropdownUIState extends State<_TimeDropdownUI> {
           onTap: onDown,
           child: Icon(
             Icons.keyboard_arrow_down,
-            color: AppColors.textVeryDarkGrey,
+            color: isDark ? AppColors.darkTextSub : AppColors.textVeryDarkGrey,
             size: 24.w,
           ),
         ),
@@ -1096,15 +1116,16 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: 340.h,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: AppColors.scaffoldBg,
+        color: isDark ? AppColors.darkSurface : AppColors.scaffoldBg,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -1129,7 +1150,7 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
           textStyle: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: AppColors.textVeryDarkGrey,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
           ),
           backgroundColor: Colors.transparent,
           textAlign: TextAlign.center,
@@ -1155,7 +1176,7 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
           textStyle: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-            color: AppColors.textVeryDarkGrey,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.textVeryDarkGrey,
           ),
           trailingDatesTextStyle: TextStyle(
             fontSize: 14.sp,
@@ -1195,7 +1216,9 @@ class _DateDropdownUIState extends State<_DateDropdownUI> {
                   height: 36.w,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.white,
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark ? AppColors.darkSurface2 : Colors.white),
                     shape: BoxShape.circle,
                   ),
                   child: Text(

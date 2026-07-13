@@ -25,8 +25,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : AppColors.scaffoldBg,
       appBar: RapidAppBar(
         title: 'Notifications',
         actions: [
@@ -98,15 +99,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _notificationCard(BuildContext context, NotificationItem item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppColors.borderColor.withValues(alpha: 0.5)),
+        border: Border.all(
+          color: isDark
+              ? AppColors.darkBorder
+              : AppColors.borderColor.withValues(alpha: 0.5),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -124,7 +130,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: AppColors.offWhite,
+                    color: isDark ? AppColors.darkSurface2 : AppColors.offWhite,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: SvgPicture.asset(_getIcon(item.type)),
@@ -142,7 +148,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textDarkGrey,
+                            color: isDark
+                                ? AppColors.darkTextPrimary
+                                : AppColors.textDarkGrey,
                           ),
                         ),
                       ),
@@ -152,7 +160,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.black300,
+                          color: isDark ? AppColors.darkTextSub : AppColors.black300,
                         ),
                       ),
                       SizedBox(height: 12.h),
@@ -179,7 +187,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: IgnorePointer(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: isDark
+                        ? AppColors.darkSurface.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                 ),

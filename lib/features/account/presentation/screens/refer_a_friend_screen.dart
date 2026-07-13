@@ -13,8 +13,9 @@ class ReferAFriendScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : AppColors.scaffoldBg,
       appBar: const RapidAppBar(title: 'Refer a Friend'),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
@@ -31,7 +32,7 @@ class ReferAFriendScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: isDark ? AppColors.darkTextPrimary : Colors.black,
               ),
             ),
             SizedBox(height: 8.h),
@@ -44,7 +45,7 @@ class ReferAFriendScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: AppColors.grey800,
+                  color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -55,12 +56,14 @@ class ReferAFriendScreen extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? AppColors.darkSurface : Colors.white,
                 borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: AppColors.grey200),
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.grey200,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
+                    color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -74,7 +77,7 @@ class ReferAFriendScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.grey600,
+                      color: isDark ? AppColors.darkTextSub : AppColors.grey600,
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -88,7 +91,9 @@ class ReferAFriendScreen extends StatelessWidget {
                             vertical: 18.h,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.grey100,
+                            color: isDark
+                                ? AppColors.darkSurface2
+                                : AppColors.grey100,
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
@@ -96,7 +101,9 @@ class ReferAFriendScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : Colors.black,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -117,15 +124,25 @@ class ReferAFriendScreen extends StatelessWidget {
                         child: Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark
+                                ? AppColors.darkSurface2
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(8.r),
                             border: Border.all(
-                              color: AppColors.grey200,
+                              color: isDark
+                                  ? AppColors.darkBorder
+                                  : AppColors.grey200,
                               width: 1,
                             ),
                           ),
                           child: SvgPicture.asset(
                             Assets.copy,
+                            colorFilter: isDark
+                                ? const ColorFilter.mode(
+                                    Colors.white,
+                                    BlendMode.srcIn,
+                                  )
+                                : null,
                             width: 24.w,
                             height: 24.w,
                           ),
@@ -143,6 +160,7 @@ class ReferAFriendScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildStatCard(
+                    context: context,
                     svg: Assets.people,
                     value: '3',
                     label: 'Friends Referred',
@@ -151,6 +169,7 @@ class ReferAFriendScreen extends StatelessWidget {
                 SizedBox(width: 16.w),
                 Expanded(
                   child: _buildStatCard(
+                    context: context,
                     svg: Assets.gift,
                     value: '3',
                     label: 'Months Earned',
@@ -193,19 +212,23 @@ class ReferAFriendScreen extends StatelessWidget {
   }
 
   Widget _buildStatCard({
+    required BuildContext context,
     required String svg,
     required String value,
     required String label,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.grey200),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.grey200,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -220,7 +243,7 @@ class ReferAFriendScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
+              color: isDark ? AppColors.darkTextPrimary : Colors.black,
             ),
           ),
           SizedBox(height: 4.h),

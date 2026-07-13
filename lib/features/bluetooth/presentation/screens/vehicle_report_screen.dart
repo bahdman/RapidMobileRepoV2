@@ -69,8 +69,9 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : AppColors.scaffoldBg,
       appBar: const RapidAppBar(title: 'Vehicle Report', showBackButton: false),
       body: SafeArea(
         child: BlocListener<ObdScanBloc, ObdScanState>(
@@ -196,9 +197,11 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
                               horizontal: 20.w,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? AppColors.darkSurface : Colors.white,
                               borderRadius: BorderRadius.circular(24.r),
-                              border: Border.all(color: AppColors.borderColor),
+                              border: Border.all(
+                                color: isDark ? AppColors.darkBorder : AppColors.borderColor,
+                              ),
                             ),
                             child: Column(
                               children: [
@@ -265,7 +268,9 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
                             style: TextStyle(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textVeryDarkGrey,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.textVeryDarkGrey,
                             ),
                           ),
 
@@ -325,6 +330,7 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
   }
 
   Widget _issueCard(DiagnosticIssue issue, {VoidCallback? onTap}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: InkWell(
@@ -333,11 +339,12 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? AppColors.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(16.r),
+            border: isDark ? Border.all(color: AppColors.darkBorder) : null,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withValues(alpha: isDark ? 0.0 : 0.03),
                 blurRadius: 15,
                 offset: const Offset(0, 4),
               ),
@@ -388,7 +395,9 @@ class _VehicleReportScreenState extends State<VehicleReportScreen>
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                        color: isDark
+                            ? AppColors.darkTextPrimary
+                            : const Color(0xFF1F2937),
                       ),
                     ),
                   ],

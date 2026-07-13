@@ -17,8 +17,9 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: isDark ? AppColors.darkScaffoldBg : AppColors.scaffoldBg,
       appBar: const RapidAppBar(title: 'Subscription'),
       body: Column(
         children: [
@@ -99,16 +100,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     bool isOutlinedButton = false,
     required List<String> features,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         Container(
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? AppColors.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(24.r),
             border: Border.all(
-              color: isRecommended ? AppColors.primary : AppColors.borderColor2,
+              color: isRecommended
+                  ? AppColors.primary
+                  : (isDark ? AppColors.darkBorder : AppColors.borderColor2),
               width: isRecommended ? 1.w : 1.w,
             ),
           ),
@@ -120,7 +124,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: isDark ? AppColors.darkTextPrimary : Colors.black,
                 ),
               ),
               SizedBox(height: 16.h),
@@ -134,7 +138,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         style: TextStyle(
                           fontSize: 32.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                          color: isDark ? AppColors.darkTextPrimary : Colors.black,
                         ),
                       ),
                       Padding(
@@ -184,16 +188,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isOutlinedButton
-                          ? Colors.white
+                          ? (isDark ? AppColors.darkSurface2 : Colors.white)
                           : AppColors.primary,
                       foregroundColor: isOutlinedButton
-                          ? Colors.black
+                          ? (isDark ? AppColors.darkTextPrimary : Colors.black)
                           : Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100.r),
                         side: isOutlinedButton
-                            ? BorderSide(color: AppColors.borderColor2)
+                            ? BorderSide(
+                                color: isDark
+                                    ? AppColors.darkBorder
+                                    : AppColors.borderColor2,
+                              )
                             : BorderSide.none,
                       ),
                     ),
@@ -242,6 +250,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildFeatureItem(String text) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
@@ -253,7 +262,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               text,
               style: TextStyle(
                 fontSize: 14.sp,
-                color: AppColors.grey800,
+                color: isDark ? AppColors.darkTextSub : AppColors.grey800,
                 fontWeight: FontWeight.w400,
               ),
             ),
