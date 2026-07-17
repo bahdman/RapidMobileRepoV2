@@ -72,7 +72,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       debugPrint('================================================');
 
       // Copy to clipboard because debug console might truncate long strings
-      await Clipboard.setData(ClipboardData(text: idToken));
+      // await Clipboard.setData(ClipboardData(text: idToken));
 
       // 2. Attempt Login
       try {
