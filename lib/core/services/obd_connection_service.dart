@@ -16,8 +16,10 @@ class ObdAdapter {
   final String id;
   final String name;
   final ObdTransport transport;
+
   /// BLE device reference (null for WiFi)
   final BluetoothDevice? bleDevice;
+
   /// Signal strength in dBm (null for WiFi)
   final int? rssi;
 
@@ -127,8 +129,10 @@ class ObdConnectionService {
             await FlutterBluePlus.turnOn();
             final updatedState = await FlutterBluePlus.adapterState
                 .firstWhere((s) => s != BluetoothAdapterState.turningOn)
-                .timeout(const Duration(seconds: 3),
-                    onTimeout: () => BluetoothAdapterState.off);
+                .timeout(
+                  const Duration(seconds: 3),
+                  onTimeout: () => BluetoothAdapterState.off,
+                );
             return updatedState == BluetoothAdapterState.on;
           } catch (_) {
             return false;
@@ -149,6 +153,17 @@ class ObdConnectionService {
         includeLoopback: false,
         type: InternetAddressType.IPv4,
       );
+      for (final interface in interfaces) {
+        final name = interface.name.toLowerCase();
+        final isWifi =
+            name.contains('wlan') ||
+            name.contains('wifi') ||
+            name == 'en0' ||
+            name == 'en1';
+        if (isWifi && interface.addresses.isNotEmpty) {
+          return true;
+        }
+      }
       return interfaces.isNotEmpty;
     } catch (_) {
       return false;
@@ -166,6 +181,12 @@ class ObdConnectionService {
     final discovered = <ObdAdapter>{};
 
     if (isWifiOnly) {
+      final isWifiOn = await isWifiConnected();
+      if (!isWifiOn) {
+        throw Exception(
+          'Wi-Fi is turned off. Please turn on Wi-Fi in your device settings to discover OBD adapters.',
+        );
+      }
       await _probeWifiAdapter(discovered);
       return;
     }
@@ -173,7 +194,8 @@ class ObdConnectionService {
     final btOn = await isBluetoothOn();
     if (!btOn) {
       throw Exception(
-          'Bluetooth is turned off. Please turn on Bluetooth in settings to discover OBD adapters.');
+        'Bluetooth is turned off. Please turn on Bluetooth in settings to discover OBD adapters.',
+      );
     }
 
     // 1. Probe WiFi adapter (non-blocking)
@@ -189,8 +211,8 @@ class ObdConnectionService {
           final name = r.device.platformName.isNotEmpty
               ? r.device.platformName
               : (r.advertisementData.advName.isNotEmpty
-                  ? r.advertisementData.advName
-                  : 'Unknown');
+                    ? r.advertisementData.advName
+                    : 'Unknown');
           // Filter for OBD/ELM adapters by name heuristic
           if (_isLikelyObdAdapter(name)) {
             discovered.add(
@@ -229,35 +251,57 @@ class ObdConnectionService {
 
   Future<void> _probeWifiAdapter(Set<ObdAdapter> discovered) async {
     final targets = [
-      {'host': '192.168.0.10', 'port': 35000, 'name': 'Standard Wi-Fi OBD (192.168.0.10)'},
-      {'host': '192.168.1.10', 'port': 35000, 'name': 'Vgate / iCar Wi-Fi (192.168.1.10)'},
-      {'host': '192.168.0.123', 'port': 35000, 'name': 'Kiwi Wi-Fi OBD (192.168.0.123)'},
-      {'host': '192.168.0.10', 'port': 2000, 'name': 'Wi-Fi Serial OBD (Port 2000)'},
-      {'host': '192.168.1.1', 'port': 35000, 'name': 'Gateway Wi-Fi OBD (192.168.1.1)'},
+      {
+        'host': '192.168.0.10',
+        'port': 35000,
+        'name': 'Standard Wi-Fi OBD (192.168.0.10)',
+      },
+      {
+        'host': '192.168.1.10',
+        'port': 35000,
+        'name': 'Vgate / iCar Wi-Fi (192.168.1.10)',
+      },
+      {
+        'host': '192.168.0.123',
+        'port': 35000,
+        'name': 'Kiwi Wi-Fi OBD (192.168.0.123)',
+      },
+      {
+        'host': '192.168.0.10',
+        'port': 2000,
+        'name': 'Wi-Fi Serial OBD (Port 2000)',
+      },
+      {
+        'host': '192.168.1.1',
+        'port': 35000,
+        'name': 'Gateway Wi-Fi OBD (192.168.1.1)',
+      },
     ];
 
-    await Future.wait(targets.map((target) async {
-      final host = target['host'] as String;
-      final port = target['port'] as int;
-      final name = target['name'] as String;
-      try {
-        final socket = await Socket.connect(
-          host,
-          port,
-          timeout: const Duration(seconds: 2),
-        );
-        socket.destroy();
-        final adapter = ObdAdapter(
-          id: 'wifi:$host:$port',
-          name: name,
-          transport: ObdTransport.wifi,
-        );
-        discovered.add(adapter);
-        _adaptersController.add(discovered.toList());
-      } catch (_) {
-        // No WiFi adapter at this target IP — ignore
-      }
-    }));
+    await Future.wait(
+      targets.map((target) async {
+        final host = target['host'] as String;
+        final port = target['port'] as int;
+        final name = target['name'] as String;
+        try {
+          final socket = await Socket.connect(
+            host,
+            port,
+            timeout: const Duration(seconds: 2),
+          );
+          socket.destroy();
+          final adapter = ObdAdapter(
+            id: 'wifi:$host:$port',
+            name: name,
+            transport: ObdTransport.wifi,
+          );
+          discovered.add(adapter);
+          _adaptersController.add(discovered.toList());
+        } catch (_) {
+          // No WiFi adapter at this target IP — ignore
+        }
+      }),
+    );
   }
 
   Future<void> stopScan() async {
@@ -281,8 +325,9 @@ class ObdConnectionService {
       _connectionController.add(ObdConnectionEvent.connected(adapter));
     } catch (e) {
       _isConnected = false;
-      _connectionController
-          .add(ObdConnectionEvent.error(adapter, e.toString()));
+      _connectionController.add(
+        ObdConnectionEvent.error(adapter, e.toString()),
+      );
       rethrow;
     }
   }
@@ -321,8 +366,9 @@ class ObdConnectionService {
 
     if (_notifyChar == null || _writeChar == null) {
       throw Exception(
-          'OBD UART service not found on this BLE device. '
-          'Supported profiles: FFE0/FFE1, Nordic UART');
+        'OBD UART service not found on this BLE device. '
+        'Supported profiles: FFE0/FFE1, Nordic UART',
+      );
     }
 
     // Enable notifications
@@ -365,8 +411,9 @@ class ObdConnectionService {
       _onWifiData,
       onError: (e) {
         _isConnected = false;
-        _connectionController
-            .add(ObdConnectionEvent.error(_activeAdapter!, e.toString()));
+        _connectionController.add(
+          ObdConnectionEvent.error(_activeAdapter!, e.toString()),
+        );
       },
       onDone: () {
         _isConnected = false;
@@ -390,12 +437,12 @@ class ObdConnectionService {
 
   /// Initialise the ELM327 chip with standard AT commands.
   Future<void> _initElm327() async {
-    await _sendCommand('ATZ', waitMs: 1500);   // Reset
-    await _sendCommand('ATE0');                 // Echo off
-    await _sendCommand('ATL0');                 // Linefeeds off
-    await _sendCommand('ATS0');                 // Spaces off
-    await _sendCommand('ATH0');                 // Headers off
-    await _sendCommand('ATSP0');               // Auto protocol
+    await _sendCommand('ATZ', waitMs: 1500); // Reset
+    await _sendCommand('ATE0'); // Echo off
+    await _sendCommand('ATL0'); // Linefeeds off
+    await _sendCommand('ATS0'); // Spaces off
+    await _sendCommand('ATH0'); // Headers off
+    await _sendCommand('ATSP0'); // Auto protocol
   }
 
   /// Send a raw ELM327 command and await the response string.

@@ -400,7 +400,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 ),
                 SizedBox(height: 24.h),
                 GestureDetector(
-                  onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+                  onTap: () => context
+                      .read<BluetoothBloc>()
+                      .add(StartSearch(isWifiOnly: widget.isWifi)),
                   child: Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: 24.w,
@@ -470,7 +472,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             ),
             SizedBox(height: 24.h),
             GestureDetector(
-              onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+              onTap: () => context
+                  .read<BluetoothBloc>()
+                  .add(StartSearch(isWifiOnly: widget.isWifi)),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
                 decoration: BoxDecoration(
