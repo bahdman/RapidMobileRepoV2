@@ -12,7 +12,8 @@ import 'package:rapid_app/route_names.dart';
 import 'bloc/bluetooth_bloc.dart';
 
 class BluetoothScreen extends StatefulWidget {
-  const BluetoothScreen({super.key});
+  final bool isWifi;
+  const BluetoothScreen({super.key, this.isWifi = false});
 
   @override
   State<BluetoothScreen> createState() => _BluetoothScreenState();
@@ -23,14 +24,14 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   void initState() {
     super.initState();
     // Add StartSearch event when screen is opened
-    context.read<BluetoothBloc>().add(StartSearch());
+    context.read<BluetoothBloc>().add(StartSearch(isWifiOnly: widget.isWifi));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const RapidAppBar(title: 'Bluetooth'),
+      appBar: RapidAppBar(title: widget.isWifi ? 'Wi-Fi' : 'Bluetooth'),
       body: BlocListener<BluetoothBloc, BluetoothState>(
         listener: (context, state) {
           if (state is BluetoothConnected) {
@@ -44,18 +45,24 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         child: BlocBuilder<BluetoothBloc, BluetoothState>(
           builder: (context, state) {
             return Column(
-              children: [
-                SizedBox(height: 32.h),
-                _headerSection(state),
-                SizedBox(height: 24.h),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: _buildContent(context, state),
-                  ),
-                ),
-              ],
-            ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
+                  children: [
+                    SizedBox(height: 32.h),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: _headerSection(state),
+                    ),
+                    SizedBox(height: 24.h),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24.w),
+                        child: _buildContent(context, state),
+                      ),
+                    ),
+                  ],
+                )
+                .animate()
+                .fadeIn(duration: 400.ms)
+                .slideY(begin: 0.05, end: 0, curve: Curves.easeOut);
           },
         ),
       ),
@@ -63,18 +70,19 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   }
 
   Widget _headerSection(BluetoothState state) {
-    String title = 'Searching for devices';
+    final modeName = widget.isWifi ? 'Wi-Fi' : 'Bluetooth';
+    String title = 'Searching for $modeName devices';
     String subtitle = 'Looking nearby...';
 
     if (state is BluetoothDevicesFound) {
       if (state.isScanning) {
-        title = 'Searching for devices';
+        title = 'Searching for $modeName devices';
         subtitle =
             '${state.devices.length} device${state.devices.length == 1 ? '' : 's'} found so far...';
       } else {
         title = state.devices.isEmpty ? 'Scan Complete' : 'Devices Discovered';
         subtitle = state.devices.isEmpty
-            ? 'No OBD adapters found'
+            ? 'No $modeName OBD adapters found'
             : '${state.devices.length} device${state.devices.length == 1 ? '' : 's'} ready to connect';
       }
     } else if (state is BluetoothConnecting) {
@@ -84,32 +92,35 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       subtitle = 'Device ready to use';
     } else if (state is BluetoothPermissionDenied) {
       title = 'Permission Required';
-      subtitle = 'Bluetooth & location access needed';
+      subtitle = '$modeName access needed';
     } else if (state is BluetoothError) {
       title = 'Connection Error';
       subtitle = state.message;
     }
 
-    return Column(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurface,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
-        ),
-        SizedBox(height: 12.h),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: AppColors.textMediumGrey,
-            fontWeight: FontWeight.w400,
+          SizedBox(height: 12.h),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.textMediumGrey,
+              fontWeight: FontWeight.w400,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -119,7 +130,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         children: [
           _hardwareGuidanceBanner(context),
           SizedBox(height: 32.h),
-          const PulsatingBluetoothIcon(),
+          PulsatingDeviceIcon(isWifi: widget.isWifi),
         ],
       );
     }
@@ -143,7 +154,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           ? [state.device]
           : [];
 
-      final isScanning = (state is BluetoothDevicesFound) ? state.isScanning : false;
+      final isScanning = (state is BluetoothDevicesFound)
+          ? state.isScanning
+          : false;
 
       if (devices.isEmpty) {
         return _emptyDevicesCard(context);
@@ -168,10 +181,16 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+                    onTap: () => context.read<BluetoothBloc>().add(
+                      StartSearch(isWifiOnly: widget.isWifi),
+                    ),
                     child: Row(
                       children: [
-                        Icon(Icons.refresh_rounded, size: 16.w, color: AppColors.primary),
+                        Icon(
+                          Icons.refresh_rounded,
+                          size: 16.w,
+                          color: AppColors.primary,
+                        ),
                         SizedBox(width: 4.w),
                         Text(
                           'Scan Again',
@@ -208,6 +227,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
   Widget _hardwareGuidanceBanner(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tip = widget.isWifi
+        ? 'Hardware tip: Connect your phone to your OBD-II adapter\'s Wi-Fi network in your device Wi-Fi settings.'
+        : 'Hardware tip: Ensure your OBD-II scanner is plugged into the OBD port and ignition is switched ON.';
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -215,21 +238,21 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             ? AppColors.primary.withValues(alpha: 0.15)
             : const Color(0xFFEAF4FF),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Icon(
-            Icons.info_outline_rounded,
+            widget.isWifi
+                ? Icons.wifi_find_rounded
+                : Icons.info_outline_rounded,
             size: 20.w,
             color: AppColors.primary,
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'Hardware tip: Ensure your OBD-II scanner is plugged into the OBD port and ignition is switched ON.',
+              tip,
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
@@ -245,6 +268,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
   Widget _emptyDevicesCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final modeName = widget.isWifi ? 'Wi-Fi' : 'Bluetooth';
     return Column(
       children: [
         _hardwareGuidanceBanner(context),
@@ -261,13 +285,15 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           child: Column(
             children: [
               Icon(
-                Icons.bluetooth_searching_rounded,
+                widget.isWifi
+                    ? Icons.wifi_off_rounded
+                    : Icons.bluetooth_searching_rounded,
                 size: 48.w,
                 color: AppColors.textMediumGrey,
               ),
               SizedBox(height: 16.h),
               Text(
-                'No Bluetooth Devices Discovered',
+                'No $modeName Devices Discovered',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w700,
@@ -278,7 +304,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Make sure your OBD-II device is plugged in, powered on, and within range (10 meters).',
+                widget.isWifi
+                    ? 'Make sure your Wi-Fi OBD-II adapter is plugged into your vehicle and your phone is connected to the adapter\'s Wi-Fi network.'
+                    : 'Make sure your OBD-II device is plugged in, powered on, and within range (10 meters).',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13.sp,
@@ -288,10 +316,14 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
               ),
               SizedBox(height: 24.h),
               GestureDetector(
-                onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+                onTap: () => context.read<BluetoothBloc>().add(
+                  StartSearch(isWifiOnly: widget.isWifi),
+                ),
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 24.w,
+                    vertical: 14.h,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(12.r),
@@ -299,7 +331,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.refresh_rounded, size: 18.w, color: Colors.white),
+                      Icon(
+                        Icons.refresh_rounded,
+                        size: 18.w,
+                        color: Colors.white,
+                      ),
                       SizedBox(width: 8.w),
                       Text(
                         'Rescan for Devices',
@@ -337,8 +373,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             ),
             child: Column(
               children: [
-                Icon(Icons.bluetooth_disabled_rounded,
-                    size: 48.w, color: AppColors.textMediumGrey),
+                Icon(
+                  Icons.bluetooth_disabled_rounded,
+                  size: 48.w,
+                  color: AppColors.textMediumGrey,
+                ),
                 SizedBox(height: 16.h),
                 Text(
                   'Bluetooth Permission Denied',
@@ -363,8 +402,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 GestureDetector(
                   onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
                   child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 14.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12.r),
@@ -402,8 +443,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         ),
         child: Column(
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 48.w, color: AppColors.tertiaryRed),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48.w,
+              color: AppColors.tertiaryRed,
+            ),
             SizedBox(height: 16.h),
             Text(
               'Connection Failed',
@@ -428,8 +472,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             GestureDetector(
               onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(12.r),
@@ -500,8 +543,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 shape: BoxShape.circle,
               ),
               child: device.isWifi
-                  ? Icon(Icons.wifi_rounded,
-                      size: 22.w, color: AppColors.blue)
+                  ? Icon(Icons.wifi_rounded, size: 22.w, color: AppColors.blue)
                   : SvgPicture.asset(Assets.bluetoothLightGrey),
             ),
             SizedBox(width: 16.w),
@@ -525,7 +567,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                       SizedBox(width: 8.w),
                       Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 8.w, vertical: 3.h),
+                          horizontal: 8.w,
+                          vertical: 3.h,
+                        ),
                         decoration: BoxDecoration(
                           color: device.isWifi
                               ? const Color(0xFFEAF4FF)
@@ -602,9 +646,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   }
 }
 
-
-class PulsatingBluetoothIcon extends StatelessWidget {
-  const PulsatingBluetoothIcon({super.key});
+class PulsatingDeviceIcon extends StatelessWidget {
+  final bool isWifi;
+  const PulsatingDeviceIcon({super.key, this.isWifi = false});
 
   static const double _centerSize = 88.0;
 
@@ -695,8 +739,11 @@ class PulsatingBluetoothIcon extends StatelessWidget {
               alignment: Alignment.center,
               clipBehavior: Clip.none,
               children: [
-                // Bluetooth icon
-                SvgPicture.asset(Assets.bluetoothBlue),
+                // Icon (Wi-Fi or Bluetooth)
+                if (isWifi)
+                  Icon(Icons.wifi_rounded, size: 36.w, color: AppColors.primary)
+                else
+                  SvgPicture.asset(Assets.bluetoothBlue),
                 // Left dot — nudged left
                 Transform.translate(
                   offset: Offset(-10.w, 0),

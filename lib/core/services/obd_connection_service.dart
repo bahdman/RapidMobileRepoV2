@@ -142,18 +142,39 @@ class ObdConnectionService {
     }
   }
 
+  /// Checks if active local network / Wi-Fi interfaces exist on the device.
+  Future<bool> isWifiConnected() async {
+    try {
+      final interfaces = await NetworkInterface.list(
+        includeLoopback: false,
+        type: InternetAddressType.IPv4,
+      );
+      return interfaces.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // ── Scanning ───────────────────────────────────────────────────────────────
 
-  /// Start scanning for BLE OBD adapters. Discovered adapters are emitted
-  /// on [adaptersStream]. Also probes the known WiFi adapter address.
-  Future<void> startScan({Duration timeout = const Duration(seconds: 12)}) async {
+  /// Start scanning for BLE or WiFi OBD adapters. Discovered adapters are emitted
+  /// on [adaptersStream].
+  Future<void> startScan({
+    Duration timeout = const Duration(seconds: 12),
+    bool isWifiOnly = false,
+  }) async {
+    final discovered = <ObdAdapter>{};
+
+    if (isWifiOnly) {
+      await _probeWifiAdapter(discovered);
+      return;
+    }
+
     final btOn = await isBluetoothOn();
     if (!btOn) {
       throw Exception(
           'Bluetooth is turned off. Please turn on Bluetooth in settings to discover OBD adapters.');
     }
-
-    final discovered = <ObdAdapter>{};
 
     // 1. Probe WiFi adapter (non-blocking)
     _probeWifiAdapter(discovered);
@@ -207,23 +228,36 @@ class ObdConnectionService {
   }
 
   Future<void> _probeWifiAdapter(Set<ObdAdapter> discovered) async {
-    try {
-      final socket = await Socket.connect(
-        _WifiDefaults.host,
-        _WifiDefaults.port,
-        timeout: const Duration(seconds: 3),
-      );
-      socket.destroy();
-      final adapter = ObdAdapter(
-        id: 'wifi:${_WifiDefaults.host}:${_WifiDefaults.port}',
-        name: 'WiFi OBD Adapter (${_WifiDefaults.host})',
-        transport: ObdTransport.wifi,
-      );
-      discovered.add(adapter);
-      _adaptersController.add(discovered.toList());
-    } catch (_) {
-      // No WiFi adapter at the default address — silently ignored
-    }
+    final targets = [
+      {'host': '192.168.0.10', 'port': 35000, 'name': 'Standard Wi-Fi OBD (192.168.0.10)'},
+      {'host': '192.168.1.10', 'port': 35000, 'name': 'Vgate / iCar Wi-Fi (192.168.1.10)'},
+      {'host': '192.168.0.123', 'port': 35000, 'name': 'Kiwi Wi-Fi OBD (192.168.0.123)'},
+      {'host': '192.168.0.10', 'port': 2000, 'name': 'Wi-Fi Serial OBD (Port 2000)'},
+      {'host': '192.168.1.1', 'port': 35000, 'name': 'Gateway Wi-Fi OBD (192.168.1.1)'},
+    ];
+
+    await Future.wait(targets.map((target) async {
+      final host = target['host'] as String;
+      final port = target['port'] as int;
+      final name = target['name'] as String;
+      try {
+        final socket = await Socket.connect(
+          host,
+          port,
+          timeout: const Duration(seconds: 2),
+        );
+        socket.destroy();
+        final adapter = ObdAdapter(
+          id: 'wifi:$host:$port',
+          name: name,
+          transport: ObdTransport.wifi,
+        );
+        discovered.add(adapter);
+        _adaptersController.add(discovered.toList());
+      } catch (_) {
+        // No WiFi adapter at this target IP — ignore
+      }
+    }));
   }
 
   Future<void> stopScan() async {
@@ -312,9 +346,19 @@ class ObdConnectionService {
   // ── WiFi connection ────────────────────────────────────────────────────────
 
   Future<void> _connectWifi(ObdAdapter adapter) async {
+    String host = _WifiDefaults.host;
+    int port = _WifiDefaults.port;
+    if (adapter.id.startsWith('wifi:')) {
+      final parts = adapter.id.split(':');
+      if (parts.length >= 3) {
+        host = parts[1];
+        port = int.tryParse(parts[2]) ?? _WifiDefaults.port;
+      }
+    }
+
     _wifiSocket = await Socket.connect(
-      _WifiDefaults.host,
-      _WifiDefaults.port,
+      host,
+      port,
       timeout: const Duration(seconds: 10),
     );
     _wifiSocket!.listen(

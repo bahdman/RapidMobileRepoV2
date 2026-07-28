@@ -16,7 +16,13 @@ abstract class BluetoothEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class StartSearch extends BluetoothEvent {}
+class StartSearch extends BluetoothEvent {
+  final bool isWifiOnly;
+  const StartSearch({this.isWifiOnly = false});
+
+  @override
+  List<Object?> get props => [isWifiOnly];
+}
 
 class DeviceSelected extends BluetoothEvent {
   final BluetoothDevice device;
@@ -120,12 +126,21 @@ class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothState> {
       return;
     }
 
-    // 2. Verify Bluetooth hardware state
-    final isBtOn = await _connectionService.isBluetoothOn();
-    if (!isBtOn) {
-      emit(const BluetoothError(
-          'Bluetooth is turned off. Please turn on Bluetooth in your settings to discover OBD adapters.'));
-      return;
+    // 2. Verify radio/network hardware state depending on transport mode
+    if (event.isWifiOnly) {
+      final isWifiOn = await _connectionService.isWifiConnected();
+      if (!isWifiOn) {
+        emit(const BluetoothError(
+            'Wi-Fi is turned off or disconnected. Please turn on Wi-Fi and connect to your OBD adapter\'s network in settings.'));
+        return;
+      }
+    } else {
+      final isBtOn = await _connectionService.isBluetoothOn();
+      if (!isBtOn) {
+        emit(const BluetoothError(
+            'Bluetooth is turned off. Please turn on Bluetooth in your settings to discover OBD adapters.'));
+        return;
+      }
     }
 
     emit(BluetoothSearching());
@@ -147,7 +162,7 @@ class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothState> {
 
     // 5. Start scan (returns after timeout or error)
     try {
-      await _connectionService.startScan();
+      await _connectionService.startScan(isWifiOnly: event.isWifiOnly);
     } catch (e) {
       if (!isClosed) emit(BluetoothError(e.toString().replaceAll('Exception: ', '')));
       return;

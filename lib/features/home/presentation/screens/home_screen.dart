@@ -480,16 +480,7 @@ class _DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: RapidButton(
               text: 'Connect Directly',
               onPressed: () {
-                context.pushNamed(AppRoutes.bluetooth);
-                context.read<BluetoothBloc>().add(
-                  const DeviceSelected(
-                    BluetoothDevice(
-                      id: 'wifi:192.168.0.10:35000',
-                      name: 'WiFi OBD Adapter',
-                      transport: ObdTransport.wifi,
-                    ),
-                  ),
-                );
+                context.pushNamed(AppRoutes.bluetooth, extra: 'wifi');
               },
               backgroundColor: AppColors.connectDirectBlue,
               textColor: Colors.white,

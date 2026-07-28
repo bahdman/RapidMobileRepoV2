@@ -270,7 +270,10 @@ GoRouter buildRouter(String initialRoute) {
         path: '/${AppRoutes.bluetooth}',
         name: AppRoutes.bluetooth,
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const BluetoothScreen(),
+        builder: (context, state) {
+          final isWifi = state.extra == 'wifi' || state.uri.queryParameters['mode'] == 'wifi';
+          return BluetoothScreen(isWifi: isWifi);
+        },
       ),
 
       GoRoute(
