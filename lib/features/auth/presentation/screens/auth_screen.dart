@@ -178,15 +178,15 @@ class _AuthScreenState extends State<AuthScreen> {
                     SizedBox(height: 16.h),
 
                     // Sign in with Apple
-                    _buildAuthButton(
-                      label: 'Sign in with Apple',
-                      onTap: () {
-                        //test
-                        context.pushNamed(AppRoutes.home);
-                      },
-                      svgIcon: Assets.apple,
-                    ),
-                    SizedBox(height: 16.h),
+                    // _buildAuthButton(
+                    //   label: 'Sign in with Apple',
+                    //   onTap: () {
+                    //     //test
+                    //     context.pushNamed(AppRoutes.home);
+                    //   },
+                    //   svgIcon: Assets.apple,
+                    // ),
+                    // SizedBox(height: 16.h),
 
                     // Sign in with Google
                     _buildAuthButton(
@@ -197,14 +197,14 @@ class _AuthScreenState extends State<AuthScreen> {
                       },
                       svgIcon: Assets.google,
                     ),
-                    SizedBox(height: 16.h),
+                    // SizedBox(height: 16.h),
 
-                    // Sign in with Facebook
-                    _buildAuthButton(
-                      label: 'Sign in with Facebook',
-                      onTap: () {},
-                      svgIcon: Assets.facebook,
-                    ),
+                    // // Sign in with Facebook
+                    // _buildAuthButton(
+                    //   label: 'Sign in with Facebook',
+                    //   onTap: () {},
+                    //   svgIcon: Assets.facebook,
+                    // ),
 
                     SizedBox(height: 48.h),
 

@@ -7,6 +7,8 @@ import 'package:rapid_app/core/theme/app_colors.dart';
 import 'package:rapid_app/core/theme/app_text_styles.dart';
 import 'package:rapid_app/core/widgets/rapid_app_bar.dart';
 
+import 'package:rapid_app/core/utils/snackbar_utils.dart';
+
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
 
@@ -25,11 +27,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 16.h),
                   _buildPlanCard(
                     title: 'Free',
                     price: '\$0',
@@ -41,7 +42,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       '1 vehicle profile',
                     ],
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 24.h),
                   _buildPlanCard(
                     title: 'Pro',
                     price: '\$9.99',
@@ -57,7 +58,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       'Priority support',
                     ],
                   ),
-                  SizedBox(height: 32.h),
+                  SizedBox(height: 24.h),
                   _buildPlanCard(
                     title: 'Premium',
                     price: '\$19.99',
@@ -185,7 +186,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   width: double.infinity,
                   height: 54.h,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showGlobalSnackBar('$title tier upgrade initiated');
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isOutlinedButton
                           ? (isDark ? AppColors.darkSurface2 : Colors.white)

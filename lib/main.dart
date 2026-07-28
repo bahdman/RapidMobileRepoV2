@@ -31,6 +31,7 @@ import 'package:rapid_app/core/utils/snackbar_utils.dart';
 import 'package:rapid_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:rapid_app/core/widgets/notification_banner_overlay.dart';
+import 'package:rapid_app/core/widgets/offline_banner_overlay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -182,7 +183,11 @@ class _MainAppState extends State<MainApp> {
               themeMode: themeMode,
               routerConfig: widget.router,
               builder: (context, routerChild) {
-                return NotificationBannerOverlay(child: routerChild ?? const SizedBox.shrink());
+                return OfflineBannerOverlay(
+                  child: NotificationBannerOverlay(
+                    child: routerChild ?? const SizedBox.shrink(),
+                  ),
+                );
               },
             );
           },

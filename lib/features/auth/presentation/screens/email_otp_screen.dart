@@ -158,7 +158,18 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
                               color: isDark ? AppColors.darkTextPrimary : Colors.black,
                             ),
                           ),
-                          SizedBox(height: 10.h),
+                          SizedBox(height: 8.h),
+                          Text(
+                            widget.contact.isNotEmpty
+                                ? 'We sent a 6-digit verification code to ${widget.contact}.'
+                                : 'We sent a 6-digit verification code to your email/phone.',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: isDark ? AppColors.darkTextSub : AppColors.textMediumGrey,
+                              height: 1.4,
+                            ),
+                          ),
+                          SizedBox(height: 24.h),
                           
                           // OTP Input Boxes
                           Center(

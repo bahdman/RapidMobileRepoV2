@@ -57,9 +57,12 @@ class BluetoothSearching extends BluetoothState {}
 
 class BluetoothDevicesFound extends BluetoothState {
   final List<BluetoothDevice> devices;
-  const BluetoothDevicesFound(this.devices);
+  final bool isScanning;
+
+  const BluetoothDevicesFound(this.devices, {this.isScanning = true});
+
   @override
-  List<Object?> get props => [devices];
+  List<Object?> get props => [devices, isScanning];
 }
 
 class BluetoothConnecting extends BluetoothState {
@@ -110,29 +113,50 @@ class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothState> {
   ) async {
     if (state is BluetoothConnecting || state is BluetoothConnected) return;
 
-    // Request permissions first
+    // 1. Request permissions first
     final granted = await _connectionService.requestPermissions();
     if (!granted) {
       emit(BluetoothPermissionDenied());
       return;
     }
 
+    // 2. Verify Bluetooth hardware state
+    final isBtOn = await _connectionService.isBluetoothOn();
+    if (!isBtOn) {
+      emit(const BluetoothError(
+          'Bluetooth is turned off. Please turn on Bluetooth in your settings to discover OBD adapters.'));
+      return;
+    }
+
     emit(BluetoothSearching());
 
-    // Subscribe to adapter discovery stream
+    List<BluetoothDevice> lastDiscovered = [];
+
+    // 3. Subscribe to adapter discovery stream
     await _adaptersSub?.cancel();
     _adaptersSub = _connectionService.adaptersStream.listen((adapters) {
+      lastDiscovered = adapters;
       if (!isClosed) add(_AdaptersUpdated(adapters));
     });
 
-    // Subscribe to connection events
+    // 4. Subscribe to connection events
     await _connectionSub?.cancel();
     _connectionSub = _connectionService.connectionStream.listen((event) {
       if (!isClosed) add(_ConnectionResult(event));
     });
 
-    // Start scan (returns after timeout)
-    await _connectionService.startScan();
+    // 5. Start scan (returns after timeout or error)
+    try {
+      await _connectionService.startScan();
+    } catch (e) {
+      if (!isClosed) emit(BluetoothError(e.toString().replaceAll('Exception: ', '')));
+      return;
+    }
+
+    // 6. Notify scan stopped
+    if (!isClosed && (state is BluetoothSearching || state is BluetoothDevicesFound)) {
+      emit(BluetoothDevicesFound(lastDiscovered, isScanning: false));
+    }
   }
 
   void _onAdaptersUpdated(
@@ -141,7 +165,7 @@ class BluetoothBloc extends Bloc<BluetoothEvent, BluetoothState> {
   ) {
     // Don't overwrite connecting/connected states
     if (state is BluetoothConnecting || state is BluetoothConnected) return;
-    emit(BluetoothDevicesFound(event.devices));
+    emit(BluetoothDevicesFound(event.devices, isScanning: true));
   }
 
   Future<void> _onDeviceSelected(

@@ -67,8 +67,16 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     String subtitle = 'Looking nearby...';
 
     if (state is BluetoothDevicesFound) {
-      subtitle =
-          '${state.devices.length} device${state.devices.length > 1 ? 's' : ''} nearby';
+      if (state.isScanning) {
+        title = 'Searching for devices';
+        subtitle =
+            '${state.devices.length} device${state.devices.length == 1 ? '' : 's'} found so far...';
+      } else {
+        title = state.devices.isEmpty ? 'Scan Complete' : 'Devices Discovered';
+        subtitle = state.devices.isEmpty
+            ? 'No OBD adapters found'
+            : '${state.devices.length} device${state.devices.length == 1 ? '' : 's'} ready to connect';
+      }
     } else if (state is BluetoothConnecting) {
       subtitle = 'Connecting...';
     } else if (state is BluetoothConnected) {
@@ -107,12 +115,12 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
   Widget _buildContent(BuildContext context, BluetoothState state) {
     if (state is BluetoothSearching) {
-      return Padding(
-        padding: EdgeInsets.only(top: 80.h),
-        child: const Align(
-          alignment: Alignment.topCenter,
-          child: PulsatingBluetoothIcon(),
-        ),
+      return Column(
+        children: [
+          _hardwareGuidanceBanner(context),
+          SizedBox(height: 32.h),
+          const PulsatingBluetoothIcon(),
+        ],
       );
     }
 
@@ -135,19 +143,181 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           ? [state.device]
           : [];
 
-      return ListView.builder(
-        itemCount: devices.length,
-        itemBuilder: (context, index) {
-          final device = devices[index] as BluetoothDevice;
-          return Padding(
-            padding: EdgeInsets.only(bottom: 16.h),
-            child: _deviceCard(context, device, state),
-          );
-        },
+      final isScanning = (state is BluetoothDevicesFound) ? state.isScanning : false;
+
+      if (devices.isEmpty) {
+        return _emptyDevicesCard(context);
+      }
+
+      return Column(
+        children: [
+          _hardwareGuidanceBanner(context),
+          SizedBox(height: 12.h),
+          if (!isScanning && state is BluetoothDevicesFound)
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Scan Finished',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMediumGrey,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh_rounded, size: 16.w, color: AppColors.primary),
+                        SizedBox(width: 4.w),
+                        Text(
+                          'Scan Again',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: devices.length,
+              itemBuilder: (context, index) {
+                final device = devices[index] as BluetoothDevice;
+                return Padding(
+                  padding: EdgeInsets.only(bottom: 16.h),
+                  child: _deviceCard(context, device, state),
+                );
+              },
+            ),
+          ),
+        ],
       );
     }
 
     return const SizedBox();
+  }
+
+  Widget _hardwareGuidanceBanner(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.primary.withValues(alpha: 0.15)
+            : const Color(0xFFEAF4FF),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            size: 20.w,
+            color: AppColors.primary,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              'Hardware tip: Ensure your OBD-II scanner is plugged into the OBD port and ignition is switched ON.',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppColors.darkTextPrimary : AppColors.primary,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyDevicesCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      children: [
+        _hardwareGuidanceBanner(context),
+        SizedBox(height: 24.h),
+        Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : Colors.white,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.borderColor,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.bluetooth_searching_rounded,
+                size: 48.w,
+                color: AppColors.textMediumGrey,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No Bluetooth Devices Discovered',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.textVeryDarkGrey,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Make sure your OBD-II device is plugged in, powered on, and within range (10 meters).',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: AppColors.textMediumGrey,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              GestureDetector(
+                onTap: () => context.read<BluetoothBloc>().add(StartSearch()),
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 18.w, color: Colors.white),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Rescan for Devices',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _permissionDeniedCard(BuildContext context) {

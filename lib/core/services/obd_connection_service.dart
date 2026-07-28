@@ -116,11 +116,43 @@ class ObdConnectionService {
     return true;
   }
 
+  /// Checks if Bluetooth adapter is enabled on the device.
+  Future<bool> isBluetoothOn() async {
+    try {
+      if (!await FlutterBluePlus.isSupported) return false;
+      final state = await FlutterBluePlus.adapterState.first;
+      if (state == BluetoothAdapterState.off) {
+        if (Platform.isAndroid) {
+          try {
+            await FlutterBluePlus.turnOn();
+            final updatedState = await FlutterBluePlus.adapterState
+                .firstWhere((s) => s != BluetoothAdapterState.turningOn)
+                .timeout(const Duration(seconds: 3),
+                    onTimeout: () => BluetoothAdapterState.off);
+            return updatedState == BluetoothAdapterState.on;
+          } catch (_) {
+            return false;
+          }
+        }
+        return false;
+      }
+      return state == BluetoothAdapterState.on;
+    } catch (_) {
+      return true; // Fallback for unsupported desktop environments
+    }
+  }
+
   // ── Scanning ───────────────────────────────────────────────────────────────
 
   /// Start scanning for BLE OBD adapters. Discovered adapters are emitted
   /// on [adaptersStream]. Also probes the known WiFi adapter address.
   Future<void> startScan({Duration timeout = const Duration(seconds: 12)}) async {
+    final btOn = await isBluetoothOn();
+    if (!btOn) {
+      throw Exception(
+          'Bluetooth is turned off. Please turn on Bluetooth in settings to discover OBD adapters.');
+    }
+
     final discovered = <ObdAdapter>{};
 
     // 1. Probe WiFi adapter (non-blocking)
